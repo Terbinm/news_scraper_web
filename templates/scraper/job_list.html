@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+
+{% block title %}爬蟲任務列表 | 新聞爬蟲系統{% endblock %}
+
+{% block content %}
+<div class="row mb-4 align-items-center">
+    <div class="col">
+        <h1 class="display-5 fw-bold text-info">
+            <i class="bi bi-list-task me-2"></i>爬蟲任務列表
+        </h1>
+        <p class="text-light">管理您的新聞爬蟲任務</p>
+    </div>
+    <div class="col-auto">
+        <a href="{% url 'job_create' %}" class="btn btn-lg btn-primary shadow-lg" data-aos="zoom-in">
+            <i class="bi bi-plus-circle me-2"></i>新增爬蟲任務
+        </a>
+    </div>
+</div>
+
+{% if jobs %}
+<div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
+    {% for job in jobs %}
+    <div class="col" data-aos="fade-up" data-aos-delay="{{ forloop.counter|add:"100" }}">
+        <div class="card h-100 bg-dark-subtle border-0 rounded-4 shadow job-card">
+            <div class="card-header d-flex justify-content-between align-items-center border-0 bg-transparent">
+                <span class="fs-5 fw-bold text-white">任務 #{{ job.id }}</span>
+                {% if job.status == 'pending' %}
+                    <span class="badge bg-warning text-dark">等待中</span>
+                {% elif job.status == 'running' %}
+                    <span class="badge bg-info">執行中</span>
+                {% elif job.status == 'completed' %}
+                    <span class="badge bg-success">已完成</span>
+                {% elif job.status == 'failed' %}
+                    <span class="badge bg-danger">失敗</span>
+                {% endif %}
+            </div>
+            <div class="card-body position-relative">
+                <div class="job-info mb-4">
+                    <div class="mb-2">
+                        <i class="bi bi-calendar-date text-info me-2"></i>
+                        <span class="text-light">{{ job.created_at|date:"Y-m-d H:i" }}</span>
+                    </div>
+                    <div class="mb-2">
+                        <i class="bi bi-tag text-info me-2"></i>
+                        <span class="text-light">{{ job.categories }}</span>
+                    </div>
+                    <div>
+                        <i class="bi bi-newspaper text-info me-2"></i>
+                        <span class="text-light">每類別 {{ job.limit_per_category }} 篇文章</span>
+                    </div>
+                </div>
+
+                {% if job.status == 'running' %}
+                <div class="progress mb-3" style="height: 10px;">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated bg-info"
+                         role="progressbar" style="width: 100%"></div>
+                </div>
+                {% endif %}
+
+                <div class="d-grid">
+                    <a href="{% url 'job_detail' job.id %}" class="btn btn-outline-info stretched-link">
+                        <i class="bi bi-search me-2"></i>查看詳情
+                    </a>
+                </div>
+            </div>
+            <div class="card-footer bg-transparent border-0 text-center text-muted small">
+                {% if job.status == 'completed' %}
+                    <i class="bi bi-check-circle-fill text-success me-1"></i>完成時間: {{ job.updated_at|date:"Y-m-d H:i" }}
+                {% elif job.status == 'running' %}
+                    <i class="bi bi-arrow-repeat text-info me-1"></i>開始時間: {{ job.updated_at|date:"Y-m-d H:i" }}
+                {% elif job.status == 'failed' %}
+                    <i class="bi bi-exclamation-circle-fill text-danger me-1"></i>失敗時間: {{ job.updated_at|date:"Y-m-d H:i" }}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="row">
+    <div class="col-12 text-center py-5" data-aos="fade-up">
+        <div class="py-5">
+            <i class="bi bi-search display-1 text-muted mb-3"></i>
+            <h2 class="text-light">尚未建立任何爬蟲任務</h2>
+            <p class="text-muted mb-4">點擊「新增爬蟲任務」按鈕開始您的第一次爬蟲任務</p>
+            <a href="{% url 'job_create' %}" class="btn btn-lg btn-primary">
+                <i class="bi bi-plus-circle me-2"></i>新增爬蟲任務
+            </a>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .job-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        background: linear-gradient(145deg, #2a2d3a, #212330);
+    }
+
+    .job-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // 每5秒自動刷新進行中的任務
+    $(document).ready(function() {
+        // 檢查是否有進行中的任務
+        let hasRunningJobs = $('.badge:contains("執行中")').length > 0;
+
+        if (hasRunningJobs) {
+            // 設置定時刷新
+            setTimeout(function() {
+                location.reload();
+            }, 5000);
+        }
+    });
+</script>
+{% endblock %}

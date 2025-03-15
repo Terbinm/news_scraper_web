@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}爬蟲任務詳情 | 新聞爬蟲系統{% endblock %}
+
+{% block extra_css %}
+<style>
+    .card {
+        border: none;
+        border-radius: 10px;
+        background: linear-gradient(145deg, #2a2d3a, #212330);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    .card-header {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        background: transparent;
+    }
+
+    .nav-tabs .nav-link {
+        color: #6c757d;
+        border: none;
+        border-bottom: 2px solid transparent;
+        transition: all 0.3s ease;
+    }
+
+    .nav-tabs .nav-link:hover {
+        color: #f8f9fa;
+        border-color: transparent;
+    }
+
+    .nav-tabs .nav-link.active {
+        color: #17a2b8;
+        background-color: transparent;
+        border-color: #17a2b8;
+    }
+
+    .keyword-item {
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .keyword-item:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(23, 162, 184, 0.2);
+    }
+
+    .chart-container {
+        position: relative;
+        height: 50vh;
+        width: 100%;
+    }
+
+    .form-range::-webkit-slider-thumb {
+        background: #17a2b8;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h1 class="display-6 fw-bold text-info">
+            <i class="bi bi-search me-2"></i>爬蟲任務詳情 #{{ job.id }}
+        </h1>
+        <p class="text-light">查看爬蟲任務結果與關鍵詞分析</p>
+    </div>
+    <div class="col-md-4 text-md-end">
+        <a href="{% url 'job_list' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>返回列表
+        </a>
+    </div>
+</div>
+
+<!-- 任務資訊卡片 -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card" data-aos="fade-up">
+            <div class="card-body p-4">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="d-flex align-items-center mb-3 mb-md-0">
+                            <div class="rounded-circle bg-dark d-flex align-items-center justify-content-center me-3" style="width: 60px; height: 60px;">
+                                {% if job.status == 'pending' %}
+                                    <i class="bi bi-hourglass-split text-warning fs-2"></i>
+                                {% elif job.status == 'running' %}
+                                    <i class="bi bi-arrow-repeat text-info fs-2"></i>
+                                {% elif job.status == 'completed' %}
+                                    <i class="bi bi-check-circle text-success fs-2"></i>
+                                {% elif job.status == 'failed' %}
+                                    <i class="bi bi-exclamation-triangle text-danger fs-2"></i>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <h6 class="text-muted mb-0">狀態</h6>
+                                <h5 class="mb-0">
+                                    {% if job.status == 'pending' %}
+                                        <span class="text-warning">等待中</span>
+                                    {% elif job.status == 'running' %}
+                                        <span class="text-info">執行中</span>
+                                    {% elif job.status == 'completed' %}
+                                        <span class="text-success">已完成</span>
+                                    {% elif job.status == 'failed' %}
+                                        <span class="text-danger">失敗</span>
+                                    {% endif %}
+                                </h5>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="mb-3 mb-md-0">
+                            <h6 class="text-muted mb-0">爬取類別</h6>
+                            <h5 class="mb-0">{{ job.categories }}</h5>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="mb-3 mb-md-0">
+                            <h6 class="text-muted mb-0">每類別文章數</h6>
+                            <h5 class="mb-0">{{ job.limit_per_category }}</h5>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div>
+                            <h6 class="text-muted mb-0">創建時間</h6>
+                            <h5 class="mb-0">{{ job.created_at|date:"Y-m-d H:i" }}</h5>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 頁籤切換 -->
+<ul class="nav nav-tabs mb-4" id="myTab" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="keywords-tab" data-bs-toggle="tab" data-bs-target="#keywords" type="button" role="tab" aria-controls="keywords" aria-selected="true">
+            <i class="bi bi-bar-chart me-1"></i>關鍵詞分析

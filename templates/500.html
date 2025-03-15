@@ -1,0 +1,19 @@
+<!-- 500 錯誤頁面 templates/500.html -->
+{% extends 'base.html' %}
+
+{% block title %}伺服器錯誤 | 新聞爬蟲系統{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 text-center py-5">
+        <div class="error-container" data-aos="fade-up">
+            <h1 class="display-1 text-danger">500</h1>
+            <h2 class="mb-4">伺服器內部錯誤</h2>
+            <p class="lead text-muted mb-5">抱歉，伺服器發生了問題。請稍後再試</p>
+            <a href="{% url 'job_list' %}" class="btn btn-lg btn-info">
+                <i class="bi bi-house-door me-2"></i>返回首頁
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

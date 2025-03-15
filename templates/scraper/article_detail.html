@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ article.title }} | 新聞爬蟲系統{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h1 class="fw-bold text-info">{{ article.title }}</h1>
+    </div>
+    <div class="col-md-4 text-md-end">
+        <a href="{% url 'job_detail' article.job.id %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>返回任務詳情
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12" data-aos="fade-up">
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <div>
+                    <span class="badge bg-info me-2">{{ article.category }}</span>
+                    <span class="text-muted">{{ article.date|date:"Y-m-d H:i" }}</span>
+                </div>
+                <a href="{{ article.link }}" target="_blank" class="btn btn-sm btn-outline-info">
+                    <i class="bi bi-box-arrow-up-right me-1"></i>原始文章
+                </a>
+            </div>
+            <div class="card-body">
+                <div class="mb-3 pb-3 border-bottom border-secondary">
+                    <h6 class="text-muted">作者:</h6>
+                    <p>{{ article.author }}</p>
+                </div>
+                
+                <div class="article-content">
+                    {{ article.content|linebreaks }}
+                </div>
+                
+                {% if article.photo_links %}
+                <div class="mt-4 pt-3 border-top border-secondary">
+                    <h5 class="mb-3 text-info">
+                        <i class="bi bi-images me-2"></i>文章圖片
+                    </h5>
+                    <div class="row">
+                        {% with photo_links=article.photo_links|safe %}
+                            {% for link in photo_links %}
+                            <div class="col-md-4 mb-3">
+                                <div class="card bg-dark">
+                                    <img src="{{ link }}" class="card-img-top img-fluid" alt="新聞圖片">
+                                    <div class="card-footer text-center">
+                                        <a href="{{ link }}" target="_blank" class="btn btn-sm btn-outline-info">
+                                            <i class="bi bi-arrows-fullscreen me-1"></i>查看原圖
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            {% empty %}
+                            <div class="col-12 text-center text-muted">
+                                <i class="bi bi-card-image me-1"></i>沒有可顯示的圖片
+                            </div>
+                            {% endfor %}
+                        {% endwith %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 元數據卡片 -->
+<div class="row">
+    <div class="col-12" data-aos="fade-up" data-aos-delay="100">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-info-circle me-2"></i>文章元數據
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-dark">
+                        <tbody>
+                            <tr>
+                                <th style="width: 200px;">文章ID</th>
+                                <td>{{ article.item_id }}</td>
+                            </tr>
+                            <tr>
+                                <th>任務ID</th>
+                                <td>{{ article.job.id }}</td>
+                            </tr>
+                            <tr>
+                                <th>類別</th>
+                                <td>{{ article.category }}</td>
+                            </tr>
+                            <tr>
+                                <th>發布日期</th>
+                                <td>{{ article.date|date:"Y-m-d H:i:s" }}</td>
+                            </tr>
+                            <tr>
+                                <th>爬取日期</th>
+                                <td>{{ article.job.created_at|date:"Y-m-d H:i:s" }}</td>
+                            </tr>
+                            <tr>
+                                <th>原始連結</th>
+                                <td>
+                                    <a href="{{ article.link }}" target="_blank" class="text-info">
+                                        {{ article.link }}
+                                    </a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        // 處理圖片連結
+        try {
+            // 如果photo_links是JSON字串，嘗試解析
+            {% if article.photo_links %}
+                const photoLinks = JSON.parse('{{ article.photo_links|escapejs }}');
+                if (Array.isArray(photoLinks) && photoLinks.length > 0) {
+                    let photoHtml = '';
+                    
+                    photoLinks.forEach(function(link) {
+                        photoHtml += `
+                            <div class="col-md-4 mb-3">
+                                <div class="card bg-dark">
+                                    <img src="${link}" class="card-img-top img-fluid" alt="新聞圖片">
+                                    <div class="card-footer text-center">
+                                        <a href="${link}" target="_blank" class="btn btn-sm btn-outline-info">
+                                            <i class="bi bi-arrows-fullscreen me-1"></i>查看原圖
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    
+                    $('.article-photos').html(photoHtml);
+                }
+            {% endif %}
+        } catch (e) {
+            console.error('解析圖片連結時出錯:', e);
+        }
+    });
+</script>
+{% endblock %}

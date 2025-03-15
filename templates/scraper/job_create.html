@@ -1,0 +1,148 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}新增爬蟲任務 | 新聞爬蟲系統{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="card border-0 rounded-4 shadow bg-dark-subtle" data-aos="fade-up">
+            <div class="card-header bg-info bg-opacity-75 text-white border-0 rounded-top-4">
+                <h3 class="mb-0">
+                    <i class="bi bi-plus-circle me-2"></i>新增爬蟲任務
+                </h3>
+            </div>
+            <div class="card-body p-4">
+                <form method="post" class="needs-validation" novalidate>
+                    {% csrf_token %}
+
+                    <div class="row">
+                        <div class="col-12 mb-4">
+                            <div class="card bg-dark-subtle border border-secondary rounded-3">
+                                <div class="card-header bg-dark-subtle border-secondary">
+                                    <h5 class="mb-0 text-white">
+                                        <i class="bi bi-tag me-2"></i>選擇爬取類別
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    {{ form.categories|as_crispy_field }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4 mb-4">
+                            <div class="card h-100 bg-dark-subtle border border-secondary rounded-3">
+                                <div class="card-header bg-dark-subtle border-secondary">
+                                    <h5 class="mb-0 text-white">
+                                        <i class="bi bi-newspaper me-2"></i>文章數量
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    {{ form.limit_per_category|as_crispy_field }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-8 mb-4">
+                            <div class="card h-100 bg-dark-subtle border border-secondary rounded-3">
+                                <div class="card-header bg-dark-subtle border-secondary">
+                                    <h5 class="mb-0 text-white">
+                                        <i class="bi bi-gear me-2"></i>進階選項
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            {{ form.use_threading|as_crispy_field }}
+                                        </div>
+                                        <div class="col-md-6">
+                                            {{ form.max_workers|as_crispy_field }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between mt-3">
+                        <a href="{% url 'job_list' %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-1"></i>返回列表
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-play-fill me-1"></i>開始爬蟲任務
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        // 多選框美化
+        $('.form-check-input').parent().addClass('form-check-inline');
+
+        // 處理多線程相關邏輯
+        const useThreadingCheck = $('#id_use_threading');
+        const maxWorkersInput = $('#id_max_workers');
+        const maxWorkersFormGroup = $('#div_id_max_workers');
+
+        // 初始狀態
+        if (!useThreadingCheck.is(':checked')) {
+            maxWorkersFormGroup.addClass('text-muted opacity-50');
+            maxWorkersInput.prop('disabled', true);
+        }
+
+        // 當選擇框改變時
+        useThreadingCheck.change(function() {
+            if (this.checked) {
+                maxWorkersFormGroup.removeClass('text-muted opacity-50');
+                maxWorkersInput.prop('disabled', false);
+
+                // 使用動畫效果
+                maxWorkersFormGroup.addClass('animate__animated animate__fadeIn');
+            } else {
+                maxWorkersFormGroup.addClass('text-muted opacity-50');
+                maxWorkersInput.prop('disabled', true);
+            }
+        });
+
+        // 表單提交處理
+        $('form').submit(function(e) {
+            const selectedCategories = $('input[name="categories"]:checked').length;
+
+            if (selectedCategories === 0) {
+                e.preventDefault();
+
+                Swal.fire({
+                    title: '提示',
+                    text: '請至少選擇一個爬取類別',
+                    icon: 'warning',
+                    confirmButtonColor: '#3085d6'
+                });
+
+                return false;
+            }
+
+            // 顯示加載提示
+            Swal.fire({
+                title: '任務已提交',
+                html: '爬蟲任務正在啟動中，請稍候...',
+                icon: 'info',
+                showConfirmButton: false,
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            return true;
+        });
+    });
+</script>
+{% endblock %}

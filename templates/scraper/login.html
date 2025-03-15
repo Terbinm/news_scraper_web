@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}登入 | 新聞爬蟲系統{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5" data-aos="fade-up">
+        <div class="card bg-dark-subtle text-white border-info shadow-lg">
+            <div class="card-header bg-info bg-opacity-75 text-white text-center py-3">
+                <h3><i class="bi bi-lock-fill me-2"></i>用戶登入</h3>
+            </div>
+            <div class="card-body p-4">
+                <form method="post" class="needs-validation" novalidate>
+                    {% csrf_token %}
+
+                    <div class="mb-4">
+                        <label for="{{ form.username.id_for_label }}" class="form-label">
+                            <i class="bi bi-person-fill me-1"></i>{{ form.username.label }}
+                        </label>
+                        {{ form.username|as_crispy_field }}
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="{{ form.password.id_for_label }}" class="form-label">
+                            <i class="bi bi-key-fill me-1"></i>{{ form.password.label }}
+                        </label>
+                        {{ form.password|as_crispy_field }}
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-info btn-lg">
+                            <i class="bi bi-box-arrow-in-right me-1"></i>登入
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // 登入頁面動態背景效果
+    document.addEventListener('DOMContentLoaded', function() {
+        const body = document.querySelector('body');
+        body.style.background = 'linear-gradient(-45deg, #2b5876, #4e4376, #2b5876, #4e4376)';
+        body.style.backgroundSize = '400% 400%';
+        body.style.animation = 'gradient 15s ease infinite';
+    });
+
+    // 登入表單驗證
+    (function() {
+        'use strict';
+
+        const forms = document.querySelectorAll('.needs-validation');
+
+        Array.from(forms).forEach(form => {
+            form.addEventListener('submit', event => {
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+
+                form.classList.add('was-validated');
+            }, false);
+        });
+    })();
+</script>
+<style>
+    @keyframes gradient {
+        0% {
+            background-position: 0% 50%;
+        }
+        50% {
+            background-position: 100% 50%;
+        }
+        100% {
+            background-position: 0% 50%;
+        }
+    }
+</style>
+{% endblock %}
