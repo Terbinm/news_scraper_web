@@ -60,7 +60,7 @@ ROOT_URLCONF = 'news_scraper_web.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],  # 添加這行，指向專案根目錄下的templates文件夾
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -72,7 +72,6 @@ TEMPLATES = [
         },
     },
 ]
-
 WSGI_APPLICATION = 'news_scraper_web.wsgi.application'
 
 
@@ -151,3 +150,6 @@ TIME_ZONE = 'Asia/Taipei'
 # 登入重導向設定
 LOGIN_REDIRECT_URL = '/jobs/'
 LOGIN_URL = '/login/'
+
+CONN_MAX_AGE = 60  # 60秒後關閉數據庫連接
+

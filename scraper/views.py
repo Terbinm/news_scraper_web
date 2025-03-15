@@ -1,16 +1,44 @@
+import matplotlib
+matplotlib.use('Agg')  # 使用非交互式後端，避免tkinter錯誤
+
+import matplotlib.pyplot as plt
+import matplotlib.font_manager as fm
+import matplotlib as mpl
+from matplotlib.font_manager import FontProperties
+
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.http import JsonResponse
+from django.conf import settings
+
 import json
 import os
 import threading
-import matplotlib.pyplot as plt
+
 import pandas as pd
 from .models import ScrapeJob, Article, KeywordAnalysis
 from .forms import LoginForm, ScrapeJobForm, KeywordFilterForm
 from .services import run_scraper
+import platform
+import os
+
+
+
+# 設置中文字體
+def set_matplotlib_chinese_font():
+    # 直接使用字體文件路徑
+    font_path = os.path.join(settings.BASE_DIR, 'static', 'fonts', 'MantouSans-Regular.ttf')
+
+    # 確認字體文件存在
+    if not os.path.exists(font_path):
+        raise FileNotFoundError(f"找不到字體文件: {font_path}")
+
+    # 不要設置font.family和font.sans-serif
+    # 直接返回字體屬性對象給每個需要顯示中文的地方使用
+    return FontProperties(fname=font_path)
 
 
 def login_view(request):
@@ -106,6 +134,12 @@ def job_detail(request, job_id):
 @login_required
 def generate_chart(request, job_id):
     """生成關鍵詞頻率圖表"""
+    # 初始化圖表前關閉先前圖表
+    plt.close('all')
+
+    # 獲取字體屬性
+    font_prop = set_matplotlib_chinese_font()
+
     job = get_object_or_404(ScrapeJob, id=job_id, user=request.user)
 
     # 處理篩選條件
@@ -129,18 +163,26 @@ def generate_chart(request, job_id):
     frequencies = [k.frequency for k in keywords]
 
     # 使用 matplotlib 生成圖表
-    plt.figure(figsize=(10, 6))
-    plt.barh(words, frequencies)
-    plt.xlabel('頻率')
-    plt.ylabel('關鍵詞')
-    plt.title('關鍵詞頻率分布')
+    fig, ax = plt.subplots(figsize=(10, 6))
+
+    # 先設置刻度位置，再設置標籤
+    y_pos = range(len(words))
+    ax.barh(y_pos, frequencies)
+    ax.set_yticks(y_pos)
+    ax.set_yticklabels(words, fontproperties=font_prop)
+
+    # 設置標籤
+    ax.set_xlabel('頻率', fontproperties=font_prop)
+    ax.set_ylabel('關鍵詞', fontproperties=font_prop)
+    ax.set_title('關鍵詞頻率分布', fontproperties=font_prop)
+
     plt.tight_layout()
 
     # 保存圖表到靜態文件
     chart_path = f'static/charts/job_{job_id}_keywords.png'
     os.makedirs(os.path.dirname(chart_path), exist_ok=True)
-    plt.savefig(chart_path)
-    plt.close()
+    plt.savefig(chart_path, dpi=100, bbox_inches='tight')
+    plt.close()  # 確保關閉圖表
 
     # 準備Chart.js數據
     chart_data = {

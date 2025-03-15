@@ -1,0 +1,8924 @@
+[
+  {
+    "word": "人士",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "財經"
+  },
+  {
+    "word": "母公司",
+    "pos": "Nc",
+    "frequency": 2,
+    "category": "財經"
+  },
+  {
+    "word": "幻方",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "財經"
+  },
+  {
+    "word": "資本",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "財經"
+  },
+  {
+    "word": "總部",
+    "pos": "Nc",
+    "frequency": 2,
+    "category": "財經"
+  },
+  {
+    "word": "公司",
+    "pos": "Nc",
+    "frequency": 2,
+    "category": "財經"
+  },
+  {
+    "word": "當地",
+    "pos": "Nc",
+    "frequency": 2,
+    "category": "財經"
+  },
+  {
+    "word": "經濟",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "財經"
+  },
+  {
+    "word": "創辦人",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "財經"
+  },
+  {
+    "word": "梁文鋒",
+    "pos": "Nb",
+    "frequency": 2,
+    "category": "財經"
+  },
+  {
+    "word": "決策",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "財經"
+  },
+  {
+    "word": "全球",
+    "pos": "Nc",
+    "frequency": 2,
+    "category": "財經"
+  },
+  {
+    "word": "聲譽",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "財經"
+  },
+  {
+    "word": "科學",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "財經"
+  },
+  {
+    "word": "精神",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "財經"
+  },
+  {
+    "word": "所在地",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "財經"
+  },
+  {
+    "word": "浙江省",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "財經"
+  },
+  {
+    "word": "政府",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "財經"
+  },
+  {
+    "word": "科技",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "財經"
+  },
+  {
+    "word": "浙江省政府",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "財經"
+  },
+  {
+    "word": "科技創新",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "財經"
+  },
+  {
+    "word": "網友",
+    "pos": "Na",
+    "frequency": 11,
+    "category": "政治"
+  },
+  {
+    "word": "老柯",
+    "pos": "Nb",
+    "frequency": 9,
+    "category": "政治"
+  },
+  {
+    "word": "說法",
+    "pos": "Na",
+    "frequency": 6,
+    "category": "政治"
+  },
+  {
+    "word": "騎士",
+    "pos": "Na",
+    "frequency": 6,
+    "category": "政治"
+  },
+  {
+    "word": "黃揚明",
+    "pos": "Nb",
+    "frequency": 5,
+    "category": "政治"
+  },
+  {
+    "word": "停車場",
+    "pos": "Nc",
+    "frequency": 4,
+    "category": "政治"
+  },
+  {
+    "word": "轎車",
+    "pos": "Na",
+    "frequency": 4,
+    "category": "政治"
+  },
+  {
+    "word": "民進黨",
+    "pos": "Nb",
+    "frequency": 3,
+    "category": "政治"
+  },
+  {
+    "word": "立院",
+    "pos": "Nc",
+    "frequency": 3,
+    "category": "政治"
+  },
+  {
+    "word": "黨團",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "政治"
+  },
+  {
+    "word": "總召",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "政治"
+  },
+  {
+    "word": "藍白",
+    "pos": "Nb",
+    "frequency": 3,
+    "category": "政治"
+  },
+  {
+    "word": "縣市長",
+    "pos": "Nc",
+    "frequency": 3,
+    "category": "政治"
+  },
+  {
+    "word": "表格",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "政治"
+  },
+  {
+    "word": "是非",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "政治"
+  },
+  {
+    "word": "關鍵字",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "政治"
+  },
+  {
+    "word": "金魚腦",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "政治"
+  },
+  {
+    "word": "立法院",
+    "pos": "Nc",
+    "frequency": 3,
+    "category": "政治"
+  },
+  {
+    "word": "藍委",
+    "pos": "Nb",
+    "frequency": 3,
+    "category": "政治"
+  },
+  {
+    "word": "影片",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "政治"
+  },
+  {
+    "word": "民眾",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "政治"
+  },
+  {
+    "word": "國民黨",
+    "pos": "Nb",
+    "frequency": 2,
+    "category": "政治"
+  },
+  {
+    "word": "媒體人",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "政治"
+  },
+  {
+    "word": "肖話",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "政治"
+  },
+  {
+    "word": "像話",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "政治"
+  },
+  {
+    "word": "臉書粉專",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "政治"
+  },
+  {
+    "word": "院長",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "政治"
+  },
+  {
+    "word": "罷免案",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "政治"
+  },
+  {
+    "word": "人民",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "政治"
+  },
+  {
+    "word": "奇蹟",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "政治"
+  },
+  {
+    "word": "醫院",
+    "pos": "Nc",
+    "frequency": 2,
+    "category": "政治"
+  },
+  {
+    "word": "內臟",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "政治"
+  },
+  {
+    "word": "柯建銘",
+    "pos": "Nb",
+    "frequency": 1,
+    "category": "政治"
+  },
+  {
+    "word": "記者會",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "政治"
+  },
+  {
+    "word": "名義",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "政治"
+  },
+  {
+    "word": "粉專",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "政治"
+  },
+  {
+    "word": "院長給",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "政治"
+  },
+  {
+    "word": "國會本來",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "政治"
+  },
+  {
+    "word": "綠營",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "政治"
+  },
+  {
+    "word": "人民好錯亂",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "政治"
+  },
+  {
+    "word": "柯建銘15日開記者會",
+    "pos": "Nb",
+    "frequency": 1,
+    "category": "政治"
+  },
+  {
+    "word": "民黨",
+    "pos": "Nb",
+    "frequency": 1,
+    "category": "政治"
+  },
+  {
+    "word": "國會",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "政治"
+  },
+  {
+    "word": "建銘",
+    "pos": "Nb",
+    "frequency": 1,
+    "category": "政治"
+  },
+  {
+    "word": "記者",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "政治"
+  },
+  {
+    "word": "名義先行",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "政治"
+  },
+  {
+    "word": "大陸",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "政治"
+  },
+  {
+    "word": "網上",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "政治"
+  },
+  {
+    "word": "輪輾到",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "政治"
+  },
+  {
+    "word": "地上",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "政治"
+  },
+  {
+    "word": "畫面",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "政治"
+  },
+  {
+    "word": "頭都",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "政治"
+  },
+  {
+    "word": "微博",
+    "pos": "Nb",
+    "frequency": 1,
+    "category": "政治"
+  },
+  {
+    "word": "入口",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "政治"
+  },
+  {
+    "word": "機車",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "政治"
+  },
+  {
+    "word": "輪輾",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "政治"
+  },
+  {
+    "word": "可能",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "政治"
+  },
+  {
+    "word": "表面",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "政治"
+  },
+  {
+    "word": "反應",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "政治"
+  },
+  {
+    "word": "車輪",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "政治"
+  },
+  {
+    "word": "頭部",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "政治"
+  },
+  {
+    "word": "司機",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "政治"
+  },
+  {
+    "word": "油門",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "政治"
+  },
+  {
+    "word": "煞車",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "政治"
+  },
+  {
+    "word": "腎上腺",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "政治"
+  },
+  {
+    "word": "大腦",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "政治"
+  },
+  {
+    "word": "保時捷",
+    "pos": "Nb",
+    "frequency": 17,
+    "category": "社會"
+  },
+  {
+    "word": "濾鏡",
+    "pos": "Na",
+    "frequency": 16,
+    "category": "社會"
+  },
+  {
+    "word": "民眾",
+    "pos": "Na",
+    "frequency": 15,
+    "category": "社會"
+  },
+  {
+    "word": "臺北",
+    "pos": "Nc",
+    "frequency": 12,
+    "category": "社會"
+  },
+  {
+    "word": "女警",
+    "pos": "Na",
+    "frequency": 12,
+    "category": "社會"
+  },
+  {
+    "word": "網路",
+    "pos": "Na",
+    "frequency": 12,
+    "category": "社會"
+  },
+  {
+    "word": "影片",
+    "pos": "Na",
+    "frequency": 11,
+    "category": "社會"
+  },
+  {
+    "word": "賽車",
+    "pos": "Na",
+    "frequency": 9,
+    "category": "社會"
+  },
+  {
+    "word": "台灣",
+    "pos": "Nc",
+    "frequency": 9,
+    "category": "社會"
+  },
+  {
+    "word": "波麗士",
+    "pos": "Nb",
+    "frequency": 8,
+    "category": "社會"
+  },
+  {
+    "word": "陷阱",
+    "pos": "Na",
+    "frequency": 8,
+    "category": "社會"
+  },
+  {
+    "word": "競賽",
+    "pos": "Na",
+    "frequency": 8,
+    "category": "社會"
+  },
+  {
+    "word": "保時捷",
+    "pos": "Na",
+    "frequency": 8,
+    "category": "社會"
+  },
+  {
+    "word": "預賽",
+    "pos": "Na",
+    "frequency": 8,
+    "category": "社會"
+  },
+  {
+    "word": "技術",
+    "pos": "Na",
+    "frequency": 7,
+    "category": "社會"
+  },
+  {
+    "word": "網友",
+    "pos": "Na",
+    "frequency": 6,
+    "category": "社會"
+  },
+  {
+    "word": "說服力",
+    "pos": "Na",
+    "frequency": 6,
+    "category": "社會"
+  },
+  {
+    "word": "比賽",
+    "pos": "Na",
+    "frequency": 6,
+    "category": "社會"
+  },
+  {
+    "word": "儀表板",
+    "pos": "Na",
+    "frequency": 6,
+    "category": "社會"
+  },
+  {
+    "word": "世界",
+    "pos": "Nc",
+    "frequency": 6,
+    "category": "社會"
+  },
+  {
+    "word": "賽事",
+    "pos": "Na",
+    "frequency": 6,
+    "category": "社會"
+  },
+  {
+    "word": "選手",
+    "pos": "Na",
+    "frequency": 6,
+    "category": "社會"
+  },
+  {
+    "word": "手法",
+    "pos": "Na",
+    "frequency": 5,
+    "category": "社會"
+  },
+  {
+    "word": "現實",
+    "pos": "Na",
+    "frequency": 5,
+    "category": "社會"
+  },
+  {
+    "word": "粉專",
+    "pos": "Nb",
+    "frequency": 5,
+    "category": "社會"
+  },
+  {
+    "word": "小時",
+    "pos": "Na",
+    "frequency": 5,
+    "category": "社會"
+  },
+  {
+    "word": "政府",
+    "pos": "Na",
+    "frequency": 5,
+    "category": "社會"
+  },
+  {
+    "word": "科技",
+    "pos": "Na",
+    "frequency": 4,
+    "category": "社會"
+  },
+  {
+    "word": "情人",
+    "pos": "Na",
+    "frequency": 4,
+    "category": "社會"
+  },
+  {
+    "word": "成員",
+    "pos": "Na",
+    "frequency": 4,
+    "category": "社會"
+  },
+  {
+    "word": "氣候",
+    "pos": "Na",
+    "frequency": 4,
+    "category": "社會"
+  },
+  {
+    "word": "車迷",
+    "pos": "Na",
+    "frequency": 4,
+    "category": "社會"
+  },
+  {
+    "word": "活動",
+    "pos": "Na",
+    "frequency": 4,
+    "category": "社會"
+  },
+  {
+    "word": "耐力賽",
+    "pos": "Na",
+    "frequency": 4,
+    "category": "社會"
+  },
+  {
+    "word": "樣貌",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "社會"
+  },
+  {
+    "word": "身分",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "社會"
+  },
+  {
+    "word": "照片",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "社會"
+  },
+  {
+    "word": "愛情",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "社會"
+  },
+  {
+    "word": "寶貝",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "社會"
+  },
+  {
+    "word": "情人節",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "社會"
+  },
+  {
+    "word": "集團",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "社會"
+  },
+  {
+    "word": "步驟",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "社會"
+  },
+  {
+    "word": "原則",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "社會"
+  },
+  {
+    "word": "感情",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "社會"
+  },
+  {
+    "word": "城市",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "社會"
+  },
+  {
+    "word": "中心",
+    "pos": "Nc",
+    "frequency": 3,
+    "category": "社會"
+  },
+  {
+    "word": "決賽",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "社會"
+  },
+  {
+    "word": "冠軍",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "社會"
+  },
+  {
+    "word": "臺北市",
+    "pos": "Nc",
+    "frequency": 3,
+    "category": "社會"
+  },
+  {
+    "word": "原始碼",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "社會"
+  },
+  {
+    "word": "都市",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "社會"
+  },
+  {
+    "word": "品牌",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "社會"
+  },
+  {
+    "word": "錦標賽",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "社會"
+  },
+  {
+    "word": "國際",
+    "pos": "Nc",
+    "frequency": 3,
+    "category": "社會"
+  },
+  {
+    "word": "經典",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "社會"
+  },
+  {
+    "word": "車款",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "社會"
+  },
+  {
+    "word": "跑車",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "社會"
+  },
+  {
+    "word": "動力",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "社會"
+  },
+  {
+    "word": "時間",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "社會"
+  },
+  {
+    "word": "遊戲",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "社會"
+  },
+  {
+    "word": "資格",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "社會"
+  },
+  {
+    "word": "貼文",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "社會"
+  },
+  {
+    "word": "面目",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "社會"
+  },
+  {
+    "word": "防備",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "社會"
+  },
+  {
+    "word": "粉專",
+    "pos": "Nc",
+    "frequency": 2,
+    "category": "社會"
+  },
+  {
+    "word": "女神",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "社會"
+  },
+  {
+    "word": "白色情人節",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "社會"
+  },
+  {
+    "word": "濾鏡前",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "社會"
+  },
+  {
+    "word": "月異",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "社會"
+  },
+  {
+    "word": "急難感",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "社會"
+  },
+  {
+    "word": "程式",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "社會"
+  },
+  {
+    "word": "資訊局",
+    "pos": "Nc",
+    "frequency": 2,
+    "category": "社會"
+  },
+  {
+    "word": "階段",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "社會"
+  },
+  {
+    "word": "城市",
+    "pos": "Nc",
+    "frequency": 2,
+    "category": "社會"
+  },
+  {
+    "word": "設計",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "社會"
+  },
+  {
+    "word": "團隊",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "社會"
+  },
+  {
+    "word": "平台",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "社會"
+  },
+  {
+    "word": "數據",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "社會"
+  },
+  {
+    "word": "決策",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "社會"
+  },
+  {
+    "word": "市政",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "社會"
+  },
+  {
+    "word": "隊伍",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "社會"
+  },
+  {
+    "word": "方向",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "社會"
+  },
+  {
+    "word": "交通",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "社會"
+  },
+  {
+    "word": "資訊",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "社會"
+  },
+  {
+    "word": "環境",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "社會"
+  },
+  {
+    "word": "機會",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "社會"
+  },
+  {
+    "word": "運動",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "社會"
+  },
+  {
+    "word": "粉絲",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "社會"
+  },
+  {
+    "word": "賽道",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "社會"
+  },
+  {
+    "word": "快感",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "社會"
+  },
+  {
+    "word": "日本",
+    "pos": "Nc",
+    "frequency": 2,
+    "category": "社會"
+  },
+  {
+    "word": "回合",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "社會"
+  },
+  {
+    "word": "法國",
+    "pos": "Nc",
+    "frequency": 2,
+    "category": "社會"
+  },
+  {
+    "word": "薩爾特賽道",
+    "pos": "Nb",
+    "frequency": 2,
+    "category": "社會"
+  },
+  {
+    "word": "英國",
+    "pos": "Nc",
+    "frequency": 2,
+    "category": "社會"
+  },
+  {
+    "word": "古德伍德賽道",
+    "pos": "Nb",
+    "frequency": 2,
+    "category": "社會"
+  },
+  {
+    "word": "改款",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "社會"
+  },
+  {
+    "word": "原型車",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "社會"
+  },
+  {
+    "word": "系統",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "社會"
+  },
+  {
+    "word": "成績",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "社會"
+  },
+  {
+    "word": "網路戀愛",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "影片教",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "網路戀愛詐騙",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "情人劫",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "感情」",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "濾鏡後",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "真面目",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "防備」",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "網路交友",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "粉專也",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "劇本情人",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "文\n",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "歐巴",
+    "pos": "Nb",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "劇本",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "白色",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "匯了",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "黑客",
+    "pos": "Nb",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "北市政府",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "黑客",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "好手",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "劍潭",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "青年",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "活動",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "現場",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "臺北程式設計",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "任務",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "創意",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "技能",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "作品",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "價值",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "獎金",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "服務型",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "目標",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "機關",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "資料",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "資訊局長",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "趙式隆",
+    "pos": "Nb",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "群力來",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "表表",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "機制",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "民間",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "互動性",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "視角",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "問題",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "架構",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "功能",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "生活",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "市民",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "需求",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "想法",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "主題",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "消防局",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "表板」",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "資料為",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "民政局",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "表板",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "業務",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "發展局",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "儀表板」",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "地質",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "因素",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "交通局",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "紅綠燈",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "道管",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "鄰里",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "計畫",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "地圖",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "保護局",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "碳排",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "變化",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "北市府",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "文件",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "全民",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "意義",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "佳作",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "基礎",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "成果",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "年輕人",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "模型車",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "海報感",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "魅力",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "熱潮",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "保時捷今",
+    "pos": "Nb",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "刺激",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "亞太",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "韓國",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "網址",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "亞洲",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "區域性",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "總裁",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "傅孟哲",
+    "pos": "Nb",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "起點",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "世代",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "賽 ",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "世界",
+    "pos": "Nb",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "次數",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "日本富士",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "車場",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "巴瑟斯特24",
+    "pos": "Nb",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "所在",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "地─",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "澳洲",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "帕諾拉馬山賽道",
+    "pos": "Nb",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "全球",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "聖地─",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "電玩迷",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "車壇",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "傳奇",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "時期",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "時捷",
+    "pos": "Nb",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "表現",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "車款：",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "本質上",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "級距",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "經典現代車款",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "耐力",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "曼24",
+    "pos": "Nb",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "混合",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "綜效",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "車身",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "狀態",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "富士",
+    "pos": "Nb",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "賽車場",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "系列",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "賽車界",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "戰績",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "猛獸",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "水平",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "引擎",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "月的利曼",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "地位",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "跑車迷",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "印象深刻",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "性能",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "模擬器",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "賽事。",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "行銷",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "處長",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "線上",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "賽車迷",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "保時捷",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "電跑車",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "畫面",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "動態",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "朋友",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "電玩",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "原因",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "車隊",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "電競",
+    "pos": "Nb",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "俱樂部",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": " 車迷",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "技巧",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "熟悉",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "速度",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "能力",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "地區",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "資格賽",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "精品獎項",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "總冠軍",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "東京",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "旅程",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "熱血",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "樂趣",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "積分",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "電競",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "外套",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "曲面",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "螢幕",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "電競椅",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "詳情",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "官網",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "台北",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "車迷",
+    "pos": "Nb",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "模式",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "預賽賽",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "玩家",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "年齡",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "日期依",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "活動網站",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "社會"
+  },
+  {
+    "word": "保時捷",
+    "pos": "Nb",
+    "frequency": 33,
+    "category": "科技"
+  },
+  {
+    "word": "賽車",
+    "pos": "Na",
+    "frequency": 20,
+    "category": "科技"
+  },
+  {
+    "word": "台灣",
+    "pos": "Nc",
+    "frequency": 18,
+    "category": "科技"
+  },
+  {
+    "word": "預賽",
+    "pos": "Na",
+    "frequency": 17,
+    "category": "科技"
+  },
+  {
+    "word": "參議院",
+    "pos": "Nc",
+    "frequency": 16,
+    "category": "科技"
+  },
+  {
+    "word": "保時捷",
+    "pos": "Na",
+    "frequency": 14,
+    "category": "科技"
+  },
+  {
+    "word": "賽事",
+    "pos": "Na",
+    "frequency": 13,
+    "category": "科技"
+  },
+  {
+    "word": "選手",
+    "pos": "Na",
+    "frequency": 12,
+    "category": "科技"
+  },
+  {
+    "word": "餐廳",
+    "pos": "Nc",
+    "frequency": 12,
+    "category": "科技"
+  },
+  {
+    "word": "豆湯",
+    "pos": "Na",
+    "frequency": 12,
+    "category": "科技"
+  },
+  {
+    "word": "世界",
+    "pos": "Nc",
+    "frequency": 11,
+    "category": "科技"
+  },
+  {
+    "word": "車迷",
+    "pos": "Na",
+    "frequency": 9,
+    "category": "科技"
+  },
+  {
+    "word": "活動",
+    "pos": "Na",
+    "frequency": 9,
+    "category": "科技"
+  },
+  {
+    "word": "比賽",
+    "pos": "Na",
+    "frequency": 8,
+    "category": "科技"
+  },
+  {
+    "word": "小時",
+    "pos": "Na",
+    "frequency": 8,
+    "category": "科技"
+  },
+  {
+    "word": "車款",
+    "pos": "Na",
+    "frequency": 8,
+    "category": "科技"
+  },
+  {
+    "word": "賽道",
+    "pos": "Na",
+    "frequency": 7,
+    "category": "科技"
+  },
+  {
+    "word": "耐力賽",
+    "pos": "Na",
+    "frequency": 7,
+    "category": "科技"
+  },
+  {
+    "word": "經典",
+    "pos": "Na",
+    "frequency": 7,
+    "category": "科技"
+  },
+  {
+    "word": "跑車",
+    "pos": "Na",
+    "frequency": 7,
+    "category": "科技"
+  },
+  {
+    "word": "品牌",
+    "pos": "Na",
+    "frequency": 6,
+    "category": "科技"
+  },
+  {
+    "word": "日本",
+    "pos": "Nc",
+    "frequency": 6,
+    "category": "科技"
+  },
+  {
+    "word": "冠軍",
+    "pos": "Na",
+    "frequency": 6,
+    "category": "科技"
+  },
+  {
+    "word": "錦標賽",
+    "pos": "Na",
+    "frequency": 6,
+    "category": "科技"
+  },
+  {
+    "word": "國際",
+    "pos": "Nc",
+    "frequency": 6,
+    "category": "科技"
+  },
+  {
+    "word": "時間",
+    "pos": "Na",
+    "frequency": 6,
+    "category": "科技"
+  },
+  {
+    "word": "遊戲",
+    "pos": "Na",
+    "frequency": 6,
+    "category": "科技"
+  },
+  {
+    "word": "美國",
+    "pos": "Nc",
+    "frequency": 6,
+    "category": "科技"
+  },
+  {
+    "word": "菜單",
+    "pos": "Na",
+    "frequency": 6,
+    "category": "科技"
+  },
+  {
+    "word": "參議員",
+    "pos": "Na",
+    "frequency": 6,
+    "category": "科技"
+  },
+  {
+    "word": "動力",
+    "pos": "Na",
+    "frequency": 5,
+    "category": "科技"
+  },
+  {
+    "word": "成績",
+    "pos": "Na",
+    "frequency": 5,
+    "category": "科技"
+  },
+  {
+    "word": "資格賽",
+    "pos": "Na",
+    "frequency": 5,
+    "category": "科技"
+  },
+  {
+    "word": "運動",
+    "pos": "Na",
+    "frequency": 4,
+    "category": "科技"
+  },
+  {
+    "word": "線上",
+    "pos": "Nc",
+    "frequency": 4,
+    "category": "科技"
+  },
+  {
+    "word": "粉絲",
+    "pos": "Na",
+    "frequency": 4,
+    "category": "科技"
+  },
+  {
+    "word": "快感",
+    "pos": "Na",
+    "frequency": 4,
+    "category": "科技"
+  },
+  {
+    "word": "競賽",
+    "pos": "Na",
+    "frequency": 4,
+    "category": "科技"
+  },
+  {
+    "word": "回合",
+    "pos": "Na",
+    "frequency": 4,
+    "category": "科技"
+  },
+  {
+    "word": "利曼",
+    "pos": "Nb",
+    "frequency": 4,
+    "category": "科技"
+  },
+  {
+    "word": "薩爾特賽道",
+    "pos": "Nb",
+    "frequency": 4,
+    "category": "科技"
+  },
+  {
+    "word": "富士",
+    "pos": "Nb",
+    "frequency": 4,
+    "category": "科技"
+  },
+  {
+    "word": "英國",
+    "pos": "Nc",
+    "frequency": 4,
+    "category": "科技"
+  },
+  {
+    "word": "古德伍德賽道",
+    "pos": "Nb",
+    "frequency": 4,
+    "category": "科技"
+  },
+  {
+    "word": "系統",
+    "pos": "Na",
+    "frequency": 4,
+    "category": "科技"
+  },
+  {
+    "word": "決賽",
+    "pos": "Na",
+    "frequency": 4,
+    "category": "科技"
+  },
+  {
+    "word": "積分",
+    "pos": "Na",
+    "frequency": 4,
+    "category": "科技"
+  },
+  {
+    "word": "湯品",
+    "pos": "Na",
+    "frequency": 4,
+    "category": "科技"
+  },
+  {
+    "word": "傳統",
+    "pos": "Na",
+    "frequency": 4,
+    "category": "科技"
+  },
+  {
+    "word": "官方",
+    "pos": "Na",
+    "frequency": 4,
+    "category": "科技"
+  },
+  {
+    "word": "法國",
+    "pos": "Nc",
+    "frequency": 3,
+    "category": "科技"
+  },
+  {
+    "word": "改款",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "科技"
+  },
+  {
+    "word": "原型車",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "科技"
+  },
+  {
+    "word": "模擬器",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "科技"
+  },
+  {
+    "word": "原因",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "科技"
+  },
+  {
+    "word": "階段",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "科技"
+  },
+  {
+    "word": "資格",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "科技"
+  },
+  {
+    "word": "網站",
+    "pos": "Nc",
+    "frequency": 3,
+    "category": "科技"
+  },
+  {
+    "word": "年輕人",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "模型車",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "海報",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "魅力",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "電競",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "熱忱",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "刺激",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "亞太",
+    "pos": "Nc",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "韓國",
+    "pos": "Nc",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "網址",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "亞洲",
+    "pos": "Nc",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "線上賽車",
+    "pos": "Nc",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "總裁",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "傅孟哲",
+    "pos": "Nb",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "起點",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "賽 ",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": " 保時捷",
+    "pos": "Nb",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "世界",
+    "pos": "Nb",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "車場",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "巴瑟斯特24",
+    "pos": "Nb",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "澳洲",
+    "pos": "Nc",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "帕諾拉馬山賽道",
+    "pos": "Nb",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "全球",
+    "pos": "Nc",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "電玩迷",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "車壇",
+    "pos": "Nc",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "時期",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "表現",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "本質",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "級距",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "耐力",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "曼24",
+    "pos": "Nb",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "綜效",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "車身",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "狀態",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "車場",
+    "pos": "Nc",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "用車",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "別賽",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "系列",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "賽車界",
+    "pos": "Nc",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "戰績",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "猛獸",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "自然",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "水平",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "引擎",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "地位",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "跑車迷",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "印象",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "性能",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "程式",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "行銷",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "處長",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "平台",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "保時捷",
+    "pos": "Nc",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "畫面",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "設計",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "動態",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "朋友",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "電玩",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "電競",
+    "pos": "Nb",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "俱樂部",
+    "pos": "Nc",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "成員",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "技巧",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "熟悉",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "速度",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "能力",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "地區",
+    "pos": "Nc",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "機會",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "東京",
+    "pos": "Nc",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "旅程",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "中心",
+    "pos": "Nc",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "熱血",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "樂趣",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "曲面",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "螢幕",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "台北",
+    "pos": "Nc",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "模式",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "玩家",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "對象",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "日期",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "歷史",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "名字",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "事件",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "期間",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "物資",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "說法",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "愛達荷州",
+    "pos": "Nc",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "杜布瓦",
+    "pos": "Nb",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "委員會",
+    "pos": "Nc",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "主席",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "馬鈴薯泥",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "愛達荷州",
+    "pos": "Nb",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "馬鈴薯",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "版本",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "明尼蘇達州",
+    "pos": "Nc",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "尼爾森",
+    "pos": "Nb",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "要求",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "食材",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "家鄉",
+    "pos": "Nc",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "廚房",
+    "pos": "Nc",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "新聞",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "話題",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "先驅報",
+    "pos": "Nb",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "國會",
+    "pos": "Nc",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "豆子",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "做法",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "配方",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "變化",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "政壇",
+    "pos": "Nc",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "飲食",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "科技"
+  },
+  {
+    "word": "熱潮",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "科技"
+  },
+  {
+    "word": "域性",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "科技"
+  },
+  {
+    "word": "次數",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "科技"
+  },
+  {
+    "word": "車世界",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "科技"
+  },
+  {
+    "word": "聖地",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "科技"
+  },
+  {
+    "word": "傳奇到現代",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "科技"
+  },
+  {
+    "word": "原型",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "科技"
+  },
+  {
+    "word": "車，",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "科技"
+  },
+  {
+    "word": "混合動力",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "科技"
+  },
+  {
+    "word": "賽車迷",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "科技"
+  },
+  {
+    "word": " 車迷",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "科技"
+  },
+  {
+    "word": "總成績",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "科技"
+  },
+  {
+    "word": "精品",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "科技"
+  },
+  {
+    "word": "獎項",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "科技"
+  },
+  {
+    "word": "電競椅等電競",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "科技"
+  },
+  {
+    "word": "詳情請見官網",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "科技"
+  },
+  {
+    "word": "車迷",
+    "pos": "Nb",
+    "frequency": 1,
+    "category": "科技"
+  },
+  {
+    "word": "決選出",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "科技"
+  },
+  {
+    "word": "年齡",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "科技"
+  },
+  {
+    "word": "保時捷獨特",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "科技"
+  },
+  {
+    "word": "電競熱潮",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "科技"
+  },
+  {
+    "word": "區域性",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "科技"
+  },
+  {
+    "word": "保時捷未來不可或缺",
+    "pos": "Nb",
+    "frequency": 1,
+    "category": "科技"
+  },
+  {
+    "word": "世代",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "科技"
+  },
+  {
+    "word": "保時捷曾",
+    "pos": "Nb",
+    "frequency": 1,
+    "category": "科技"
+  },
+  {
+    "word": "冠次數",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "科技"
+  },
+  {
+    "word": "地─",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "科技"
+  },
+  {
+    "word": "聖地─",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "科技"
+  },
+  {
+    "word": "保時捷車迷",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "科技"
+  },
+  {
+    "word": "傳奇",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "科技"
+  },
+  {
+    "word": "保時捷356A",
+    "pos": "Nb",
+    "frequency": 1,
+    "category": "科技"
+  },
+  {
+    "word": "保時捷為",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "科技"
+  },
+  {
+    "word": "混合",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "科技"
+  },
+  {
+    "word": "賽車 ",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "科技"
+  },
+  {
+    "word": "耐力賽中",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "科技"
+  },
+  {
+    "word": "旅競速",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "科技"
+  },
+  {
+    "word": "電跑車",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "科技"
+  },
+  {
+    "word": "車隊",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "科技"
+  },
+  {
+    "word": "車在",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "科技"
+  },
+  {
+    "word": "精品獎項",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "科技"
+  },
+  {
+    "word": "時捷",
+    "pos": "Nb",
+    "frequency": 1,
+    "category": "科技"
+  },
+  {
+    "word": "外套",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "科技"
+  },
+  {
+    "word": "電競椅",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "科技"
+  },
+  {
+    "word": "詳情",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "科技"
+  },
+  {
+    "word": "官網",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "科技"
+  },
+  {
+    "word": "車迷可",
+    "pos": "Nb",
+    "frequency": 1,
+    "category": "科技"
+  },
+  {
+    "word": "預賽賽",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "科技"
+  },
+  {
+    "word": "年齡為",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "科技"
+  },
+  {
+    "word": "活動網站",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "科技"
+  },
+  {
+    "word": "參議院豆湯",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "科技"
+  },
+  {
+    "word": "湯的",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "科技"
+  },
+  {
+    "word": "例外",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "科技"
+  },
+  {
+    "word": "糧食配給",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "科技"
+  },
+  {
+    "word": "白腰",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "科技"
+  },
+  {
+    "word": "華盛頓時報",
+    "pos": "Nb",
+    "frequency": 1,
+    "category": "科技"
+  },
+  {
+    "word": "演說",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "科技"
+  },
+  {
+    "word": "高湯",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "科技"
+  },
+  {
+    "word": "議院",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "科技"
+  },
+  {
+    "word": "起源",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "科技"
+  },
+  {
+    "word": "餐點",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "科技"
+  },
+  {
+    "word": "糧食",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "科技"
+  },
+  {
+    "word": "白腰豆",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "科技"
+  },
+  {
+    "word": "華盛頓時",
+    "pos": "Nb",
+    "frequency": 1,
+    "category": "科技"
+  },
+  {
+    "word": "報-",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "科技"
+  },
+  {
+    "word": "多爾",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "科技"
+  },
+  {
+    "word": "演說中",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "科技"
+  },
+  {
+    "word": "豬腳",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "科技"
+  },
+  {
+    "word": "衛星",
+    "pos": "Na",
+    "frequency": 23,
+    "category": "國際"
+  },
+  {
+    "word": "土星",
+    "pos": "Nb",
+    "frequency": 9,
+    "category": "國際"
+  },
+  {
+    "word": "許允樂",
+    "pos": "Nb",
+    "frequency": 7,
+    "category": "國際"
+  },
+  {
+    "word": "天文",
+    "pos": "Na",
+    "frequency": 5,
+    "category": "國際"
+  },
+  {
+    "word": "望遠鏡",
+    "pos": "Na",
+    "frequency": 5,
+    "category": "國際"
+  },
+  {
+    "word": "總數",
+    "pos": "Na",
+    "frequency": 4,
+    "category": "國際"
+  },
+  {
+    "word": "直徑",
+    "pos": "Na",
+    "frequency": 4,
+    "category": "國際"
+  },
+  {
+    "word": "軌道",
+    "pos": "Na",
+    "frequency": 4,
+    "category": "國際"
+  },
+  {
+    "word": "時間",
+    "pos": "Na",
+    "frequency": 4,
+    "category": "國際"
+  },
+  {
+    "word": "碎片",
+    "pos": "Na",
+    "frequency": 4,
+    "category": "國際"
+  },
+  {
+    "word": "艾旭敦",
+    "pos": "Nb",
+    "frequency": 3,
+    "category": "國際"
+  },
+  {
+    "word": "太陽系",
+    "pos": "Nc",
+    "frequency": 3,
+    "category": "國際"
+  },
+  {
+    "word": "土星衛星",
+    "pos": "Nb",
+    "frequency": 3,
+    "category": "國際"
+  },
+  {
+    "word": "李玉璽",
+    "pos": "Nb",
+    "frequency": 3,
+    "category": "國際"
+  },
+  {
+    "word": "祝福",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "國際"
+  },
+  {
+    "word": "台灣",
+    "pos": "Nc",
+    "frequency": 2,
+    "category": "國際"
+  },
+  {
+    "word": "中央",
+    "pos": "Nc",
+    "frequency": 2,
+    "category": "國際"
+  },
+  {
+    "word": "研究院",
+    "pos": "Nc",
+    "frequency": 2,
+    "category": "國際"
+  },
+  {
+    "word": "物理",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "國際"
+  },
+  {
+    "word": "研究所",
+    "pos": "Nc",
+    "frequency": 2,
+    "category": "國際"
+  },
+  {
+    "word": "博士",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "國際"
+  },
+  {
+    "word": "研究員",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "國際"
+  },
+  {
+    "word": "團隊",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "國際"
+  },
+  {
+    "word": "土星",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "國際"
+  },
+  {
+    "word": "國際",
+    "pos": "Nc",
+    "frequency": 2,
+    "category": "國際"
+  },
+  {
+    "word": "聯合會",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "國際"
+  },
+  {
+    "word": "美國",
+    "pos": "Nc",
+    "frequency": 2,
+    "category": "國際"
+  },
+  {
+    "word": "天文學會",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "國際"
+  },
+  {
+    "word": "筆記",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "國際"
+  },
+  {
+    "word": "自然",
+    "pos": "Nb",
+    "frequency": 2,
+    "category": "國際"
+  },
+  {
+    "word": "成因",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "國際"
+  },
+  {
+    "word": "過程",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "國際"
+  },
+  {
+    "word": "月球",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "國際"
+  },
+  {
+    "word": "土衛五",
+    "pos": "Nb",
+    "frequency": 2,
+    "category": "國際"
+  },
+  {
+    "word": "方向",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "國際"
+  },
+  {
+    "word": "天文學家",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "國際"
+  },
+  {
+    "word": "夏帕德",
+    "pos": "Nb",
+    "frequency": 2,
+    "category": "國際"
+  },
+  {
+    "word": "光點",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "國際"
+  },
+  {
+    "word": "技術",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "國際"
+  },
+  {
+    "word": "數據",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "國際"
+  },
+  {
+    "word": "加法夏",
+    "pos": "Nb",
+    "frequency": 2,
+    "category": "國際"
+  },
+  {
+    "word": "新高",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "國際"
+  },
+  {
+    "word": "蒙迪爾法裡子群",
+    "pos": "Nb",
+    "frequency": 2,
+    "category": "國際"
+  },
+  {
+    "word": "天體",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "國際"
+  },
+  {
+    "word": "殘骸",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "國際"
+  },
+  {
+    "word": "引力",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "國際"
+  },
+  {
+    "word": "小型",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "國際"
+  },
+  {
+    "word": "藝人",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "國際"
+  },
+  {
+    "word": "禮物",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "國際"
+  },
+  {
+    "word": "公司",
+    "pos": "Nc",
+    "frequency": 2,
+    "category": "國際"
+  },
+  {
+    "word": "天文學",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "國際"
+  },
+  {
+    "word": "木星",
+    "pos": "Nb",
+    "frequency": 1,
+    "category": "國際"
+  },
+  {
+    "word": "夏威夷",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "國際"
+  },
+  {
+    "word": "昴星",
+    "pos": "Nb",
+    "frequency": 1,
+    "category": "國際"
+  },
+  {
+    "word": "土衛六",
+    "pos": "Nb",
+    "frequency": 1,
+    "category": "國際"
+  },
+  {
+    "word": "威夷",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "國際"
+  },
+  {
+    "word": "星望遠鏡",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "國際"
+  },
+  {
+    "word": "蒙迪爾法裡",
+    "pos": "Nb",
+    "frequency": 1,
+    "category": "國際"
+  },
+  {
+    "word": "子群",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "國際"
+  },
+  {
+    "word": "蒙迪爾法",
+    "pos": "Nb",
+    "frequency": 1,
+    "category": "國際"
+  },
+  {
+    "word": "裡子群",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "國際"
+  },
+  {
+    "word": "張兆志",
+    "pos": "Nb",
+    "frequency": 1,
+    "category": "國際"
+  },
+  {
+    "word": "婚姻",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "國際"
+  },
+  {
+    "word": "主因",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "國際"
+  },
+  {
+    "word": "計畫",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "國際"
+  },
+  {
+    "word": "想法",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "國際"
+  },
+  {
+    "word": "網友",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "國際"
+  },
+  {
+    "word": "粉紅",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "國際"
+  },
+  {
+    "word": "泡泡",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "國際"
+  },
+  {
+    "word": "氛圍",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "國際"
+  },
+  {
+    "word": "白色",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "國際"
+  },
+  {
+    "word": "世界",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "國際"
+  },
+  {
+    "word": "言語",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "國際"
+  },
+  {
+    "word": "照片",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "國際"
+  },
+  {
+    "word": "火辣",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "國際"
+  },
+  {
+    "word": "牛仔",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "國際"
+  },
+  {
+    "word": "鬆外套",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "國際"
+  },
+  {
+    "word": "視角",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "國際"
+  },
+  {
+    "word": "深溝",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "國際"
+  },
+  {
+    "word": "脖子",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "國際"
+  },
+  {
+    "word": "蝴蝶結",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "國際"
+  },
+  {
+    "word": "合照",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "國際"
+  },
+  {
+    "word": "粉絲",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "國際"
+  },
+  {
+    "word": "留言",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "國際"
+  },
+  {
+    "word": "禮物小樂～情人節",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "國際"
+  },
+  {
+    "word": "小樂",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "國際"
+  },
+  {
+    "word": "官宣交往後",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "國際"
+  },
+  {
+    "word": "甜蜜期",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "國際"
+  },
+  {
+    "word": "舞台劇",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "國際"
+  },
+  {
+    "word": "戀情",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "國際"
+  },
+  {
+    "word": "男方",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "國際"
+  },
+  {
+    "word": "私事",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "國際"
+  },
+  {
+    "word": "經歷",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "國際"
+  },
+  {
+    "word": "張家陞",
+    "pos": "Nb",
+    "frequency": 16,
+    "category": "娛樂"
+  },
+  {
+    "word": "徐瑋澤",
+    "pos": "Nb",
+    "frequency": 12,
+    "category": "娛樂"
+  },
+  {
+    "word": "毛祁生",
+    "pos": "Nb",
+    "frequency": 10,
+    "category": "娛樂"
+  },
+  {
+    "word": "朴靖恆",
+    "pos": "Nb",
+    "frequency": 10,
+    "category": "娛樂"
+  },
+  {
+    "word": "王湛",
+    "pos": "Nb",
+    "frequency": 9,
+    "category": "娛樂"
+  },
+  {
+    "word": "歌手",
+    "pos": "Na",
+    "frequency": 8,
+    "category": "娛樂"
+  },
+  {
+    "word": "舞台",
+    "pos": "Na",
+    "frequency": 8,
+    "category": "娛樂"
+  },
+  {
+    "word": "藝人",
+    "pos": "Na",
+    "frequency": 6,
+    "category": "娛樂"
+  },
+  {
+    "word": "歌聲",
+    "pos": "Na",
+    "frequency": 6,
+    "category": "娛樂"
+  },
+  {
+    "word": "企劃",
+    "pos": "Na",
+    "frequency": 6,
+    "category": "娛樂"
+  },
+  {
+    "word": "老師",
+    "pos": "Na",
+    "frequency": 6,
+    "category": "娛樂"
+  },
+  {
+    "word": "街頭",
+    "pos": "Nc",
+    "frequency": 5,
+    "category": "娛樂"
+  },
+  {
+    "word": "觀眾",
+    "pos": "Na",
+    "frequency": 5,
+    "category": "娛樂"
+  },
+  {
+    "word": "圖章",
+    "pos": "Na",
+    "frequency": 5,
+    "category": "娛樂"
+  },
+  {
+    "word": "學生",
+    "pos": "Na",
+    "frequency": 5,
+    "category": "娛樂"
+  },
+  {
+    "word": "公司法",
+    "pos": "Na",
+    "frequency": 5,
+    "category": "娛樂"
+  },
+  {
+    "word": "作業",
+    "pos": "Na",
+    "frequency": 4,
+    "category": "娛樂"
+  },
+  {
+    "word": "接班人",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "娛樂"
+  },
+  {
+    "word": "期間",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "娛樂"
+  },
+  {
+    "word": "活動",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "娛樂"
+  },
+  {
+    "word": "演員",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "娛樂"
+  },
+  {
+    "word": "張家陞",
+    "pos": "Nc",
+    "frequency": 3,
+    "category": "娛樂"
+  },
+  {
+    "word": "化身",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "娛樂"
+  },
+  {
+    "word": "西門町",
+    "pos": "Nc",
+    "frequency": 3,
+    "category": "娛樂"
+  },
+  {
+    "word": "主題曲",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "娛樂"
+  },
+  {
+    "word": "插曲",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "娛樂"
+  },
+  {
+    "word": "片尾曲",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "娛樂"
+  },
+  {
+    "word": "角色",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "娛樂"
+  },
+  {
+    "word": "現實",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "娛樂"
+  },
+  {
+    "word": "現場",
+    "pos": "Nc",
+    "frequency": 3,
+    "category": "娛樂"
+  },
+  {
+    "word": "關係",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "娛樂"
+  },
+  {
+    "word": "辦法",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "娛樂"
+  },
+  {
+    "word": "願望",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "娛樂"
+  },
+  {
+    "word": "實力派",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "娛樂"
+  },
+  {
+    "word": "王哲威",
+    "pos": "Nb",
+    "frequency": 3,
+    "category": "娛樂"
+  },
+  {
+    "word": "人群",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "娛樂"
+  },
+  {
+    "word": "玫瑰花",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "娛樂"
+  },
+  {
+    "word": "安全感",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "娛樂"
+  },
+  {
+    "word": "尾聲",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "娛樂"
+  },
+  {
+    "word": "祁生",
+    "pos": "Nb",
+    "frequency": 3,
+    "category": "娛樂"
+  },
+  {
+    "word": "外套",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "娛樂"
+  },
+  {
+    "word": "雙手",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "娛樂"
+  },
+  {
+    "word": "形狀",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "娛樂"
+  },
+  {
+    "word": "粉紅",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "娛樂"
+  },
+  {
+    "word": "時候",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "娛樂"
+  },
+  {
+    "word": "粉絲",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "娛樂"
+  },
+  {
+    "word": "心情",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "娛樂"
+  },
+  {
+    "word": "工作",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "娛樂"
+  },
+  {
+    "word": "人員",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "娛樂"
+  },
+  {
+    "word": "反應",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "娛樂"
+  },
+  {
+    "word": "把握",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "娛樂"
+  },
+  {
+    "word": "地方",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "娛樂"
+  },
+  {
+    "word": "吉他課",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "娛樂"
+  },
+  {
+    "word": "律師",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "娛樂"
+  },
+  {
+    "word": "公司",
+    "pos": "Nc",
+    "frequency": 3,
+    "category": "娛樂"
+  },
+  {
+    "word": "題目",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "娛樂"
+  },
+  {
+    "word": "陳以謙",
+    "pos": "Nb",
+    "frequency": 2,
+    "category": "娛樂"
+  },
+  {
+    "word": "靖恆",
+    "pos": "Nb",
+    "frequency": 2,
+    "category": "娛樂"
+  },
+  {
+    "word": "群組",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "娛樂"
+  },
+  {
+    "word": "吉他",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "娛樂"
+  },
+  {
+    "word": "戲劇",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "娛樂"
+  },
+  {
+    "word": "微光",
+    "pos": "Nb",
+    "frequency": 2,
+    "category": "娛樂"
+  },
+  {
+    "word": "音樂",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "娛樂"
+  },
+  {
+    "word": "時間",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "娛樂"
+  },
+  {
+    "word": "天空",
+    "pos": "Nc",
+    "frequency": 2,
+    "category": "娛樂"
+  },
+  {
+    "word": "毛祁",
+    "pos": "Nb",
+    "frequency": 2,
+    "category": "娛樂"
+  },
+  {
+    "word": "事件",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "娛樂"
+  },
+  {
+    "word": "網友",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "娛樂"
+  },
+  {
+    "word": "家寧",
+    "pos": "Nb",
+    "frequency": 2,
+    "category": "娛樂"
+  },
+  {
+    "word": "課程",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "娛樂"
+  },
+  {
+    "word": "怒火",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "娛樂"
+  },
+  {
+    "word": "糾紛",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "娛樂"
+  },
+  {
+    "word": "時事",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "娛樂"
+  },
+  {
+    "word": "音樂夢",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "娛樂"
+  },
+  {
+    "word": "天空下起綿綿細雨",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "娛樂"
+  },
+  {
+    "word": "圖章CP",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "娛樂"
+  },
+  {
+    "word": "初舞台",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "娛樂"
+  },
+  {
+    "word": "家裡",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "娛樂"
+  },
+  {
+    "word": "陳以謙助陣",
+    "pos": "Nb",
+    "frequency": 1,
+    "category": "娛樂"
+  },
+  {
+    "word": "群組為他",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "娛樂"
+  },
+  {
+    "word": "觀眾說",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "娛樂"
+  },
+  {
+    "word": "束驚喜",
+    "pos": "Nb",
+    "frequency": 1,
+    "category": "娛樂"
+  },
+  {
+    "word": "細雨",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "娛樂"
+  },
+  {
+    "word": "台下",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "娛樂"
+  },
+  {
+    "word": "指控",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "娛樂"
+  },
+  {
+    "word": "女友",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "娛樂"
+  },
+  {
+    "word": "家奪走",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "娛樂"
+  },
+  {
+    "word": "頻道",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "娛樂"
+  },
+  {
+    "word": "盈利粗估",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "娛樂"
+  },
+  {
+    "word": "法律系",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "娛樂"
+  },
+  {
+    "word": "老師寄來",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "娛樂"
+  },
+  {
+    "word": "遭遇",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "娛樂"
+  },
+  {
+    "word": "報告",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "娛樂"
+  },
+  {
+    "word": "文章",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "娛樂"
+  },
+  {
+    "word": "法律",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "娛樂"
+  },
+  {
+    "word": "朋友",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "娛樂"
+  },
+  {
+    "word": "網紅",
+    "pos": "Nb",
+    "frequency": 1,
+    "category": "娛樂"
+  },
+  {
+    "word": "案例",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "娛樂"
+  },
+  {
+    "word": "內容",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "娛樂"
+  },
+  {
+    "word": "娛樂",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "娛樂"
+  },
+  {
+    "word": "股權",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "娛樂"
+  },
+  {
+    "word": "法律問",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "娛樂"
+  },
+  {
+    "word": "字數不得",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "娛樂"
+  },
+  {
+    "word": "曾淑惠",
+    "pos": "Nb",
+    "frequency": 1,
+    "category": "娛樂"
+  },
+  {
+    "word": "會計系",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "娛樂"
+  },
+  {
+    "word": "教材",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "娛樂"
+  },
+  {
+    "word": "方向",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "娛樂"
+  },
+  {
+    "word": "法律生",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "娛樂"
+  },
+  {
+    "word": "內行人",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "娛樂"
+  },
+  {
+    "word": "民刑法老師",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "娛樂"
+  },
+  {
+    "word": "刑事告訴和民事求償",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "娛樂"
+  },
+  {
+    "word": "智財",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "娛樂"
+  },
+  {
+    "word": "商標",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "娛樂"
+  },
+  {
+    "word": "兩岸",
+    "pos": "Nc",
+    "frequency": 35,
+    "category": "生活"
+  },
+  {
+    "word": "總統",
+    "pos": "Na",
+    "frequency": 15,
+    "category": "生活"
+  },
+  {
+    "word": "策略",
+    "pos": "Na",
+    "frequency": 14,
+    "category": "生活"
+  },
+  {
+    "word": "大陸",
+    "pos": "Nc",
+    "frequency": 10,
+    "category": "生活"
+  },
+  {
+    "word": "政府",
+    "pos": "Na",
+    "frequency": 10,
+    "category": "生活"
+  },
+  {
+    "word": "民進黨",
+    "pos": "Nb",
+    "frequency": 10,
+    "category": "生活"
+  },
+  {
+    "word": "台灣",
+    "pos": "Nc",
+    "frequency": 8,
+    "category": "生活"
+  },
+  {
+    "word": "關係",
+    "pos": "Na",
+    "frequency": 8,
+    "category": "生活"
+  },
+  {
+    "word": "人民",
+    "pos": "Na",
+    "frequency": 7,
+    "category": "生活"
+  },
+  {
+    "word": "勢力",
+    "pos": "Na",
+    "frequency": 6,
+    "category": "生活"
+  },
+  {
+    "word": "民意",
+    "pos": "Na",
+    "frequency": 6,
+    "category": "生活"
+  },
+  {
+    "word": "政治",
+    "pos": "Na",
+    "frequency": 5,
+    "category": "生活"
+  },
+  {
+    "word": "團隊",
+    "pos": "Na",
+    "frequency": 5,
+    "category": "生活"
+  },
+  {
+    "word": "川普",
+    "pos": "Nb",
+    "frequency": 5,
+    "category": "生活"
+  },
+  {
+    "word": "政策",
+    "pos": "Na",
+    "frequency": 5,
+    "category": "生活"
+  },
+  {
+    "word": "國安",
+    "pos": "Na",
+    "frequency": 4,
+    "category": "生活"
+  },
+  {
+    "word": "訊號",
+    "pos": "Na",
+    "frequency": 4,
+    "category": "生活"
+  },
+  {
+    "word": "事實",
+    "pos": "Na",
+    "frequency": 4,
+    "category": "生活"
+  },
+  {
+    "word": "國際",
+    "pos": "Nc",
+    "frequency": 4,
+    "category": "生活"
+  },
+  {
+    "word": "情勢",
+    "pos": "Na",
+    "frequency": 4,
+    "category": "生活"
+  },
+  {
+    "word": "對岸",
+    "pos": "Nc",
+    "frequency": 4,
+    "category": "生活"
+  },
+  {
+    "word": "統戰",
+    "pos": "Na",
+    "frequency": 4,
+    "category": "生活"
+  },
+  {
+    "word": "社會",
+    "pos": "Na",
+    "frequency": 4,
+    "category": "生活"
+  },
+  {
+    "word": "國家",
+    "pos": "Na",
+    "frequency": 4,
+    "category": "生活"
+  },
+  {
+    "word": "民間",
+    "pos": "Nc",
+    "frequency": 4,
+    "category": "生活"
+  },
+  {
+    "word": "時代",
+    "pos": "Na",
+    "frequency": 4,
+    "category": "生活"
+  },
+  {
+    "word": "滲透法",
+    "pos": "Na",
+    "frequency": 4,
+    "category": "生活"
+  },
+  {
+    "word": "軍法",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "生活"
+  },
+  {
+    "word": "美國",
+    "pos": "Nc",
+    "frequency": 3,
+    "category": "生活"
+  },
+  {
+    "word": "悲劇",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "生活"
+  },
+  {
+    "word": "反應",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "生活"
+  },
+  {
+    "word": "行政院",
+    "pos": "Nc",
+    "frequency": 2,
+    "category": "生活"
+  },
+  {
+    "word": "國防部",
+    "pos": "Nc",
+    "frequency": 2,
+    "category": "生活"
+  },
+  {
+    "word": "陸委會",
+    "pos": "Nc",
+    "frequency": 2,
+    "category": "生活"
+  },
+  {
+    "word": "部會",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "生活"
+  },
+  {
+    "word": "首長",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "生活"
+  },
+  {
+    "word": "措施",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "生活"
+  },
+  {
+    "word": "權利",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "生活"
+  },
+  {
+    "word": "側翼",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "生活"
+  },
+  {
+    "word": "青鳥",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "生活"
+  },
+  {
+    "word": "狀態",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "生活"
+  },
+  {
+    "word": "真心",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "生活"
+  },
+  {
+    "word": "程度",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "生活"
+  },
+  {
+    "word": "體制",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "生活"
+  },
+  {
+    "word": "敵意",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "生活"
+  },
+  {
+    "word": "局勢",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "生活"
+  },
+  {
+    "word": "北京",
+    "pos": "Nc",
+    "frequency": 2,
+    "category": "生活"
+  },
+  {
+    "word": "座談",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "生活"
+  },
+  {
+    "word": "陸方",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "生活"
+  },
+  {
+    "word": "立場",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "生活"
+  },
+  {
+    "word": "動作",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "生活"
+  },
+  {
+    "word": "現狀",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "生活"
+  },
+  {
+    "word": "進程",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "生活"
+  },
+  {
+    "word": "蓬佩奧",
+    "pos": "Nb",
+    "frequency": 2,
+    "category": "生活"
+  },
+  {
+    "word": "博明",
+    "pos": "Nb",
+    "frequency": 2,
+    "category": "生活"
+  },
+  {
+    "word": "鷹派",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "生活"
+  },
+  {
+    "word": "軍方",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "生活"
+  },
+  {
+    "word": "陰謀",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "生活"
+  },
+  {
+    "word": "台海",
+    "pos": "Nc",
+    "frequency": 2,
+    "category": "生活"
+  },
+  {
+    "word": "契機",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "生活"
+  },
+  {
+    "word": "工具",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "生活"
+  },
+  {
+    "word": "理由",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "生活"
+  },
+  {
+    "word": "風險",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "生活"
+  },
+  {
+    "word": "主席",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "生活"
+  },
+  {
+    "word": "當局",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "生活"
+  },
+  {
+    "word": "中國",
+    "pos": "Nc",
+    "frequency": 2,
+    "category": "生活"
+  },
+  {
+    "word": "餘地",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "生活"
+  },
+  {
+    "word": "領導人",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "生活"
+  },
+  {
+    "word": "決策",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "生活"
+  },
+  {
+    "word": "旅行社",
+    "pos": "Nc",
+    "frequency": 2,
+    "category": "生活"
+  },
+  {
+    "word": "陸客",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "生活"
+  },
+  {
+    "word": "能力",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "生活"
+  },
+  {
+    "word": "前提下",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "生活"
+  },
+  {
+    "word": "智慧",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "生活"
+  },
+  {
+    "word": "獨派",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "生活"
+  },
+  {
+    "word": "路線",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "生活"
+  },
+  {
+    "word": "法西斯",
+    "pos": "Nc",
+    "frequency": 2,
+    "category": "生活"
+  },
+  {
+    "word": "煉獄",
+    "pos": "Nc",
+    "frequency": 2,
+    "category": "生活"
+  },
+  {
+    "word": "檢調",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "生活"
+  },
+  {
+    "word": "案件",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "生活"
+  },
+  {
+    "word": "機率",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "生活"
+  },
+  {
+    "word": "祭旗",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "生活"
+  },
+  {
+    "word": "問題",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "生活"
+  },
+  {
+    "word": "分裂法",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "生活"
+  },
+  {
+    "word": "後果",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "生活"
+  },
+  {
+    "word": "交流派",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "生活"
+  },
+  {
+    "word": "底線",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "生活"
+  },
+  {
+    "word": "民眾",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "生活"
+  },
+  {
+    "word": "力量",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "生活"
+  },
+  {
+    "word": "黑暗",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "生活"
+  },
+  {
+    "word": "開端",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "生活"
+  },
+  {
+    "word": "賴清德",
+    "pos": "Nb",
+    "frequency": 1,
+    "category": "生活"
+  },
+  {
+    "word": "高層",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "生活"
+  },
+  {
+    "word": "會議",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "生活"
+  },
+  {
+    "word": "境外",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "生活"
+  },
+  {
+    "word": "眼睛",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "生活"
+  },
+  {
+    "word": "動作打斷",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "生活"
+  },
+  {
+    "word": "美中",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "生活"
+  },
+  {
+    "word": "高規格會見",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "生活"
+  },
+  {
+    "word": "人都",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "生活"
+  },
+  {
+    "word": "普棄用",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "生活"
+  },
+  {
+    "word": "川普陣營內鬥的",
+    "pos": "Nb",
+    "frequency": 1,
+    "category": "生活"
+  },
+  {
+    "word": "右翼",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "生活"
+  },
+  {
+    "word": "可行性",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "生活"
+  },
+  {
+    "word": "主流",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "生活"
+  },
+  {
+    "word": "賊不兩立",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "生活"
+  },
+  {
+    "word": "諜案",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "生活"
+  },
+  {
+    "word": "時間",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "生活"
+  },
+  {
+    "word": "誤會與敵意",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "生活"
+  },
+  {
+    "word": "大機",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "生活"
+  },
+  {
+    "word": "國安高層會議",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "生活"
+  },
+  {
+    "word": "軍法審判",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "生活"
+  },
+  {
+    "word": "人民眼睛",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "生活"
+  },
+  {
+    "word": "民意敵意",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "生活"
+  },
+  {
+    "word": "國安團隊",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "生活"
+  },
+  {
+    "word": "川普重拾",
+    "pos": "Nb",
+    "frequency": 1,
+    "category": "生活"
+  },
+  {
+    "word": "高規格",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "生活"
+  },
+  {
+    "word": "川普陣營內鬥",
+    "pos": "Nb",
+    "frequency": 1,
+    "category": "生活"
+  },
+  {
+    "word": "美國右翼",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "生活"
+  },
+  {
+    "word": "兩岸政策",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "生活"
+  },
+  {
+    "word": "賴總統",
+    "pos": "Nb",
+    "frequency": 1,
+    "category": "生活"
+  },
+  {
+    "word": "團令",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "生活"
+  },
+  {
+    "word": "信度",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "生活"
+  },
+  {
+    "word": "勢中",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "生活"
+  },
+  {
+    "word": "台灣主流",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "生活"
+  },
+  {
+    "word": "民意對撞",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "生活"
+  },
+  {
+    "word": "軍演",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "生活"
+  },
+  {
+    "word": "絕敵對",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "生活"
+  },
+  {
+    "word": "誤會與",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "生活"
+  },
+  {
+    "word": "兩岸",
+    "pos": "Nc",
+    "frequency": 18,
+    "category": "言論"
+  },
+  {
+    "word": "經濟",
+    "pos": "Na",
+    "frequency": 15,
+    "category": "言論"
+  },
+  {
+    "word": "政策",
+    "pos": "Na",
+    "frequency": 13,
+    "category": "言論"
+  },
+  {
+    "word": "學校",
+    "pos": "Nc",
+    "frequency": 12,
+    "category": "言論"
+  },
+  {
+    "word": "中國",
+    "pos": "Nc",
+    "frequency": 10,
+    "category": "言論"
+  },
+  {
+    "word": "高雄",
+    "pos": "Nc",
+    "frequency": 9,
+    "category": "言論"
+  },
+  {
+    "word": "總統",
+    "pos": "Na",
+    "frequency": 8,
+    "category": "言論"
+  },
+  {
+    "word": "中共",
+    "pos": "Nb",
+    "frequency": 8,
+    "category": "言論"
+  },
+  {
+    "word": "地區",
+    "pos": "Nc",
+    "frequency": 8,
+    "category": "言論"
+  },
+  {
+    "word": "女中",
+    "pos": "Nc",
+    "frequency": 8,
+    "category": "言論"
+  },
+  {
+    "word": "大陸",
+    "pos": "Nc",
+    "frequency": 7,
+    "category": "言論"
+  },
+  {
+    "word": "策略",
+    "pos": "Na",
+    "frequency": 7,
+    "category": "言論"
+  },
+  {
+    "word": "政府",
+    "pos": "Na",
+    "frequency": 7,
+    "category": "言論"
+  },
+  {
+    "word": "貨幣",
+    "pos": "Na",
+    "frequency": 7,
+    "category": "言論"
+  },
+  {
+    "word": "消費",
+    "pos": "Na",
+    "frequency": 6,
+    "category": "言論"
+  },
+  {
+    "word": "初賽",
+    "pos": "Na",
+    "frequency": 6,
+    "category": "言論"
+  },
+  {
+    "word": "高中",
+    "pos": "Nc",
+    "frequency": 6,
+    "category": "言論"
+  },
+  {
+    "word": "國防",
+    "pos": "Na",
+    "frequency": 6,
+    "category": "言論"
+  },
+  {
+    "word": "人民",
+    "pos": "Na",
+    "frequency": 5,
+    "category": "言論"
+  },
+  {
+    "word": "台灣",
+    "pos": "Nc",
+    "frequency": 5,
+    "category": "言論"
+  },
+  {
+    "word": "團隊",
+    "pos": "Na",
+    "frequency": 5,
+    "category": "言論"
+  },
+  {
+    "word": "川普",
+    "pos": "Nb",
+    "frequency": 5,
+    "category": "言論"
+  },
+  {
+    "word": "民進黨",
+    "pos": "Nb",
+    "frequency": 5,
+    "category": "言論"
+  },
+  {
+    "word": "問題",
+    "pos": "Na",
+    "frequency": 5,
+    "category": "言論"
+  },
+  {
+    "word": "企業",
+    "pos": "Na",
+    "frequency": 5,
+    "category": "言論"
+  },
+  {
+    "word": "儀隊",
+    "pos": "Na",
+    "frequency": 5,
+    "category": "言論"
+  },
+  {
+    "word": "熱情",
+    "pos": "Na",
+    "frequency": 5,
+    "category": "言論"
+  },
+  {
+    "word": "屏東",
+    "pos": "Nc",
+    "frequency": 5,
+    "category": "言論"
+  },
+  {
+    "word": "會議",
+    "pos": "Na",
+    "frequency": 4,
+    "category": "言論"
+  },
+  {
+    "word": "民意",
+    "pos": "Na",
+    "frequency": 4,
+    "category": "言論"
+  },
+  {
+    "word": "關係",
+    "pos": "Na",
+    "frequency": 4,
+    "category": "言論"
+  },
+  {
+    "word": "國家",
+    "pos": "Na",
+    "frequency": 4,
+    "category": "言論"
+  },
+  {
+    "word": "目標",
+    "pos": "Na",
+    "frequency": 4,
+    "category": "言論"
+  },
+  {
+    "word": "資金",
+    "pos": "Na",
+    "frequency": 4,
+    "category": "言論"
+  },
+  {
+    "word": "競賽",
+    "pos": "Na",
+    "frequency": 4,
+    "category": "言論"
+  },
+  {
+    "word": "決賽",
+    "pos": "Na",
+    "frequency": 4,
+    "category": "言論"
+  },
+  {
+    "word": "國安",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "言論"
+  },
+  {
+    "word": "勢力",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "言論"
+  },
+  {
+    "word": "措施",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "言論"
+  },
+  {
+    "word": "美國",
+    "pos": "Nc",
+    "frequency": 3,
+    "category": "言論"
+  },
+  {
+    "word": "社會",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "言論"
+  },
+  {
+    "word": "民眾",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "言論"
+  },
+  {
+    "word": "產品",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "言論"
+  },
+  {
+    "word": "產業",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "言論"
+  },
+  {
+    "word": "工作",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "言論"
+  },
+  {
+    "word": "中央",
+    "pos": "Nc",
+    "frequency": 3,
+    "category": "言論"
+  },
+  {
+    "word": "外資",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "言論"
+  },
+  {
+    "word": "財政",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "言論"
+  },
+  {
+    "word": "環境",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "言論"
+  },
+  {
+    "word": "活動",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "言論"
+  },
+  {
+    "word": "共識",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "言論"
+  },
+  {
+    "word": "國內",
+    "pos": "Nc",
+    "frequency": 3,
+    "category": "言論"
+  },
+  {
+    "word": "關稅",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "言論"
+  },
+  {
+    "word": "壓力",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "言論"
+  },
+  {
+    "word": "活力",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "言論"
+  },
+  {
+    "word": "海軍",
+    "pos": "Nc",
+    "frequency": 3,
+    "category": "言論"
+  },
+  {
+    "word": "儀戰",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "言論"
+  },
+  {
+    "word": "軍法",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "言論"
+  },
+  {
+    "word": "體制",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "言論"
+  },
+  {
+    "word": "政治",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "言論"
+  },
+  {
+    "word": "局勢",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "言論"
+  },
+  {
+    "word": "訊號",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "言論"
+  },
+  {
+    "word": "事實",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "言論"
+  },
+  {
+    "word": "國際",
+    "pos": "Nc",
+    "frequency": 2,
+    "category": "言論"
+  },
+  {
+    "word": "情勢",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "言論"
+  },
+  {
+    "word": "對岸",
+    "pos": "Nc",
+    "frequency": 2,
+    "category": "言論"
+  },
+  {
+    "word": "統戰",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "言論"
+  },
+  {
+    "word": "風險",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "言論"
+  },
+  {
+    "word": "民間",
+    "pos": "Nc",
+    "frequency": 2,
+    "category": "言論"
+  },
+  {
+    "word": "時代",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "言論"
+  },
+  {
+    "word": "滲透法",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "言論"
+  },
+  {
+    "word": "時間",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "言論"
+  },
+  {
+    "word": "全球",
+    "pos": "Nc",
+    "frequency": 2,
+    "category": "言論"
+  },
+  {
+    "word": "科技",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "言論"
+  },
+  {
+    "word": "報告",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "言論"
+  },
+  {
+    "word": "內需",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "言論"
+  },
+  {
+    "word": "重點",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "言論"
+  },
+  {
+    "word": "地方",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "言論"
+  },
+  {
+    "word": "方案",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "言論"
+  },
+  {
+    "word": "民企",
+    "pos": "Nc",
+    "frequency": 2,
+    "category": "言論"
+  },
+  {
+    "word": "習近平",
+    "pos": "Nb",
+    "frequency": 2,
+    "category": "言論"
+  },
+  {
+    "word": "法案",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "言論"
+  },
+  {
+    "word": "市場",
+    "pos": "Nc",
+    "frequency": 2,
+    "category": "言論"
+  },
+  {
+    "word": "需求",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "言論"
+  },
+  {
+    "word": "景氣",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "言論"
+  },
+  {
+    "word": "貿易",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "言論"
+  },
+  {
+    "word": "人民幣",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "言論"
+  },
+  {
+    "word": "流動性",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "言論"
+  },
+  {
+    "word": "困境",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "言論"
+  },
+  {
+    "word": "挑戰",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "言論"
+  },
+  {
+    "word": "現實",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "言論"
+  },
+  {
+    "word": "廣場",
+    "pos": "Nc",
+    "frequency": 2,
+    "category": "言論"
+  },
+  {
+    "word": "市府",
+    "pos": "Nc",
+    "frequency": 2,
+    "category": "言論"
+  },
+  {
+    "word": "各界",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "言論"
+  },
+  {
+    "word": "貴賓",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "言論"
+  },
+  {
+    "word": "隊伍",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "言論"
+  },
+  {
+    "word": "結果",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "言論"
+  },
+  {
+    "word": "港明",
+    "pos": "Nb",
+    "frequency": 2,
+    "category": "言論"
+  },
+  {
+    "word": "主題",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "言論"
+  },
+  {
+    "word": "花蓮",
+    "pos": "Nc",
+    "frequency": 2,
+    "category": "言論"
+  },
+  {
+    "word": "高商",
+    "pos": "Nc",
+    "frequency": 2,
+    "category": "言論"
+  },
+  {
+    "word": "中學",
+    "pos": "Nc",
+    "frequency": 2,
+    "category": "言論"
+  },
+  {
+    "word": "善化",
+    "pos": "Nb",
+    "frequency": 2,
+    "category": "言論"
+  },
+  {
+    "word": "新豐高中",
+    "pos": "Nb",
+    "frequency": 2,
+    "category": "言論"
+  },
+  {
+    "word": "慈幼",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "言論"
+  },
+  {
+    "word": "工商",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "言論"
+  },
+  {
+    "word": "筆畫",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "言論"
+  },
+  {
+    "word": "排序",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "言論"
+  },
+  {
+    "word": "標準",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "言論"
+  },
+  {
+    "word": "默契",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "言論"
+  },
+  {
+    "word": "精神",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "言論"
+  },
+  {
+    "word": "國人",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "言論"
+  },
+  {
+    "word": "面前",
+    "pos": "Nc",
+    "frequency": 2,
+    "category": "言論"
+  },
+  {
+    "word": "青春",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "言論"
+  },
+  {
+    "word": "自信",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "言論"
+  },
+  {
+    "word": "過程",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "言論"
+  },
+  {
+    "word": "大學",
+    "pos": "Nc",
+    "frequency": 2,
+    "category": "言論"
+  },
+  {
+    "word": "創意",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "言論"
+  },
+  {
+    "word": "賽事",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "言論"
+  },
+  {
+    "word": "序幕",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "言論"
+  },
+  {
+    "word": "中場",
+    "pos": "Nc",
+    "frequency": 2,
+    "category": "言論"
+  },
+  {
+    "word": "氣勢",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "言論"
+  },
+  {
+    "word": "成果",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "言論"
+  },
+  {
+    "word": "分數",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "言論"
+  },
+  {
+    "word": "階段",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "言論"
+  },
+  {
+    "word": "中華",
+    "pos": "Nc",
+    "frequency": 2,
+    "category": "言論"
+  },
+  {
+    "word": "藝術",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "言論"
+  },
+  {
+    "word": "周邊",
+    "pos": "Nc",
+    "frequency": 2,
+    "category": "言論"
+  },
+  {
+    "word": "人才",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "言論"
+  },
+  {
+    "word": "攤位",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "言論"
+  },
+  {
+    "word": "事務",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "言論"
+  },
+  {
+    "word": "青年",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "言論"
+  },
+  {
+    "word": "學子",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "言論"
+  },
+  {
+    "word": "意識",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "言論"
+  },
+  {
+    "word": "全民",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "言論"
+  },
+  {
+    "word": "汗水",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "言論"
+  },
+  {
+    "word": "港明高",
+    "pos": "Nb",
+    "frequency": 2,
+    "category": "言論"
+  },
+  {
+    "word": "賴清德",
+    "pos": "Nb",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "高層",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "境外",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "反應",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "行政院",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "國防部",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "陸委會",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "部會",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "首長",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "權利",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "側翼",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "青鳥",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "狀態",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "真心",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "眼睛",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "程度",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "敵意",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "北京",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "座談",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "陸方",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "立場",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "動作",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "現狀",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "動作打斷",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "美中",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "進程",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "高規格會見",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "蓬佩奧",
+    "pos": "Nb",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "博明",
+    "pos": "Nb",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "人都",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "普棄用",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "鷹派",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "川普陣營內鬥的",
+    "pos": "Nb",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "右翼",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "軍方",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "陰謀",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "台海",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "契機",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "工具",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "理由",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "主席",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "當局",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "餘地",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "領導人",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "決策",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "旅行社",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "陸客",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "可行性",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "能力",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "前提下",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "智慧",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "主流",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "獨派",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "路線",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "法西斯",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "煉獄",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "賊不兩立",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "檢調",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "案件",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "諜案",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "機率",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "祭旗",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "悲劇",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "分裂法",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "後果",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "交流派",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "底線",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "誤會與敵意",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "力量",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "大機",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "黑暗",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "開端",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "統計局",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "數據",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "動力",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "工業",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "產值",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "電動車",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "能源",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "地位",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "生命",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "機器人",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "工具機",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "半導體",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "領域",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "疫情",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "李強",
+    "pos": "Nb",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "總理",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "核心",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "規畫",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "經濟工作",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "國企",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "外貿",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "赤字率",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "預算",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "支出",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "民幣",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "國債",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "債券",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "困難",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "動能",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "行動",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "雙軌",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "戰略",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "水準",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "法規",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "背後",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "政治考量",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "合理性",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "趨勢",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "力度",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "持續性",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "促進法",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "法律",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "層面",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "民企",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "座談會",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "馬雲",
+    "pos": "Nb",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "文章",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "國內外",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "信心",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "形象",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "方向",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "內容",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "銀行",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "官方",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "驅動力",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "邏輯",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "差異",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "政治局",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "力道",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "國際雙循環",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "特效藥",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "補貼",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "競爭力",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "普對中政策",
+    "pos": "Nb",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "逆差",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "匯率",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "方面",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "貿易戰",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "循環",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "高專",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "畢業生",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "薪資",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "進行",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "形勢",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "陷阱",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "結構性",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "悟空",
+    "pos": "Nb",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "哪吒2》",
+    "pos": "Nb",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "士氣",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "冷氣團",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "壓力重重",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "困局",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "框架",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "民弱",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "生態",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "成本",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "潛能",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "確定性",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "作者",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "產經",
+    "pos": "Nb",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "建研社",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "理事長",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "海基會",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "董事長",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "港 7 ",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "碼頭棧柒庫",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "副司令",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "敖以智",
+    "pos": "Nb",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "豔陽",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "台南市",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "隊伍計",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "中山",
+    "pos": "Nb",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "工商",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "成大南工",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "港明高中",
+    "pos": "Nb",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "臺南一中",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "鳳新高中",
+    "pos": "Nb",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "學生均",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "課業",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "美和科技",
+    "pos": "Nb",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "熊鷹",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "表演為",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "官校鼓號",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "樂隊",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "武器裝備",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "陳展",
+    "pos": "Nb",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "近距離",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "儀起",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "頭籌",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "碼頭",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "司令",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "敖以",
+    "pos": "Nb",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "高雄女中",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "儀戰成名",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "隊伍計有",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "中山工商",
+    "pos": "Nb",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "成大",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "南工",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "屏東女中",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "鳳新",
+    "pos": "Nb",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "學生",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "美和",
+    "pos": "Nb",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "熊鷹儀隊",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "表演",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "海軍官校",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "會場",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "武器",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "距離",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "言論"
+  },
+  {
+    "word": "納迪拉澤",
+    "pos": "Nb",
+    "frequency": 26,
+    "category": "軍事"
+  },
+  {
+    "word": "烏克蘭",
+    "pos": "Nc",
+    "frequency": 21,
+    "category": "軍事"
+  },
+  {
+    "word": "美國",
+    "pos": "Nc",
+    "frequency": 16,
+    "category": "軍事"
+  },
+  {
+    "word": "情報",
+    "pos": "Na",
+    "frequency": 14,
+    "category": "軍事"
+  },
+  {
+    "word": "部隊",
+    "pos": "Na",
+    "frequency": 13,
+    "category": "軍事"
+  },
+  {
+    "word": "川普",
+    "pos": "Nb",
+    "frequency": 13,
+    "category": "軍事"
+  },
+  {
+    "word": "馬斯克",
+    "pos": "Nb",
+    "frequency": 13,
+    "category": "軍事"
+  },
+  {
+    "word": "地區",
+    "pos": "Nc",
+    "frequency": 10,
+    "category": "軍事"
+  },
+  {
+    "word": "俄羅斯",
+    "pos": "Nc",
+    "frequency": 10,
+    "category": "軍事"
+  },
+  {
+    "word": "總統",
+    "pos": "Na",
+    "frequency": 8,
+    "category": "軍事"
+  },
+  {
+    "word": "軍援",
+    "pos": "Na",
+    "frequency": 8,
+    "category": "軍事"
+  },
+  {
+    "word": "感覺",
+    "pos": "Na",
+    "frequency": 8,
+    "category": "軍事"
+  },
+  {
+    "word": "土地",
+    "pos": "Na",
+    "frequency": 8,
+    "category": "軍事"
+  },
+  {
+    "word": "澤倫斯基",
+    "pos": "Nb",
+    "frequency": 8,
+    "category": "軍事"
+  },
+  {
+    "word": "前線",
+    "pos": "Nc",
+    "frequency": 7,
+    "category": "軍事"
+  },
+  {
+    "word": "女中",
+    "pos": "Nc",
+    "frequency": 6,
+    "category": "軍事"
+  },
+  {
+    "word": "決定",
+    "pos": "Na",
+    "frequency": 6,
+    "category": "軍事"
+  },
+  {
+    "word": "人氣",
+    "pos": "Na",
+    "frequency": 6,
+    "category": "軍事"
+  },
+  {
+    "word": "印象",
+    "pos": "Na",
+    "frequency": 6,
+    "category": "軍事"
+  },
+  {
+    "word": "俄羅斯人",
+    "pos": "Na",
+    "frequency": 6,
+    "category": "軍事"
+  },
+  {
+    "word": "行動",
+    "pos": "Na",
+    "frequency": 6,
+    "category": "軍事"
+  },
+  {
+    "word": "選擇",
+    "pos": "Na",
+    "frequency": 6,
+    "category": "軍事"
+  },
+  {
+    "word": "學校",
+    "pos": "Nc",
+    "frequency": 5,
+    "category": "軍事"
+  },
+  {
+    "word": "村莊",
+    "pos": "Nc",
+    "frequency": 5,
+    "category": "軍事"
+  },
+  {
+    "word": "烏克蘭人",
+    "pos": "Na",
+    "frequency": 5,
+    "category": "軍事"
+  },
+  {
+    "word": "國家",
+    "pos": "Na",
+    "frequency": 5,
+    "category": "軍事"
+  },
+  {
+    "word": "高中",
+    "pos": "Nc",
+    "frequency": 4,
+    "category": "軍事"
+  },
+  {
+    "word": "高雄",
+    "pos": "Nc",
+    "frequency": 4,
+    "category": "軍事"
+  },
+  {
+    "word": "川普會",
+    "pos": "Nb",
+    "frequency": 4,
+    "category": "軍事"
+  },
+  {
+    "word": "儀隊",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "軍事"
+  },
+  {
+    "word": "初賽",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "軍事"
+  },
+  {
+    "word": "熱情",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "軍事"
+  },
+  {
+    "word": "屏東",
+    "pos": "Nc",
+    "frequency": 3,
+    "category": "軍事"
+  },
+  {
+    "word": "時間",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "軍事"
+  },
+  {
+    "word": "團隊",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "軍事"
+  },
+  {
+    "word": "國防",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "軍事"
+  },
+  {
+    "word": "中校",
+    "pos": "Nc",
+    "frequency": 3,
+    "category": "軍事"
+  },
+  {
+    "word": "納迪拉澤",
+    "pos": "Nc",
+    "frequency": 3,
+    "category": "軍事"
+  },
+  {
+    "word": "莫斯科",
+    "pos": "Nc",
+    "frequency": 3,
+    "category": "軍事"
+  },
+  {
+    "word": "小時",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "軍事"
+  },
+  {
+    "word": "白宮",
+    "pos": "Nc",
+    "frequency": 3,
+    "category": "軍事"
+  },
+  {
+    "word": "橢圓形",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "軍事"
+  },
+  {
+    "word": "辦公室",
+    "pos": "Nc",
+    "frequency": 3,
+    "category": "軍事"
+  },
+  {
+    "word": "爆炸性",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "軍事"
+  },
+  {
+    "word": "激辮",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "軍事"
+  },
+  {
+    "word": "援助",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "軍事"
+  },
+  {
+    "word": "戰士",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "軍事"
+  },
+  {
+    "word": "壓力",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "軍事"
+  },
+  {
+    "word": "籌碼",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "軍事"
+  },
+  {
+    "word": "俄軍",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "軍事"
+  },
+  {
+    "word": "佔領區",
+    "pos": "Nc",
+    "frequency": 3,
+    "category": "軍事"
+  },
+  {
+    "word": "朱拉夫卡",
+    "pos": "Nb",
+    "frequency": 3,
+    "category": "軍事"
+  },
+  {
+    "word": "諾文克",
+    "pos": "Nb",
+    "frequency": 3,
+    "category": "軍事"
+  },
+  {
+    "word": "後勤",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "軍事"
+  },
+  {
+    "word": "通道",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "軍事"
+  },
+  {
+    "word": "當地",
+    "pos": "Nc",
+    "frequency": 3,
+    "category": "軍事"
+  },
+  {
+    "word": "庫斯克",
+    "pos": "Nc",
+    "frequency": 3,
+    "category": "軍事"
+  },
+  {
+    "word": "城鎮",
+    "pos": "Nc",
+    "frequency": 3,
+    "category": "軍事"
+  },
+  {
+    "word": "旗幟",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "軍事"
+  },
+  {
+    "word": "指揮部",
+    "pos": "Nc",
+    "frequency": 3,
+    "category": "軍事"
+  },
+  {
+    "word": "小組",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "軍事"
+  },
+  {
+    "word": "華府",
+    "pos": "Nc",
+    "frequency": 3,
+    "category": "軍事"
+  },
+  {
+    "word": "傷害",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "軍事"
+  },
+  {
+    "word": "數據",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "軍事"
+  },
+  {
+    "word": "衛星",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "軍事"
+  },
+  {
+    "word": "圖像",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "軍事"
+  },
+  {
+    "word": "庫斯克達",
+    "pos": "Nb",
+    "frequency": 3,
+    "category": "軍事"
+  },
+  {
+    "word": "啦啦",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "軍事"
+  },
+  {
+    "word": "隊長",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "軍事"
+  },
+  {
+    "word": "自家",
+    "pos": "Nc",
+    "frequency": 3,
+    "category": "軍事"
+  },
+  {
+    "word": "社群",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "軍事"
+  },
+  {
+    "word": "媒體",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "軍事"
+  },
+  {
+    "word": "信息",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "軍事"
+  },
+  {
+    "word": "星鏈",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "軍事"
+  },
+  {
+    "word": "衛星網",
+    "pos": "Na",
+    "frequency": 3,
+    "category": "軍事"
+  },
+  {
+    "word": "克里米亞",
+    "pos": "Nc",
+    "frequency": 3,
+    "category": "軍事"
+  },
+  {
+    "word": "法國",
+    "pos": "Nc",
+    "frequency": 3,
+    "category": "軍事"
+  },
+  {
+    "word": "英國",
+    "pos": "Nc",
+    "frequency": 3,
+    "category": "軍事"
+  },
+  {
+    "word": "競賽",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "軍事"
+  },
+  {
+    "word": "海軍",
+    "pos": "Nc",
+    "frequency": 2,
+    "category": "軍事"
+  },
+  {
+    "word": "港明",
+    "pos": "Nb",
+    "frequency": 2,
+    "category": "軍事"
+  },
+  {
+    "word": "頭籌",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "軍事"
+  },
+  {
+    "word": "決賽",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "軍事"
+  },
+  {
+    "word": "儀起",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "軍事"
+  },
+  {
+    "word": "儀戰",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "軍事"
+  },
+  {
+    "word": "指揮官",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "軍事"
+  },
+  {
+    "word": "庫斯克",
+    "pos": "Nb",
+    "frequency": 2,
+    "category": "軍事"
+  },
+  {
+    "word": "每日",
+    "pos": "Nb",
+    "frequency": 2,
+    "category": "軍事"
+  },
+  {
+    "word": "郵報",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "軍事"
+  },
+  {
+    "word": "北韓",
+    "pos": "Nc",
+    "frequency": 2,
+    "category": "軍事"
+  },
+  {
+    "word": "蘇賈",
+    "pos": "Nc",
+    "frequency": 2,
+    "category": "軍事"
+  },
+  {
+    "word": "市中心",
+    "pos": "Nc",
+    "frequency": 2,
+    "category": "軍事"
+  },
+  {
+    "word": "平台",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "軍事"
+  },
+  {
+    "word": "星期",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "軍事"
+  },
+  {
+    "word": "士氣",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "軍事"
+  },
+  {
+    "word": "軍民",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "軍事"
+  },
+  {
+    "word": "利益",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "軍事"
+  },
+  {
+    "word": "斯克區",
+    "pos": "Nc",
+    "frequency": 2,
+    "category": "軍事"
+  },
+  {
+    "word": "針鋒",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "軍事"
+  },
+  {
+    "word": "川普兩",
+    "pos": "Nb",
+    "frequency": 2,
+    "category": "軍事"
+  },
+  {
+    "word": "烏克蘭軍",
+    "pos": "Nc",
+    "frequency": 2,
+    "category": "軍事"
+  },
+  {
+    "word": "軍援和",
+    "pos": "Na",
+    "frequency": 2,
+    "category": "軍事"
+  },
+  {
+    "word": "高雄港",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "碼頭",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "棧柒庫",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "廣場",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "副司令",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "敖以智",
+    "pos": "Nb",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "中將",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "市府",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "各界",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "貴賓",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "豔陽",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "隊伍",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "結果",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "台南市",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "主題",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "伍計",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "中山",
+    "pos": "Nb",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "工商",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "成大",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "南工",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "花蓮",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "高商",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "中學",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "善化",
+    "pos": "Nb",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "港明高中",
+    "pos": "Nb",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "新豐",
+    "pos": "Nb",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "慈幼工商",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "臺南一中",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "鳳新高中",
+    "pos": "Nb",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "筆畫",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "排序",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "學生",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "課業",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "標準",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "默契",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "精神",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "國人",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "面前",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "青春",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "活力",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "自信",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "過程",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "美和",
+    "pos": "Nb",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "科技",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "大學",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "熊鷹",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "創意",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "表演為",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "賽事",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "序幕",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "中場",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "官校鼓號",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "樂隊",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "氣勢磅礡",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "成果",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "分數",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "中華",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "藝術",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "學校擔網",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "周邊",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "武器",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "攤位",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "民眾",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "近距離",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "事務",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "青年",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "學子",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "意識",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "全民",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "共識",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "目標",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "活動",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "汗水",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "庫斯克區",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "總統澤倫斯基",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "針鋒相對",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "烏克蘭都",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "羅斯",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "川普宣布",
+    "pos": "Nb",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "時間」",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "烏克蘭",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "川普團隊",
+    "pos": "Nb",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "方面",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "力抗川普",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "指揮官說",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "普丁",
+    "pos": "Nb",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "基輔",
+    "pos": "Nb",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "迪拉澤",
+    "pos": "Nb",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "斯克",
+    "pos": "Nb",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "中心",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "馬斯克曾",
+    "pos": "Nb",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "軍民利益",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "俄羅斯庫斯克",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "美國會",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "基輔軍援",
+    "pos": "Nb",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "每日郵報》",
+    "pos": "Nb",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "烏克蘭特種",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "北韓部隊",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "感覺和",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "川普的",
+    "pos": "Nb",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "平台X",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "國家情報",
+    "pos": "Na",
+    "frequency": 1,
+    "category": "軍事"
+  },
+  {
+    "word": "烏克蘭士氣",
+    "pos": "Nc",
+    "frequency": 1,
+    "category": "軍事"
+  }
+]

@@ -135,3 +135,461 @@
     <li class="nav-item" role="presentation">
         <button class="nav-link active" id="keywords-tab" data-bs-toggle="tab" data-bs-target="#keywords" type="button" role="tab" aria-controls="keywords" aria-selected="true">
             <i class="bi bi-bar-chart me-1"></i>關鍵詞分析
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="articles-tab" data-bs-toggle="tab" data-bs-target="#articles" type="button" role="tab" aria-controls="articles" aria-selected="false">
+            <i class="bi bi-newspaper me-1"></i>文章列表
+        </button>
+    </li>
+</ul>
+
+<!-- 頁籤內容 -->
+<div class="tab-content" id="myTabContent">
+    <!-- 關鍵詞分析頁籤 -->
+    <div class="tab-pane fade show active" id="keywords" role="tabpanel" aria-labelledby="keywords-tab">
+        <!-- 篩選卡片 -->
+        <div class="card mb-4" data-aos="fade-up">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-funnel me-2"></i>關鍵詞篩選
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="get" id="filterForm">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            {{ form.category|as_crispy_field }}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            {{ form.pos|as_crispy_field }}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            {{ form.min_frequency|as_crispy_field }}
+                        </div>
+                    </div>
+                    <div class="row align-items-end">
+                        <div class="col-md-8 mb-3">
+                            <label for="id_limit" class="form-label">顯示關鍵詞數量: <span id="limitValue">{{ form.limit.value|default:"20" }}</span></label>
+                            <input type="range" class="form-range" name="limit" id="id_limit" min="5" max="100" step="5" value="{{ form.limit.value|default:"20" }}">
+                        </div>
+                        <div class="col-md-4 text-md-end mb-3">
+                            <button type="submit" class="btn btn-info">
+                                <i class="bi bi-search me-1"></i>篩選
+                            </button>
+                            <a href="{% url 'job_detail' job.id %}" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-counterclockwise me-1"></i>重設
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- 圖表卡片 -->
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="card mb-4" data-aos="fade-up" data-aos-delay="100">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="bi bi-bar-chart-fill me-2"></i>關鍵詞頻率圖表
+                        </h5>
+                        <div class="btn-group" role="group">
+                            <button type="button" class="btn btn-sm btn-outline-info active" id="barChartBtn">
+                                <i class="bi bi-bar-chart me-1"></i>長條圖
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-info" id="pieChartBtn">
+                                <i class="bi bi-pie-chart me-1"></i>圓餅圖
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="keywordsChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="card mb-4" data-aos="fade-up" data-aos-delay="200">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="bi bi-pie-chart-fill me-2"></i>詞性分布
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container" style="height: 250px;">
+                            <canvas id="posChart"></canvas>
+                        </div>
+                        <div class="mt-3">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="badge bg-info text-white">Na: 普通名詞</span>
+                                <span id="naCount" class="badge bg-dark">0</span>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="badge bg-success text-white">Nb: 專有名詞</span>
+                                <span id="nbCount" class="badge bg-dark">0</span>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="badge bg-warning text-dark">Nc: 地方名詞</span>
+                                <span id="ncCount" class="badge bg-dark">0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 關鍵詞列表卡片 -->
+        <div class="card" data-aos="fade-up" data-aos-delay="300">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="bi bi-list-ul me-2"></i>關鍵詞列表
+                </h5>
+                <button class="btn btn-sm btn-outline-info" id="exportBtn">
+                    <i class="bi bi-download me-1"></i>匯出CSV
+                </button>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover" id="keywordsTable">
+                        <thead>
+                            <tr>
+                                <th scope="col">#</th>
+                                <th scope="col">關鍵詞</th>
+                                <th scope="col">詞性</th>
+                                <th scope="col">頻率</th>
+                                <th scope="col">類別</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for keyword in keywords %}
+                            <tr class="keyword-item">
+                                <th scope="row">{{ forloop.counter }}</th>
+                                <td>{{ keyword.word }}</td>
+                                <td>
+                                    {% if keyword.pos == 'Na' %}
+                                        <span class="badge bg-info">Na (普通名詞)</span>
+                                    {% elif keyword.pos == 'Nb' %}
+                                        <span class="badge bg-success">Nb (專有名詞)</span>
+                                    {% elif keyword.pos == 'Nc' %}
+                                        <span class="badge bg-warning text-dark">Nc (地方名詞)</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">{{ keyword.pos }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ keyword.frequency }}</td>
+                                <td>{{ keyword.category }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center py-4">
+                                    <i class="bi bi-emoji-frown me-2"></i>沒有符合條件的關鍵詞
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 文章列表頁籤 -->
+    <div class="tab-pane fade" id="articles" role="tabpanel" aria-labelledby="articles-tab">
+        <div class="card" data-aos="fade-up">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-newspaper me-2"></i>爬取文章列表
+                </h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover" id="articlesTable">
+                        <thead>
+                            <tr>
+                                <th scope="col">#</th>
+                                <th scope="col">標題</th>
+                                <th scope="col">類別</th>
+                                <th scope="col">發布日期</th>
+                                <th scope="col">作者</th>
+                                <th scope="col">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for article in articles %}
+                            <tr>
+                                <th scope="row">{{ forloop.counter }}</th>
+                                <td>{{ article.title }}</td>
+                                <td>{{ article.category }}</td>
+                                <td>{{ article.date|date:"Y-m-d H:i" }}</td>
+                                <td>{{ article.author }}</td>
+                                <td>
+                                    <button type="button" class="btn btn-sm btn-info view-article"
+                                            data-id="{{ article.id }}"
+                                            data-title="{{ article.title }}"
+                                            data-category="{{ article.category }}"
+                                            data-date="{{ article.date|date:"Y-m-d H:i" }}"
+                                            data-author="{{ article.author }}"
+                                            data-content="{{ article.content }}"
+                                            data-link="{{ article.link }}">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center py-4">
+                                    <i class="bi bi-emoji-frown me-2"></i>沒有爬取到文章或任務尚未完成
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 文章查看模態框 -->
+<div class="modal fade" id="articleModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content bg-dark text-white">
+            <div class="modal-header">
+                <h5 class="modal-title" id="articleTitle"></h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <div class="badge bg-info me-2" id="articleCategory"></div>
+                    <small class="text-muted" id="articleDate"></small>
+                    <small class="text-muted ms-2" id="articleAuthor"></small>
+                </div>
+                <div class="article-content" id="articleContent"></div>
+            </div>
+            <div class="modal-footer">
+                <a href="#" class="btn btn-outline-info" id="articleLink" target="_blank">
+                    <i class="bi bi-box-arrow-up-right me-1"></i>原始文章
+                </a>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">關閉</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // 初始化DataTables
+    $(document).ready(function() {
+        $('#keywordsTable').DataTable({
+            language: {
+                url: '//cdn.datatables.net/plug-ins/1.11.5/i18n/zh-HANT.json'
+            },
+            pageLength: 15,
+            responsive: true
+        });
+
+        $('#articlesTable').DataTable({
+            language: {
+                url: '//cdn.datatables.net/plug-ins/1.11.5/i18n/zh-HANT.json'
+            },
+            pageLength: 10,
+            responsive: true
+        });
+
+        // 顯示文章詳情
+        $('.view-article').click(function() {
+            const id = $(this).data('id');
+            const title = $(this).data('title');
+            const category = $(this).data('category');
+            const date = $(this).data('date');
+            const author = $(this).data('author');
+            const content = $(this).data('content');
+            const link = $(this).data('link');
+
+            $('#articleTitle').text(title);
+            $('#articleCategory').text(category);
+            $('#articleDate').text(date);
+            $('#articleAuthor').text('作者: ' + author);
+            $('#articleContent').html(content.replace(/\n/g, '<br>'));
+            $('#articleLink').attr('href', link);
+
+            const articleModal = new bootstrap.Modal(document.getElementById('articleModal'));
+            articleModal.show();
+        });
+
+        // 顯示滑桿值
+        $('#id_limit').on('input', function() {
+            $('#limitValue').text($(this).val());
+        });
+
+        // CSV 匯出功能
+        $('#exportBtn').click(function() {
+            exportTableToCSV('關鍵詞分析.csv');
+        });
+
+        // 初始化圖表
+        initializeCharts();
+    });
+
+    // 初始化圖表
+    function initializeCharts() {
+        // 關鍵詞頻率圖表
+        const keywordsCtx = document.getElementById('keywordsChart').getContext('2d');
+        const keywordsData = {
+            labels: [{% for keyword in keywords %}'{{ keyword.word }}',{% endfor %}],
+            datasets: [{
+                label: '頻率',
+                data: [{% for keyword in keywords %}{{ keyword.frequency }},{% endfor %}],
+                backgroundColor: 'rgba(23, 162, 184, 0.6)',
+                borderColor: 'rgba(23, 162, 184, 1)',
+                borderWidth: 1
+            }]
+        };
+
+        // 長條圖初始化
+        const keywordsChart = new Chart(keywordsCtx, {
+            type: 'bar',
+            data: keywordsData,
+            options: {
+                indexAxis: 'y',
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: 'rgba(255, 255, 255, 0.7)'
+                        }
+                    },
+                    y: {
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: 'rgba(255, 255, 255, 0.7)'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: 'rgba(255, 255, 255, 0.7)'
+                        }
+                    }
+                }
+            }
+        });
+
+        // 詞性分布圖表
+        const posCtx = document.getElementById('posChart').getContext('2d');
+
+        // 統計詞性數量
+        const posCount = {
+            'Na': 0,
+            'Nb': 0,
+            'Nc': 0
+        };
+
+        {% for keyword in keywords %}
+        posCount['{{ keyword.pos }}'] = posCount['{{ keyword.pos }}'] + 1;
+        {% endfor %}
+
+        // 更新計數器顯示
+        $('#naCount').text(posCount['Na']);
+        $('#nbCount').text(posCount['Nb']);
+        $('#ncCount').text(posCount['Nc']);
+
+        const posChart = new Chart(posCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['普通名詞 (Na)', '專有名詞 (Nb)', '地方名詞 (Nc)'],
+                datasets: [{
+                    data: [posCount['Na'], posCount['Nb'], posCount['Nc']],
+                    backgroundColor: [
+                        'rgba(23, 162, 184, 0.8)',
+                        'rgba(40, 167, 69, 0.8)',
+                        'rgba(255, 193, 7, 0.8)'
+                    ],
+                    borderColor: [
+                        'rgba(23, 162, 184, 1)',
+                        'rgba(40, 167, 69, 1)',
+                        'rgba(255, 193, 7, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: 'rgba(255, 255, 255, 0.7)'
+                        }
+                    }
+                }
+            }
+        });
+
+        // 切換圖表類型
+        $('#barChartBtn').click(function() {
+            $(this).addClass('active');
+            $('#pieChartBtn').removeClass('active');
+            keywordsChart.config.type = 'bar';
+            keywordsChart.config.options.indexAxis = 'y';
+            keywordsChart.update();
+        });
+
+        $('#pieChartBtn').click(function() {
+            $(this).addClass('active');
+            $('#barChartBtn').removeClass('active');
+            keywordsChart.config.type = 'pie';
+            keywordsChart.update();
+        });
+    }
+
+    // 匯出CSV功能
+    function exportTableToCSV(filename) {
+        const csv = [];
+        const rows = document.querySelectorAll('#keywordsTable tr');
+
+        for (let i = 0; i < rows.length; i++) {
+            const row = [], cols = rows[i].querySelectorAll('td, th');
+
+            for (let j = 0; j < cols.length; j++) {
+                // 處理特殊標籤內容
+                let cellText = cols[j].innerText;
+                if (cols[j].querySelector('.badge')) {
+                    cellText = cols[j].querySelector('.badge').innerText;
+                }
+
+                // 處理CSV中的逗號和引號
+                row.push('"' + cellText.replace(/"/g, '""') + '"');
+            }
+
+            csv.push(row.join(','));
+        }
+
+        // 下載CSV文件
+        const csvFile = new Blob([csv.join('\n')], {type: 'text/csv;charset=utf-8;'});
+        const downloadLink = document.createElement('a');
+        downloadLink.href = URL.createObjectURL(csvFile);
+        downloadLink.setAttribute('download', filename);
+        downloadLink.style.display = 'none';
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
+    }
+
+    // 如果任務仍在執行中，每5秒自動刷新頁面
+    {% if job.status == 'running' or job.status == 'pending' %}
+    setTimeout(function() {
+        location.reload();
+    }, 5000);
+    {% endif %}
+</script>
+{% endblock %}

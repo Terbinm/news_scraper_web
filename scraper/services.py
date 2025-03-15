@@ -5,6 +5,8 @@ import importlib
 import sys
 from datetime import datetime
 from django.conf import settings
+from django.utils import timezone
+
 from .models import ScrapeJob, Article, KeywordAnalysis
 
 
@@ -98,13 +100,17 @@ def process_scraper_results(job, result_file_path):
         # 保存文章
         for article_data in articles_data:
             # 創建 Article 記錄
+            date_str = article_data.get('date', datetime.now().isoformat())
+            date_obj = datetime.fromisoformat(date_str)
+            aware_date = timezone.make_aware(date_obj)
+
             article = Article(
                 job=job,
                 item_id=article_data.get('item_id', ''),
                 category=article_data.get('category', ''),
                 title=article_data.get('title', ''),
                 content=article_data.get('content', ''),
-                date=article_data.get('date', datetime.now().isoformat()),
+                date=aware_date,
                 author=','.join(article_data.get('author', [])),
                 link=article_data.get('link', ''),
                 photo_links=json.dumps(article_data.get('photo_links', []))

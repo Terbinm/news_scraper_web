@@ -17,13 +17,16 @@ def run_scraper_task(job_id):
     thread.start()
     return thread
 
-
 def _scraper_thread(job_id):
     """
     爬蟲執行緒函數
     """
     logger.info(f"開始執行爬蟲任務 {job_id}")
     try:
+        # 使用非交互式matplotlib後端
+        import matplotlib
+        matplotlib.use('Agg')
+
         run_scraper(job_id)
         logger.info(f"爬蟲任務 {job_id} 完成")
     except Exception as e:

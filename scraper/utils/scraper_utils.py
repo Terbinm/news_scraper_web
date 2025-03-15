@@ -10,6 +10,7 @@ from queue import Queue
 from collections import defaultdict
 from datetime import datetime
 from urllib.parse import urlparse
+from django.utils import timezone
 
 import pandas as pd
 import undetected_chromedriver as uc

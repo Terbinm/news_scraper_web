@@ -201,6 +201,7 @@ def get_chart_as_base64(chart_func, *args, **kwargs):
     # 創建圖表並保存到緩衝區
     fig = chart_func(*args, **kwargs)
     fig.savefig(buf, format='png', bbox_inches='tight')
+    plt.close(fig)
 
     # 獲取base64編碼
     buf.seek(0)
