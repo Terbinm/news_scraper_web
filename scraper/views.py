@@ -57,10 +57,9 @@ def job_create(request):
             job.status = 'pending'
             job.save()
 
-            # 開啟執行緒執行爬蟲任務
-            thread = threading.Thread(target=run_scraper, args=(job.id,))
-            thread.daemon = True
-            thread.start()
+            # 使用任務函數啟動爬蟲
+            from .tasks import run_scraper_task
+            run_scraper_task(job.id)
 
             messages.success(request, '爬蟲任務已創建並開始執行')
             return redirect('job_list')
