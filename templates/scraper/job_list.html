@@ -34,7 +34,8 @@
                     <span class="badge bg-danger">失敗</span>
                 {% endif %}
             </div>
-            <div class="card-body position-relative">
+
+            <div class="card-body">
                 <div class="job-info mb-4">
                     <div class="mb-2">
                         <i class="bi bi-calendar-date text-info me-2"></i>
@@ -50,20 +51,33 @@
                     </div>
                 </div>
 
-                {% if job.status == 'running' %}
-                <div class="progress mb-3" style="height: 10px;">
-                    <div class="progress-bar progress-bar-striped progress-bar-animated bg-info"
-                         role="progressbar" style="width: 100%"></div>
-                </div>
-                {% endif %}
-
-                <div class="d-grid">
-                    <a href="{% url 'job_detail' job.id %}" class="btn btn-outline-info stretched-link">
+                <div class="d-grid gap-2">
+                    {% if job.status == 'running' %}
+                    <button class="btn btn-info" disabled>
+                        <div class="d-flex align-items-center justify-content-center">
+                            <div class="spinner-border spinner-border-sm me-2" role="status">
+                                <span class="visually-hidden">正在分析...</span>
+                            </div>
+                            <span>分析中...</span>
+                        </div>
+                    </button>
+                    {% elif job.status == 'failed' %}
+                    <button class="btn btn-outline-danger" disabled>
+                        <i class="bi bi-exclamation-triangle me-2"></i>任務失敗
+                    </button>
+                    {% else %}
+                    <a href="{% url 'job_detail' job.id %}?limit=100" class="btn btn-outline-info">
                         <i class="bi bi-search me-2"></i>查看詳情
                     </a>
+                    {% endif %}
+
+                    <button type="button" class="btn btn-outline-danger delete-job" data-id="{{ job.id }}">
+                        <i class="bi bi-trash me-2"></i>刪除任務
+                    </button>
                 </div>
             </div>
-            <div class="card-footer bg-transparent border-0 text-center text-muted small">
+
+            <div class="card-footer bg-transparent border-0 text-center text-white small">
                 {% if job.status == 'completed' %}
                     <i class="bi bi-check-circle-fill text-success me-1"></i>完成時間: {{ job.updated_at|date:"Y-m-d H:i" }}
                 {% elif job.status == 'running' %}
@@ -103,6 +117,12 @@
         transform: translateY(-5px);
         box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
     }
+
+    .spinner-border {
+        width: 1rem;
+        height: 1rem;
+        border-width: 0.15em;
+    }
 </style>
 {% endblock %}
 
@@ -119,6 +139,30 @@
                 location.reload();
             }, 5000);
         }
+
+        // 刪除任務
+        $('.delete-job').click(function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const jobId = $(this).data('id');
+
+            Swal.fire({
+                title: '確認刪除',
+                text: '您確定要刪除此爬蟲任務嗎？此操作無法復原！',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: '是的，刪除!',
+                cancelButtonText: '取消'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // 發送刪除請求
+                    window.location.href = `/jobs/delete/${jobId}/`;
+                }
+            });
+        });
     });
 </script>
 {% endblock %}

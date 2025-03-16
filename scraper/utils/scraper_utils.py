@@ -75,6 +75,9 @@ class CTSimpleScraper:
         self.cookies = {}
         self.output_dir = None  # 將在run方法中設置
         self.logger = None  # 將在run方法中設置
+        self.processed_urls = set()  # 用於儲存已處理過的 URL，防止重複爬取
+        self.processed_titles = set()  # 用於儲存已處理過的標題，防止不同URL但相同內容的重複爬取
+        self.lock = threading.RLock()  # 線程鎖，用於多線程安全
 
     def setup_driver(self):
         """設置 undetected-chromedriver"""
@@ -266,6 +269,9 @@ class CTSimpleScraper:
         if not categories:
             categories = list(self.base_urls.keys())  # 默認爬取所有類別
 
+        # 用於臨時去重，但不把URL添加到self.processed_urls
+        all_urls = set()
+
         for category in categories:
             if category not in self.base_urls:
                 self.logger.warning(f"未知類別: {category}")
@@ -296,10 +302,17 @@ class CTSimpleScraper:
                 article_elements = self.driver.find_elements(By.CSS_SELECTOR, 'h3.title > a')
                 temp_links = [elem.get_attribute('href') for elem in article_elements]
 
-                # 清理連結
-                valid_links = [link for link in temp_links if self.clean_url(link)]
+                # 清理連結並在內部去重（不影響processed_urls）
+                valid_links = []
+                for link in temp_links:
+                    cleaned_link = self.clean_url(link)
+                    # 只在當前收集階段去重，不添加到self.processed_urls
+                    if cleaned_link and cleaned_link not in all_urls:
+                        valid_links.append(cleaned_link)
+                        all_urls.add(cleaned_link)  # 僅添加到臨時集合
+
                 self.article_links[category] = valid_links
-                self.logger.info(f"{category} 類別找到 {len(valid_links)} 個有效文章連結")
+                self.logger.info(f"{category} 類別找到 {len(valid_links)} 個有效且未重複的文章連結")
 
             except Exception as e:
                 self.logger.error(f"訪問 {category} 類別主頁時發生錯誤: {e}", exc_info=True)
@@ -328,37 +341,72 @@ class CTSimpleScraper:
 
     def scrape_article_selenium(self, url, category, serial_no):
         """使用 Selenium 爬取單篇文章"""
+        # 創建每個線程專屬的WebDriver實例
+        local_driver = None
+
         try:
+            # 使用線程鎖檢查URL和標題是否已經處理過
+            with self.lock:
+                if url in self.processed_urls:
+                    self.logger.info(f"跳過已處理的文章URL: {url}")
+                    return None
+
+            # 初始化每個線程自己的WebDriver，避免共享問題
+            options = uc.ChromeOptions()
+            if self.headless:
+                options.add_argument("--headless")
+                options.add_argument("--disable-gpu")
+            options.add_argument("--disable-blink-features=AutomationControlled")
+            options.add_argument("--no-sandbox")
+            options.add_argument(f"--user-agent={UserAgent().random}")
+
+            local_driver = uc.Chrome(options=options)
+
             self.logger.info(f"開始爬取文章: {url}")
-            self.driver.get(url)
+            local_driver.get(url)
 
             # 等待文章標題載入
-            WebDriverWait(self.driver, 10).until(
+            WebDriverWait(local_driver, 10).until(
                 EC.presence_of_element_located((By.CSS_SELECTOR, 'h1.article-title'))
             )
 
-            # 最小化人類行為模擬
-            scroll_height = 300
-            self.driver.execute_script(f"window.scrollTo(0, {scroll_height});")
-            time.sleep(0.5)
-
             # 提取文章資訊 (使用 CSS 選擇器)
-            title_elem = self.driver.find_element(By.CSS_SELECTOR, 'h1.article-title')
+            title_elem = local_driver.find_element(By.CSS_SELECTOR, 'h1.article-title')
             title = title_elem.text.strip() if title_elem else "未找到標題"
 
-            date_elem = self.driver.find_element(By.CSS_SELECTOR, 'div.meta-info time')
+            # 檢查標題是否已處理過（避免不同URL但內容相同的情況）
+            with self.lock:
+                if title in self.processed_titles:
+                    self.logger.info(f"跳過已處理的文章標題: {title}")
+                    if local_driver:
+                        local_driver.quit()
+                    return None
+
+                # 標記URL和標題為已處理
+                self.processed_urls.add(url)
+                self.processed_titles.add(title)
+
+            # 最小化人類行為模擬
+            scroll_height = 300
+            local_driver.execute_script(f"window.scrollTo(0, {scroll_height});")
+            time.sleep(0.5)
+
+            date_elem = local_driver.find_element(By.CSS_SELECTOR, 'div.meta-info time')
             date = date_elem.get_attribute('datetime') if date_elem else "未找到日期"
 
             # 提取作者資訊
-            author_elems = self.driver.find_elements(By.CSS_SELECTOR, 'div.author a')
+            author_elems = local_driver.find_elements(By.CSS_SELECTOR, 'div.author a')
             author = [a.text.strip() for a in author_elems] if author_elems else ["未找到作者"]
 
             # 提取內文
-            content_elems = self.driver.find_elements(By.CSS_SELECTOR, 'div.article-body p')
+            content_elems = local_driver.find_elements(By.CSS_SELECTOR, 'div.article-body p')
             content = "\n".join([p.text.strip() for p in content_elems]) if content_elems else "未找到內容"
 
-            # 提取圖片連結
-            photo_links = self.extract_photo_links(category)
+            # 提取圖片連結 - 使用local_driver而不是self.driver
+            photo_elements = local_driver.find_elements(By.CSS_SELECTOR, 'div.article-body img')
+            photo_links = [img.get_attribute('src') for img in photo_elements if img.get_attribute('src')]
+            filtered_links = [link for link in photo_links if
+                              link and not ('gif' in link.lower() or 'ad' in link.lower())]
 
             # 提取日期用於 item_id
             date_str = self.extract_date_from_url(url)
@@ -375,11 +423,18 @@ class CTSimpleScraper:
                 "title": title,
                 "content": content,
                 "link": url,
-                "photo_links": photo_links
+                "photo_links": filtered_links
             }
         except Exception as e:
             self.logger.error(f"爬取文章 {url} 失敗: {e}")
             return None
+        finally:
+            # 確保每個線程的WebDriver都能被關閉
+            if local_driver:
+                try:
+                    local_driver.quit()
+                except:
+                    pass
 
     def scrape_articles(self, limit_per_category=5, use_threading=False, max_workers=4):
         """爬取每個類別的文章內容
@@ -422,7 +477,8 @@ class CTSimpleScraper:
                     try:
                         article_data = future.result()
                         if article_data:
-                            results.append(article_data)
+                            with self.lock:  # 使用鎖保護對results的訪問
+                                results.append(article_data)
                             self.logger.info(f"成功爬取 {category} 類別的文章: {article_data['title']}")
                     except Exception as e:
                         self.logger.error(f"爬取文章 {link} 時發生異常: {e}")
@@ -480,6 +536,10 @@ class CTSimpleScraper:
             bool: 爬蟲是否成功完成
         """
         try:
+            # 每次執行時重置已處理 URL 和標題集合
+            self.processed_urls = set()
+            self.processed_titles = set()
+
             # 設置輸出目錄
             if output_dir is None:
                 current_date = datetime.now().strftime('%Y%m%d_%H%M_%S')

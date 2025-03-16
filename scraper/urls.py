@@ -9,5 +9,6 @@ urlpatterns = [
     path('jobs/create/', views.job_create, name='job_create'),
     path('jobs/<int:job_id>/', views.job_detail, name='job_detail'),
     path('jobs/<int:job_id>/chart/', views.generate_chart, name='generate_chart'),
+    path('jobs/delete/<int:job_id>/', views.job_delete, name='job_delete'),
     path('articles/<int:article_id>/', views.article_detail, name='article_detail'),
 ]

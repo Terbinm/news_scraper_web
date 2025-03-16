@@ -215,3 +215,21 @@ def article_detail(request, article_id):
     """文章詳情視圖"""
     article = get_object_or_404(Article, id=article_id, job__user=request.user)
     return render(request, 'scraper/article_detail.html', {'article': article})
+
+
+@login_required
+def job_delete(request, job_id):
+    """刪除爬蟲任務"""
+    job = get_object_or_404(ScrapeJob, id=job_id, user=request.user)
+
+    # 記錄任務 ID 用於消息提示
+    job_id_display = job.id
+
+    # 刪除任務
+    job.delete()
+
+    # 提示成功消息
+    messages.success(request, f'爬蟲任務 #{job_id_display} 已成功刪除')
+
+    # 重定向到任務列表
+    return redirect('job_list')

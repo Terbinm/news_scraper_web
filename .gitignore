@@ -1,0 +1,22 @@
+# 排除特定目錄內容但保留目錄結構
+/media/scraper_output/*
+/media/charts/*
+/static/fonts/*.ttf
+/static/fonts/*.TTF
+/static/fonts/*.otf
+/static/fonts/*.OTF
+/static/fonts/*.woff
+/static/fonts/*.WOFF
+/static/fonts/*.woff2
+/static/fonts/*.WOFF2
+/static/fonts/*.eot
+/static/fonts/*.EOT
+
+# 排除數據庫文件
+db.sqlite3
+
+# 保留空目錄（使用 .gitkeep 文件）
+!/media/.gitkeep
+!/media/scraper_output/.gitkeep
+!/media/charts/.gitkeep
+!/static/fonts/.gitkeep

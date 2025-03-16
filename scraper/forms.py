@@ -66,11 +66,27 @@ class ScrapeJobForm(forms.ModelForm):
         categories = self.cleaned_data['categories']
         return ','.join(categories)
 
+    def clean(self):
+        """驗證表單數據"""
+        cleaned_data = super().clean()
+        use_threading = cleaned_data.get('use_threading')
+        max_workers = cleaned_data.get('max_workers')
+
+        # 如果未使用多線程，則不需要檢查max_workers字段
+        if not use_threading:
+            # 如果未勾選使用多線程，則使用默認值
+            cleaned_data['max_workers'] = 4
+
+        return cleaned_data
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # 如果是已有實例，將類別字串轉回多選值
         if self.instance.pk and self.instance.categories:
             self.initial['categories'] = self.instance.categories.split(',')
+
+        # 將max_workers設為非必填
+        self.fields['max_workers'].required = False
 
 
 class KeywordFilterForm(forms.Form):
