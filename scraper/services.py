@@ -188,17 +188,51 @@ def generate_keyword_chart_data(job_id, filters=None):
 
     # 獲取關鍵詞資料
     limit = filters.get('limit', 20)
-    keywords = KeywordAnalysis.objects.filter(**query_filters).order_by('-frequency')[:limit]
+    cross_category = filters.get('cross_category', False)
 
-    # 準備圖表數據
-    labels = [k.word for k in keywords]
-    data = [k.frequency for k in keywords]
+    # 獲取符合篩選條件的關鍵詞
+    keywords = KeywordAnalysis.objects.filter(**query_filters)
+
+    # 如果啟用跨類別統計，則合併相同關鍵詞在不同類別的頻率
+    if cross_category:
+        from django.db.models import Sum
+
+        # 將category從篩選條件中移除（如果有的話）
+        if 'category' in query_filters:
+            del query_filters['category']
+
+        # 重新查詢關鍵詞，按照詞和詞性分組，並計算頻率總和
+        keywords = (KeywordAnalysis.objects
+                    .filter(**query_filters)
+                    .values('word', 'pos')
+                    .annotate(frequency=Sum('frequency'))
+                    .order_by('-frequency')[:limit])
+
+        # 準備圖表數據
+        labels = [k['word'] for k in keywords]
+        data = [k['frequency'] for k in keywords]
+
+        # 設置類別為"跨類別統計"
+        category_label = "跨類別統計"
+    else:
+        # 不進行跨類別統計時，直接按頻率排序取前N個
+        keywords = keywords.order_by('-frequency')[:limit]
+
+        # 準備圖表數據
+        labels = [k.word for k in keywords]
+        data = [k.frequency for k in keywords]
+
+        # 設置類別標籤
+        if 'category' in filters and filters['category']:
+            category_label = filters['category']
+        else:
+            category_label = "所有類別"
 
     # 返回 Chart.js 格式數據
     return {
         'labels': labels,
         'datasets': [{
-            'label': '關鍵詞頻率',
+            'label': f'{category_label}關鍵詞頻率',
             'data': data,
             'backgroundColor': 'rgba(54, 162, 235, 0.6)',
             'borderColor': 'rgba(54, 162, 235, 1)',

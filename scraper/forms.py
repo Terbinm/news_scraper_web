@@ -93,7 +93,6 @@ class KeywordFilterForm(forms.Form):
     """關鍵詞篩選表單"""
 
     CATEGORY_CHOICES = [
-        ('', '所有類別'),
         ('財經', '財經'),
         ('政治', '政治'),
         ('社會', '社會'),
@@ -112,11 +111,21 @@ class KeywordFilterForm(forms.Form):
         ('Nc', '地方名詞 (Nc)')
     ]
 
+    # 單選類別，用於非跨類別模式
     category = forms.ChoiceField(
         label='類別',
-        choices=CATEGORY_CHOICES,
+        choices=[('', '所有類別')] + CATEGORY_CHOICES,
         required=False,
         widget=forms.Select(attrs={'class': 'form-select'})
+    )
+
+    # 多選類別，用於跨類別模式
+    selected_categories = forms.MultipleChoiceField(
+        label='要統計的類別',
+        choices=CATEGORY_CHOICES,
+        required=False,
+        widget=forms.CheckboxSelectMultiple(attrs={'class': 'form-check-input'}),
+        help_text='選擇要納入跨類別統計的新聞類別，不選擇則包含所有類別'
     )
 
     pos = forms.ChoiceField(
@@ -136,8 +145,28 @@ class KeywordFilterForm(forms.Form):
     limit = forms.IntegerField(
         label='顯示數量',
         required=False,
-        min_value=5,
-        max_value=100,
+        min_value=1,
+        max_value=10000,
         initial=20,
         widget=forms.NumberInput(attrs={'class': 'form-control'})
     )
+
+    # 跨類別統計選項
+    cross_category = forms.BooleanField(
+        label='跨類別統計',
+        required=False,
+        help_text='啟用跨類別統計可合併相同關鍵詞在不同類別的頻率，並顯示分類詳情',
+        widget=forms.CheckboxInput(attrs={'class': 'form-check-input'})
+    )
+
+    # 清理表單數據
+    def clean(self):
+        cleaned_data = super().clean()
+        cross_category = cleaned_data.get('cross_category')
+        selected_categories = cleaned_data.get('selected_categories')
+
+        # 如果啟用了跨類別統計但未選擇類別，則設為空列表（表示全選）
+        if cross_category and not selected_categories:
+            cleaned_data['selected_categories'] = []
+
+        return cleaned_data

@@ -59,6 +59,20 @@ def login_view(request):
 
     return render(request, 'scraper/login.html', {'form': form})
 
+def get_category_colors():
+    """生成類別顏色映射"""
+    category_colors = {
+        '財經': {'bg': 'rgba(54, 162, 235, 0.7)', 'border': 'rgba(54, 162, 235, 1)'},
+        '政治': {'bg': 'rgba(255, 99, 132, 0.7)', 'border': 'rgba(255, 99, 132, 1)'},
+        '社會': {'bg': 'rgba(255, 159, 64, 0.7)', 'border': 'rgba(255, 159, 64, 1)'},
+        '科技': {'bg': 'rgba(75, 192, 192, 0.7)', 'border': 'rgba(75, 192, 192, 1)'},
+        '國際': {'bg': 'rgba(153, 102, 255, 0.7)', 'border': 'rgba(153, 102, 255, 1)'},
+        '娛樂': {'bg': 'rgba(255, 205, 86, 0.7)', 'border': 'rgba(255, 205, 86, 1)'},
+        '生活': {'bg': 'rgba(201, 203, 207, 0.7)', 'border': 'rgba(201, 203, 207, 1)'},
+        '言論': {'bg': 'rgba(0, 204, 150, 0.7)', 'border': 'rgba(0, 204, 150, 1)'},
+        '軍事': {'bg': 'rgba(255, 0, 110, 0.7)', 'border': 'rgba(255, 0, 110, 1)'}
+    }
+    return category_colors
 
 @login_required
 def logout_view(request):
@@ -103,29 +117,127 @@ def job_detail(request, job_id):
     job = get_object_or_404(ScrapeJob, id=job_id, user=request.user)
     articles = Article.objects.filter(job=job)
 
+    # 獲取該任務下所有存在的類別
+    available_categories = KeywordAnalysis.objects.filter(job=job).values_list('category', flat=True).distinct()
+
     # 處理關鍵詞篩選
     form = KeywordFilterForm(request.GET)
     filter_args = {'job': job}
 
+    # 設置初始表單數據，特別是多選類別
+    if not request.GET:
+        form = KeywordFilterForm(initial={'selected_categories': list(available_categories)})
+
     if form.is_valid():
-        if form.cleaned_data.get('category'):
-            filter_args['category'] = form.cleaned_data['category']
         if form.cleaned_data.get('pos'):
             filter_args['pos'] = form.cleaned_data['pos']
         if form.cleaned_data.get('min_frequency'):
             filter_args['frequency__gte'] = form.cleaned_data['min_frequency']
 
-    keywords = KeywordAnalysis.objects.filter(**filter_args).order_by('-frequency')
+        # 處理類別選擇 - 無論是否為跨類別模式都使用多選
+        cross_category = form.cleaned_data.get('cross_category', False)
+        selected_categories = form.cleaned_data.get('selected_categories', [])
 
-    # 限制關鍵詞數量
-    limit = form.cleaned_data.get('limit', 20) if form.is_valid() else 20
-    keywords = keywords[:limit]
+        # 確保有選中的類別
+        if not selected_categories:
+            selected_categories = list(available_categories)
+
+        # 添加類別條件 - 不論是否為跨類別模式，都使用 category__in
+        filter_args['category__in'] = selected_categories
+
+        # 如果啟用跨類別統計
+        if cross_category:
+            from django.db.models import Sum, F, Count, Q
+            from collections import defaultdict
+
+            # 限制關鍵詞數量
+            limit = form.cleaned_data.get('limit', 20)
+
+            # 先獲取分組統計的總頻率
+            aggregated_keywords = (KeywordAnalysis.objects
+                                   .filter(**filter_args)
+                                   .values('word', 'pos')
+                                   .annotate(total_frequency=Sum('frequency'))
+                                   .order_by('-total_frequency')[:limit])
+
+            # 獲取包含在結果中的詞列表
+            words_in_result = [kw['word'] for kw in aggregated_keywords]
+
+            # 對於每個聚合的關鍵詞，獲取其在各個類別中的詳細分布
+            category_details = {}
+            if words_in_result:
+                detail_data = (KeywordAnalysis.objects
+                               .filter(**filter_args, word__in=words_in_result)
+                               .values('word', 'category', 'frequency')
+                               .order_by('-frequency'))
+
+                # 將詳細信息整理成詞典形式
+                for item in detail_data:
+                    word = item['word']
+                    if word not in category_details:
+                        category_details[word] = {}
+                    category_details[word][item['category']] = item['frequency']
+
+            # 創建可用於模板的自定義關鍵詞列表，包含類別分布信息
+            from collections import namedtuple
+
+            # 擴展 KeywordResult 以包含更多類別信息
+            KeywordResult = namedtuple('KeywordResult', [
+                'word', 'pos', 'frequency', 'category', 'category_details',
+                'category_list', 'top_category'
+            ])
+
+            keyword_list = []
+            for kw in aggregated_keywords:
+                details = category_details.get(kw['word'], {})
+                # 格式化類別詳情為可讀字符串
+                details_str = ", ".join([f"{cat}: {freq}" for cat, freq in details.items()])
+
+                # 獲取出現頻率最高的類別
+                top_category = ""
+                max_freq = 0
+                for cat, freq in details.items():
+                    if freq > max_freq:
+                        max_freq = freq
+                        top_category = cat
+
+                # 所有出現的類別列表（按頻率排序）
+                category_list = sorted(details.items(), key=lambda x: x[1], reverse=True)
+                category_list = [cat for cat, _ in category_list]
+
+                keyword_list.append(KeywordResult(
+                    word=kw['word'],
+                    pos=kw['pos'],
+                    frequency=kw['total_frequency'],
+                    category="跨類別統計",
+                    category_details=details_str,
+                    category_list=category_list,
+                    top_category=top_category
+                ))
+
+            keywords = keyword_list
+        else:
+            # 不啟用跨類別統計但仍使用多類別查詢
+            # 限制關鍵詞數量
+            limit = form.cleaned_data.get('limit', 20)
+
+            # 這裡不合併不同類別的相同關鍵詞，而是分別顯示
+            keywords = KeywordAnalysis.objects.filter(**filter_args).order_by('-frequency')[:limit]
+    else:
+        # 如果表單無效，使用默認查詢 - 所有類別
+        filter_args['category__in'] = available_categories
+        limit = 20
+        keywords = KeywordAnalysis.objects.filter(**filter_args).order_by('-frequency')[:limit]
 
     context = {
         'job': job,
         'articles': articles,
+        'articles_len': len(articles),
         'keywords': keywords,
         'form': form,
+        'available_categories': available_categories,
+        'is_cross_category': form.is_valid() and form.cleaned_data.get('cross_category', False),
+        'category_colors': get_category_colors()  # 生成類別顏色映射
     }
 
     return render(request, 'scraper/job_detail.html', context)
@@ -146,6 +258,10 @@ def generate_chart(request, job_id):
     form = KeywordFilterForm(request.GET)
     filter_args = {'job': job}
 
+    # 添加跨類別統計參數
+    cross_category = False
+    selected_categories = []
+
     if form.is_valid():
         if form.cleaned_data.get('category'):
             filter_args['category'] = form.cleaned_data['category']
@@ -154,13 +270,52 @@ def generate_chart(request, job_id):
         if form.cleaned_data.get('min_frequency'):
             filter_args['frequency__gte'] = form.cleaned_data['min_frequency']
 
+        # 獲取跨類別統計選項
+        cross_category = form.cleaned_data.get('cross_category', False)
+        selected_categories = form.cleaned_data.get('selected_categories', [])
+
     # 獲取並限制關鍵詞數量
     limit = form.cleaned_data.get('limit', 20) if form.is_valid() else 20
-    keywords = KeywordAnalysis.objects.filter(**filter_args).order_by('-frequency')[:limit]
 
     # 準備圖表數據
-    words = [k.word for k in keywords]
-    frequencies = [k.frequency for k in keywords]
+    if cross_category:
+        from django.db.models import Sum
+
+        # 準備基本的查詢條件
+        base_filters = {'job': job}
+        if form.is_valid():
+            if form.cleaned_data.get('pos'):
+                base_filters['pos'] = form.cleaned_data['pos']
+            if form.cleaned_data.get('min_frequency'):
+                base_filters['frequency__gte'] = form.cleaned_data['min_frequency']
+
+        # 如果選擇了特定類別，則只統計這些類別
+        if selected_categories:
+            base_filters['category__in'] = selected_categories
+            categories_label = "、".join(selected_categories)
+        else:
+            categories_label = "所有類別"
+
+        # 分組統計
+        keywords = (KeywordAnalysis.objects
+                    .filter(**base_filters)
+                    .values('word', 'pos')
+                    .annotate(frequency=Sum('frequency'))
+                    .order_by('-frequency')[:limit])
+
+        words = [k['word'] for k in keywords]
+        frequencies = [k['frequency'] for k in keywords]
+        chart_title = f'跨類別關鍵詞頻率分布 ({categories_label})'
+    else:
+        keywords = KeywordAnalysis.objects.filter(**filter_args).order_by('-frequency')[:limit]
+        words = [k.word for k in keywords]
+        frequencies = [k.frequency for k in keywords]
+
+        # 設置圖表標題
+        if 'category' in filter_args:
+            chart_title = f"{filter_args['category']}類別關鍵詞頻率分布"
+        else:
+            chart_title = '所有類別關鍵詞頻率分布'
 
     # 使用 matplotlib 生成圖表
     fig, ax = plt.subplots(figsize=(10, 6))
@@ -174,7 +329,7 @@ def generate_chart(request, job_id):
     # 設置標籤
     ax.set_xlabel('頻率', fontproperties=font_prop)
     ax.set_ylabel('關鍵詞', fontproperties=font_prop)
-    ax.set_title('關鍵詞頻率分布', fontproperties=font_prop)
+    ax.set_title(chart_title, fontproperties=font_prop)
 
     plt.tight_layout()
 
