@@ -4,52 +4,181 @@
 {% block title %}登入 | 新聞爬蟲系統{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-6 col-lg-5" data-aos="fade-up">
-        <div class="card bg-dark-subtle text-white border-info shadow-lg">
-            <div class="card-header bg-info bg-opacity-75 text-white text-center py-3">
-                <h3><i class="bi bi-lock-fill me-2"></i>用戶登入</h3>
+<!-- 水平雙欄登入容器 -->
+<div class="row justify-content-center align-items-center py-3 py-md-5">
+    <div class="row g-0 w-100" style="max-width: 1000px;">
+        <!-- 左側資訊區域 -->
+        <div class="col-md-6 d-none d-md-block">
+            <div class="login-info-container p-4 p-md-5 text-center" data-aos="fade-left">
+                <h3 class="text-info mb-3">新聞爬蟲管理系統</h3>
+                <p class="text-light">使用先進技術分析新聞關鍵詞，掌握媒體趨勢</p>
+
+                <div class="features mt-4 mb-5">
+                    <div class="feature-item mb-3">
+                        <i class="bi bi-speedometer2 text-info me-2"></i>
+                        <span>多線程高效爬取</span>
+                    </div>
+                    <div class="feature-item mb-3">
+                        <i class="bi bi-bar-chart-line text-info me-2"></i>
+                        <span>關鍵詞智能分析</span>
+                    </div>
+                    <div class="feature-item mb-3">
+                        <i class="bi bi-graph-up text-info me-2"></i>
+                        <span>視覺化數據呈現</span>
+                    </div>
+                </div>
+
+                <!-- 圖片容器，設置為溢出可見 -->
+                <div class="login-image-wrapper">
+                    <div class="login-image-container"></div>
+                </div>
             </div>
-            <div class="card-body p-4">
+        </div>
+
+        <!-- 右側登入表單區域 -->
+        <div class="col-md-6">
+            <div class="login-form-container p-4 p-md-5" data-aos="fade-right">
+                <h2 class="text-info mb-4">
+                    <i class="bi bi-shield-lock me-2"></i>系統登入
+                </h2>
+                <p class="text-light mb-4">請輸入您的帳號密碼以進入新聞爬蟲系統</p>
+
                 <form method="post" class="needs-validation" novalidate>
                     {% csrf_token %}
 
                     <div class="mb-4">
-                        <label for="{{ form.username.id_for_label }}" class="form-label">
-                            <i class="bi bi-person-fill me-1"></i>{{ form.username.label }}
-                        </label>
-                        {{ form.username|as_crispy_field }}
+                        <div class="form-floating">
+                            <input type="text" class="form-control login-input"
+                                   id="{{ form.username.id_for_label }}" name="username"
+                                   placeholder="請輸入用戶名" required>
+                            <label for="{{ form.username.id_for_label }}">
+                                <i class="bi bi-person-fill me-1"></i>用戶名
+                            </label>
+                        </div>
+                        <div class="invalid-feedback">請輸入有效的用戶名</div>
                     </div>
 
                     <div class="mb-4">
-                        <label for="{{ form.password.id_for_label }}" class="form-label">
-                            <i class="bi bi-key-fill me-1"></i>{{ form.password.label }}
-                        </label>
-                        {{ form.password|as_crispy_field }}
+                        <div class="form-floating">
+                            <input type="password" class="form-control login-input"
+                                   id="{{ form.password.id_for_label }}" name="password"
+                                   placeholder="請輸入密碼" required>
+                            <label for="{{ form.password.id_for_label }}">
+                                <i class="bi bi-key-fill me-1"></i>密碼
+                            </label>
+                        </div>
+                        <div class="invalid-feedback">請輸入密碼</div>
                     </div>
 
-                    <div class="d-grid gap-2">
-                        <button type="submit" class="btn btn-info btn-lg">
-                            <i class="bi bi-box-arrow-in-right me-1"></i>登入
+                    <div class="mt-5">
+                        <button type="submit" class="btn btn-info btn-lg text-white w-100">
+                            <i class="bi bi-box-arrow-in-right me-2"></i>登入系統
                         </button>
                     </div>
                 </form>
+
+                <div class="mt-4 text-center">
+                    <div class="card-body-footer text-white">
+                        <small>登入後即可開始使用新聞爬蟲系統的所有功能</small>
+                    </div>
+                </div>
             </div>
         </div>
+
     </div>
 </div>
 {% endblock %}
 
+{% block extra_css %}
+<style>
+    /* 登入頁面樣式 */
+    .login-form-container,
+    .login-info-container {
+        height: 100%;
+        position: relative;
+    }
+
+    /* 登入表單區域背景 */
+    .login-form-container {
+        background: linear-gradient(145deg, #2a2d3a, #212330);
+        border-radius: 10px 0 0 10px;
+        box-shadow: -5px 0 15px rgba(0, 0, 0, 0.2);
+    }
+
+    /* 左側資訊區域背景 */
+    .login-info-container {
+        background: linear-gradient(145deg, var(--lighter-bg), var(--darker-bg));
+        border-radius: 0 10px 10px 0;
+        overflow: visible; /* 允許內容溢出 */
+    }
+
+    /* 輸入框樣式 - 深色背景，非透明 */
+    .login-input {
+        background-color: #1a1d26 !important; /* 深色不透明背景 */
+        border-color: rgba(255, 255, 255, 0.1);
+        color: #fff !important;
+        height: calc(3.5rem + 2px);
+        padding: 1.5rem 0.75rem 0.5rem;
+    }
+
+    .login-input:focus {
+        background-color: #1a1d26 !important; /* 保持相同背景色 */
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 0.25rem rgba(23, 162, 184, 0.25);
+    }
+
+    .form-floating>label {
+        padding: 1rem 0.75rem;
+        color: rgba(255, 255, 255, 0.6);
+    }
+
+    /* 功能特點樣式 */
+    .feature-item {
+        padding: 8px 15px;
+        background-color: rgba(0, 0, 0, 0.2);
+        border-radius: 30px;
+        display: inline-block;
+        margin: 0 5px;
+    }
+
+    /* 圖片容器樣式設置 */
+    .login-image-wrapper {
+        position: relative;
+        height: 200px; /* 容器高度 */
+        overflow: visible; /* 允許內容溢出 */
+    }
+
+    .login-image-container {
+        position: absolute;
+        bottom: -50px; /* 向下溢出 */
+        right: -80px; /* 向右溢出 */
+        width: 300px;
+        height: 300px;
+        background-image: url('/static/images/login.png');
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: contain;
+        z-index: 10;
+    }
+
+    /* 按鈕動畫效果 */
+    .btn-info {
+        background: var(--gradient-primary);
+        border: none;
+        font-weight: 500;
+        letter-spacing: 0.5px;
+        transition: all 0.3s ease;
+    }
+
+    .btn-info:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+    }
+</style>
+{% endblock %}
+
 {% block extra_js %}
 <script>
-    // 登入頁面動態背景效果
-    document.addEventListener('DOMContentLoaded', function() {
-        const body = document.querySelector('body');
-        body.style.background = 'linear-gradient(-45deg, #2b5876, #4e4376, #2b5876, #4e4376)';
-        body.style.backgroundSize = '400% 400%';
-        body.style.animation = 'gradient 15s ease infinite';
-    });
-
     // 登入表單驗證
     (function() {
         'use strict';
@@ -68,17 +197,4 @@
         });
     })();
 </script>
-<style>
-    @keyframes gradient {
-        0% {
-            background-position: 0% 50%;
-        }
-        50% {
-            background-position: 100% 50%;
-        }
-        100% {
-            background-position: 0% 50%;
-        }
-    }
-</style>
 {% endblock %}

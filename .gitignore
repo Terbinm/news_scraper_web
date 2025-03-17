@@ -12,6 +12,7 @@
 /static/fonts/*.eot
 /static/fonts/*.EOT
 
+*.pyc
 # 排除數據庫文件
 db.sqlite3
 
@@ -20,3 +21,4 @@ db.sqlite3
 !/media/scraper_output/.gitkeep
 !/media/charts/.gitkeep
 !/static/fonts/.gitkeep
+

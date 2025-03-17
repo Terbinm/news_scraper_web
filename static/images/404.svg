@@ -1,0 +1,166 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600">
+  <!-- 背景漸變 -->
+  <defs>
+    <linearGradient id="bg-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0F2027"/>
+      <stop offset="50%" stop-color="#203A43"/>
+      <stop offset="100%" stop-color="#2C5364"/>
+    </linearGradient>
+
+    <!-- 六角形網格效果 -->
+    <pattern id="hexgrid" width="56" height="100" patternUnits="userSpaceOnUse">
+      <path d="M28 66L0 50L0 16L28 0L56 16L56 50L28 66L28 100" fill="none" stroke="#3498db" stroke-width="0.5" opacity="0.3"/>
+      <path d="M0 50L28 66L56 50" fill="none" stroke="#3498db" stroke-width="0.5" opacity="0.3"/>
+    </pattern>
+
+    <!-- 光暈效果 -->
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="5" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+
+    <!-- 粒子效果 -->
+    <filter id="particle" x="-50%" y="-50%" width="200%" height="200%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" result="noise"/>
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="5" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+
+    <!-- 破損效果 -->
+    <filter id="broken" x="-50%" y="-50%" width="200%" height="200%">
+      <feTurbulence type="turbulence" baseFrequency="0.05" numOctaves="2" seed="5"/>
+      <feDisplacementMap in="SourceGraphic" scale="10"/>
+    </filter>
+  </defs>
+
+  <!-- 主背景 -->
+  <rect width="800" height="600" fill="url(#bg-gradient)"/>
+  <rect width="800" height="600" fill="url(#hexgrid)"/>
+
+  <!-- 中央主圓形 -->
+  <circle cx="400" cy="300" r="120" fill="#1e88e5" opacity="0.8" filter="url(#glow)"/>
+
+  <!-- 旋轉環 -->
+  <g transform="translate(400, 300)">
+    <circle cx="0" cy="0" r="180" fill="none" stroke="#64b5f6" stroke-width="2" stroke-dasharray="10 15" opacity="0.7">
+      <animateTransform attributeName="transform" attributeType="XML" type="rotate" from="0" to="360" dur="60s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="0" cy="0" r="200" fill="none" stroke="#bbdefb" stroke-width="1" stroke-dasharray="5 10" opacity="0.5">
+      <animateTransform attributeName="transform" attributeType="XML" type="rotate" from="360" to="0" dur="90s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+
+  <!-- 數據線 -->
+  <g stroke="#4fc3f7" stroke-width="1.5" fill="none">
+    <!-- 隨機連接線 -->
+    <path d="M 400,300 L 200,150 L 300,100 L 500,200" opacity="0.6">
+      <animate attributeName="opacity" values="0.2;0.8;0.2" dur="8s" repeatCount="indefinite"/>
+    </path>
+    <path d="M 400,300 L 600,250 L 650,350 L 500,400" opacity="0.6">
+      <animate attributeName="opacity" values="0.8;0.2;0.8" dur="6s" repeatCount="indefinite"/>
+    </path>
+    <path d="M 400,300 L 250,400 L 150,350 L 300,500" opacity="0.6">
+      <animate attributeName="opacity" values="0.3;0.7;0.3" dur="7s" repeatCount="indefinite"/>
+    </path>
+  </g>
+
+  <!-- 數據節點 -->
+  <g>
+    <circle cx="200" cy="150" r="8" fill="#03a9f4" opacity="0.8" filter="url(#glow)">
+      <animate attributeName="r" values="6;10;6" dur="3s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="300" cy="100" r="5" fill="#03a9f4" opacity="0.8" filter="url(#glow)">
+      <animate attributeName="r" values="4;8;4" dur="4s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="500" cy="200" r="7" fill="#03a9f4" opacity="0.8" filter="url(#glow)">
+      <animate attributeName="r" values="5;9;5" dur="2.5s" repeatCount="indefinite"/>
+    </circle>
+
+    <circle cx="600" cy="250" r="6" fill="#03a9f4" opacity="0.8" filter="url(#glow)">
+      <animate attributeName="r" values="4;8;4" dur="3.5s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="650" cy="350" r="5" fill="#03a9f4" opacity="0.8" filter="url(#glow)">
+      <animate attributeName="r" values="3;7;3" dur="4.5s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="500" cy="400" r="8" fill="#03a9f4" opacity="0.8" filter="url(#glow)">
+      <animate attributeName="r" values="6;10;6" dur="2.8s" repeatCount="indefinite"/>
+    </circle>
+
+    <circle cx="250" cy="400" r="7" fill="#03a9f4" opacity="0.8" filter="url(#glow)">
+      <animate attributeName="r" values="5;9;5" dur="3.2s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="150" cy="350" r="5" fill="#03a9f4" opacity="0.8" filter="url(#glow)">
+      <animate attributeName="r" values="3;7;3" dur="4.2s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="300" cy="500" r="6" fill="#03a9f4" opacity="0.8" filter="url(#glow)">
+      <animate attributeName="r" values="4;8;4" dur="3.8s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+
+  <!-- 粒子系統 -->
+  <g filter="url(#particle)">
+    <circle cx="350" cy="250" r="3" fill="#e1f5fe" opacity="0.6"/>
+    <circle cx="420" cy="220" r="2" fill="#e1f5fe" opacity="0.5"/>
+    <circle cx="380" cy="270" r="2.5" fill="#e1f5fe" opacity="0.7"/>
+    <circle cx="450" cy="260" r="2" fill="#e1f5fe" opacity="0.6"/>
+    <circle cx="360" cy="320" r="3" fill="#e1f5fe" opacity="0.5"/>
+    <circle cx="430" cy="350" r="2.5" fill="#e1f5fe" opacity="0.7"/>
+    <circle cx="390" cy="370" r="2" fill="#e1f5fe" opacity="0.6"/>
+    <circle cx="440" cy="330" r="3" fill="#e1f5fe" opacity="0.5"/>
+  </g>
+
+  <!-- 數碼化文字/標記 -->
+  <g font-family="'Courier New', monospace" fill="#b3e5fc" opacity="0.7">
+    <text x="180" cy="140" font-size="8">DATA.SYS</text>
+    <text x="280" cy="95" font-size="7">NET.0xFF</text>
+    <text x="490" cy="190" font-size="9">AI.CORE</text>
+    <text x="590" cy="240" font-size="8">SYNC.10x</text>
+    <text x="640" cy="360" font-size="7">NODE.42</text>
+    <text x="490" cy="410" font-size="8">PROC.VRT</text>
+    <text x="240" cy="410" font-size="7">MEM.ALG</text>
+    <text x="140" cy="340" font-size="8">QBIT.SIM</text>
+    <text x="290" cy="510" font-size="9">SYS.LOOP</text>
+  </g>
+
+  <!-- 六邊形裝飾 -->
+  <g fill="none" stroke="#29b6f6" stroke-width="1" opacity="0.4">
+    <path d="M400,200 L430,215 L430,245 L400,260 L370,245 L370,215 Z">
+      <animateTransform attributeName="transform" attributeType="XML" type="rotate" from="0 400 300" to="360 400 300" dur="30s" repeatCount="indefinite"/>
+    </path>
+    <path d="M400,180 L440,200 L440,240 L400,260 L360,240 L360,200 Z">
+      <animateTransform attributeName="transform" attributeType="XML" type="rotate" from="360 400 300" to="0 400 300" dur="40s" repeatCount="indefinite"/>
+    </path>
+    <path d="M400,160 L450,190 L450,250 L400,280 L350,250 L350,190 Z">
+      <animateTransform attributeName="transform" attributeType="XML" type="rotate" from="0 400 300" to="360 400 300" dur="50s" repeatCount="indefinite"/>
+    </path>
+  </g>
+
+  <!-- 半透明圓形光暈 -->
+  <circle cx="400" cy="300" r="250" fill="url(#bg-gradient)" opacity="0.1"/>
+
+  <!-- 中央相機破損效果 -->
+  <g transform="translate(400, 300)" filter="url(#broken)">
+    <!-- 相機鏡頭外框 -->
+    <circle cx="0" cy="0" r="60" fill="none" stroke="#64b5f6" stroke-width="3"/>
+
+    <!-- 破裂的鏡頭 -->
+    <path d="M0,0 L-50,-30 M0,0 L30,-40 M0,0 L50,20 M0,0 L-30,50 M0,0 L10,45" stroke="#e1f5fe" stroke-width="2"/>
+
+    <!-- 破損的光圈 -->
+    <path d="M-30,-30 A42.4 42.4 0 0 1 30,-30" fill="none" stroke="#e1f5fe" stroke-width="1.5" stroke-dasharray="5 8"/>
+    <path d="M30,30 A42.4 42.4 0 0 1 -30,30" fill="none" stroke="#e1f5fe" stroke-width="1.5" stroke-dasharray="3 6"/>
+
+    <!-- 雜訊效果 -->
+    <g opacity="0.5">
+      <rect x="-25" y="-15" width="10" height="5" fill="#e1f5fe"/>
+      <rect x="15" y="10" width="8" height="4" fill="#e1f5fe"/>
+      <rect x="-10" y="20" width="15" height="3" fill="#e1f5fe"/>
+    </g>
+  </g>
+
+  <!-- 底部圖片找不到文字 -->
+  <g transform="translate(400, 300)">
+    <rect x="-120" y="-25" width="240" height="50" rx="5" ry="5" fill="#102027" stroke="#3498db" stroke-width="1" opacity="0.7"/>
+    <text x="0" y="14" font-family="Arial, sans-serif" font-size="36" fill="#e1f5fe" text-anchor="middle">圖片找不到</text>
+
+  </g>
+</svg>

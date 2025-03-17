@@ -315,7 +315,7 @@
                     <div class="row align-items-end">
                         <div class="col-md-8 mb-3">
                             <label for="id_limit" class="form-label">顯示關鍵詞數量: <span id="limitValue">{{ form.limit.value|default:"20" }}</span></label>
-                            <input type="range" class="form-range" name="limit" id="id_limit" min="5" max="1076" step="1" value="{{ form.limit.value|default:"20" }}">
+                            <input type="range" class="form-range" name="limit" id="id_limit" min="5" max="100" step="1" value="{{ form.limit.value|default:"20" }}">
                         </div>
                         <div class="col-md-4 text-md-end mb-3">
                             <button type="submit" class="btn btn-info">

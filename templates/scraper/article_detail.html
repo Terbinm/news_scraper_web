@@ -36,33 +36,21 @@
                     {{ article.content|linebreaks }}
                 </div>
                 
-                {% if article.photo_links %}
-                <div class="mt-4 pt-3 border-top border-secondary">
+                <!-- 圖片區塊 - 由JavaScript動態生成 -->
+                <div class="mt-4 pt-3 border-top border-secondary" id="photoSection">
                     <h5 class="mb-3 text-info">
                         <i class="bi bi-images me-2"></i>文章圖片
                     </h5>
-                    <div class="row">
-                        {% with photo_links=article.photo_links|safe %}
-                            {% for link in photo_links %}
-                            <div class="col-md-4 mb-3">
-                                <div class="card bg-dark">
-                                    <img src="{{ link }}" class="card-img-top img-fluid" alt="新聞圖片">
-                                    <div class="card-footer text-center">
-                                        <a href="{{ link }}" target="_blank" class="btn btn-sm btn-outline-info">
-                                            <i class="bi bi-arrows-fullscreen me-1"></i>查看原圖
-                                        </a>
-                                    </div>
-                                </div>
+                    <div class="row" id="articlePhotos">
+                        <!-- 圖片將由JavaScript動態加載 -->
+                        <div class="col-12 text-center text-white" id="photoPlaceholder">
+                            <div class="spinner-border text-info" role="status">
+                                <span class="visually-hidden">加載中...</span>
                             </div>
-                            {% empty %}
-                            <div class="col-12 text-center text-white">
-                                <i class="bi bi-card-image me-1"></i>沒有可顯示的圖片
-                            </div>
-                            {% endfor %}
-                        {% endwith %}
+                            <p class="mt-2">加載圖片中...</p>
+                        </div>
                     </div>
                 </div>
-                {% endif %}
             </div>
         </div>
     </div>
@@ -123,32 +111,112 @@
     $(document).ready(function() {
         // 處理圖片連結
         try {
-            // 如果photo_links是JSON字串，嘗試解析
             {% if article.photo_links %}
-                const photoLinks = JSON.parse('{{ article.photo_links|escapejs }}');
+                let photoLinksData = '{{ article.photo_links|escapejs }}';
+                let photoLinks = [];
+
+                // 嘗試解析JSON
+                try {
+                    photoLinks = JSON.parse(photoLinksData);
+                } catch (jsonError) {
+                    console.error('JSON解析失敗，嘗試其他方式:', jsonError);
+
+                    // 可能是字符串形式的數組，嘗試進行清理和解析
+                    if (photoLinksData.startsWith('[') && photoLinksData.endsWith(']')) {
+                        // 移除可能導致解析錯誤的轉義字符
+                        let cleanedData = photoLinksData
+                            .replace(/\\"/g, '"')  // 將 \" 替換為 "
+                            .replace(/\\\\/g, '\\'); // 將 \\ 替換為 \
+
+                        try {
+                            photoLinks = JSON.parse(cleanedData);
+                        } catch (e) {
+                            console.error('清理後JSON解析仍失敗:', e);
+
+                            // 最後嘗試手動分割字符串
+                            if (photoLinksData.includes(',')) {
+                                photoLinks = photoLinksData
+                                    .replace(/\[|\]|"/g, '')  // 移除 [, ], 和 "
+                                    .split(',')
+                                    .map(link => link.trim())
+                                    .filter(link => link && link.length > 5);  // 過濾空值和過短的字符串
+                            } else if (photoLinksData.length > 5) {
+                                // 可能只有一個連結
+                                photoLinks = [photoLinksData.replace(/\[|\]|"/g, '').trim()];
+                            }
+                        }
+                    }
+                }
+
+                // 顯示圖片
                 if (Array.isArray(photoLinks) && photoLinks.length > 0) {
-                    let photoHtml = '';
-                    
-                    photoLinks.forEach(function(link) {
-                        photoHtml += `
-                            <div class="col-md-4 mb-3">
-                                <div class="card bg-dark">
-                                    <img src="${link}" class="card-img-top img-fluid" alt="新聞圖片">
-                                    <div class="card-footer text-center">
-                                        <a href="${link}" target="_blank" class="btn btn-sm btn-outline-info">
-                                            <i class="bi bi-arrows-fullscreen me-1"></i>查看原圖
-                                        </a>
+                    // 過濾掉無效的連結
+                    photoLinks = photoLinks.filter(link => {
+                        return link && typeof link === 'string' &&
+                               (link.startsWith('http') || link.startsWith('data:image'));
+                    });
+
+                    if (photoLinks.length > 0) {
+                        let photoHtml = '';
+
+                        photoLinks.forEach(function(link) {
+                            photoHtml += `
+                                <div class="col-md-4 mb-3">
+                                    <div class="card bg-dark">
+                                        <img src="${link}" class="card-img-top img-fluid" alt="新聞圖片" onerror="this.onerror=null; this.src='/static/images/404.svg'; this.alt='圖片載入失敗';">
+                                        <div class="card-footer text-center">
+                                            <a href="${link}" target="_blank" class="btn btn-sm btn-outline-info">
+                                                <i class="bi bi-arrows-fullscreen me-1"></i>查看原圖
+                                            </a>
+                                        </div>
                                     </div>
                                 </div>
+                            `;
+                        });
+
+                        $('#articlePhotos').html(photoHtml);
+                    } else {
+                        $('#photoSection').html(`
+                            <h5 class="mb-3 text-info">
+                                <i class="bi bi-images me-2"></i>文章圖片
+                            </h5>
+                            <div class="alert alert-info">
+                                <i class="bi bi-info-circle me-2"></i>此文章沒有可顯示的圖片
                             </div>
-                        `;
-                    });
-                    
-                    $('.article-photos').html(photoHtml);
+                        `);
+                    }
+                } else {
+                    // 沒有圖片
+                    $('#photoSection').html(`
+                        <h5 class="mb-3 text-info">
+                            <i class="bi bi-images me-2"></i>文章圖片
+                        </h5>
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle me-2"></i>此文章沒有可顯示的圖片
+                        </div>
+                    `);
                 }
+            {% else %}
+                // 沒有圖片連結
+                $('#photoSection').html(`
+                    <h5 class="mb-3 text-info">
+                        <i class="bi bi-images me-2"></i>文章圖片
+                    </h5>
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-2"></i>此文章沒有可顯示的圖片
+                    </div>
+                `);
             {% endif %}
         } catch (e) {
-            console.error('解析圖片連結時出錯:', e);
+            console.error('處理圖片時出錯:', e);
+            $('#photoSection').html(`
+                <h5 class="mb-3 text-info">
+                    <i class="bi bi-images me-2"></i>文章圖片
+                </h5>
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-triangle me-2"></i>處理圖片時出錯
+                </div>
+            `);
         }
     });
 </script>
