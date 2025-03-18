@@ -6,7 +6,7 @@
 {% block content %}
 <!-- 水平雙欄登入容器 -->
 <div class="row justify-content-center align-items-center py-3 py-md-5">
-    <div class="row g-0 w-100" style="max-width: 1000px;">
+    <div class="row g-0 w-100" style="max-width: 750px;">
         <!-- 左側資訊區域 -->
         <div class="col-md-6 d-none d-md-block">
             <div class="login-info-container p-4 p-md-5 text-center" data-aos="fade-left">
@@ -43,12 +43,12 @@
                 </h2>
                 <p class="text-light mb-4">請輸入您的帳號密碼以進入新聞爬蟲系統</p>
 
-                <form method="post" class="needs-validation" novalidate>
+                <form method="post" class="needs-validation" novalidate id="loginForm">
                     {% csrf_token %}
 
                     <div class="mb-4">
                         <div class="form-floating">
-                            <input type="text" class="form-control login-input"
+                            <input type="text" class="form-control login-input" data-decode="false"
                                    id="{{ form.username.id_for_label }}" name="username"
                                    placeholder="請輸入用戶名" required>
                             <label for="{{ form.username.id_for_label }}">
@@ -60,7 +60,7 @@
 
                     <div class="mb-4">
                         <div class="form-floating">
-                            <input type="password" class="form-control login-input"
+                            <input type="password" class="form-control login-input" data-decode="false"
                                    id="{{ form.password.id_for_label }}" name="password"
                                    placeholder="請輸入密碼" required>
                             <label for="{{ form.password.id_for_label }}">
@@ -70,16 +70,19 @@
                         <div class="invalid-feedback">請輸入密碼</div>
                     </div>
 
-                    <div class="mt-5">
-                        <button type="submit" class="btn btn-info btn-lg text-white w-100">
+                    <div class="mt-5 position-relative">
+                        <button type="submit" class="btn btn-info btn-lg text-white w-100" id="loginButton">
                             <i class="bi bi-box-arrow-in-right me-2"></i>登入系統
                         </button>
+                        <p id="rubbingText" class="text-warning position-absolute" style="display: none; top: -25px; width: 100%; text-align: center;">
+                            請先完整填寫表單！
+                        </p>
                     </div>
                 </form>
 
                 <div class="mt-4 text-center">
                     <div class="card-body-footer text-white">
-                        <small>登入後即可開始使用新聞爬蟲系統的所有功能</small>
+                        <small>登入後即可開始使用新聞爬蟲系統功能</small>
                     </div>
                 </div>
             </div>
@@ -119,12 +122,18 @@
         color: #fff !important;
         height: calc(3.5rem + 2px);
         padding: 1.5rem 0.75rem 0.5rem;
+        transition: all 0.3s ease;
     }
 
     .login-input:focus {
         background-color: #1a1d26 !important; /* 保持相同背景色 */
         border-color: var(--primary-color);
         box-shadow: 0 0 0 0.25rem rgba(23, 162, 184, 0.25);
+    }
+
+    .login-input.active {
+        border-color: #17a2b8;
+        box-shadow: 0 0 10px rgba(23, 162, 184, 0.5);
     }
 
     .form-floating>label {
@@ -150,10 +159,10 @@
 
     .login-image-container {
         position: absolute;
-        bottom: -50px; /* 向下溢出 */
-        right: -80px; /* 向右溢出 */
-        width: 300px;
-        height: 300px;
+        bottom: -180px; /* 向下溢出 */
+        right: 120px; /* 向右溢出 */
+        width: 450px;
+        height: 450px;
         background-image: url('/static/images/login.png');
         background-position: center;
         background-repeat: no-repeat;
@@ -174,27 +183,150 @@
         transform: translateY(-3px);
         box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
     }
+
+    /* 調皮按鈕效果 */
+    #loginButton {
+        transition: all 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+        position: relative;
+        z-index: 1;
+    }
+
+    #loginButton.run-away {
+        opacity: 0.8;
+    }
+
+    #rubbingText {
+        font-weight: bold;
+        text-shadow: 0 0 5px rgba(255, 193, 7, 0.5);
+    }
 </style>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-    // 登入表單驗證
-    (function() {
-        'use strict';
+    document.addEventListener('DOMContentLoaded', function() {
+        // 字符集定義 - 用於解碼效果
+        const charset = 'ᚠᚢᚦᚨᚱᚳᚷᚹᚻᚾᛁᛂᛇᛈᛉᛊᛏᛒᛖᛗᛚᛝᛟᛡᛢᛣᛤᛥᛦᛧᛨ';
 
-        const forms = document.querySelectorAll('.needs-validation');
+        // 調皮按鈕相關元素
+        const loginButton = document.getElementById('loginButton');
+        const rubbingText = document.getElementById('rubbingText');
+        const form = document.getElementById('loginForm');
+        const usernameInput = document.getElementById('id_username');
+        const passwordInput = document.getElementById('id_password');
 
-        Array.from(forms).forEach(form => {
-            form.addEventListener('submit', event => {
-                if (!form.checkValidity()) {
-                    event.preventDefault();
-                    event.stopPropagation();
-                }
+        // 解碼輸入框效果
+        const decodingInputs = document.querySelectorAll('[data-decode="true"]');
 
-                form.classList.add('was-validated');
-            }, false);
+        // 為每個解碼輸入框添加事件監聽
+        decodingInputs.forEach(input => {
+            input.addEventListener('input', handleInput);
+            input.addEventListener('focus', function() {
+                this.classList.add('active');
+            });
         });
-    })();
+
+        // 檢查表單完整性
+        function isFormComplete() {
+            return usernameInput.value.trim() !== '' && passwordInput.value.trim() !== '';
+        }
+
+        // 調皮按鈕鼠標移入效果
+        loginButton.addEventListener('mouseover', function(e) {
+            if (!isFormComplete()) {
+                // 計算鼠標位置與按鈕中心的方向向量
+                const rect = this.getBoundingClientRect();
+                const buttonCenterX = rect.left + rect.width / 2;
+                const buttonCenterY = rect.top + rect.height / 2;
+
+                const mouseX = e.clientX;
+                const mouseY = e.clientY;
+
+                // 計算方向向量
+                let dirX = mouseX - buttonCenterX;
+                let dirY = mouseY - buttonCenterY;
+
+                // 標準化向量
+                const length = Math.sqrt(dirX * dirX + dirY * dirY);
+                dirX = dirX / length;
+                dirY = dirY / length;
+
+                // 計算移動距離 (按鈕尺寸的1.5倍)
+                const moveDistance = Math.max(rect.width, rect.height) * 1.5;
+
+                // 計算新位置
+                const newX = -dirX * moveDistance;
+                const newY = -dirY * moveDistance;
+
+                // 移動按鈕
+                this.style.transform = `translate(${newX}px, ${newY}px)`;
+                this.classList.add('run-away');
+
+                // 顯示提示文字
+                rubbingText.style.display = 'block';
+
+                // 定時返回原位置
+                setTimeout(() => {
+                    this.style.transform = 'translate(0, 0)';
+                    this.classList.remove('run-away');
+                    rubbingText.style.display = 'none';
+                }, 2000);
+            }
+        });
+
+        // 處理表單提交
+        form.addEventListener('submit', function(e) {
+            if (!isFormComplete()) {
+                e.preventDefault();
+                rubbingText.style.display = 'block';
+                setTimeout(() => {
+                    rubbingText.style.display = 'none';
+                }, 2000);
+            }
+        });
+
+        // 處理輸入事件 - 實現解碼效果
+        function handleInput(e) {
+            const input = e.target;
+            const value = input.value;
+
+            // 獲取輸入的最後一個字符
+            if (value.length > 0) {
+                const lastChar = value[value.length - 1];
+
+                // 創建解碼動畫
+                decodeChar(lastChar, input);
+            }
+        }
+
+        // 實現字符解碼動畫
+        function decodeChar(char, inputElement) {
+            // 創建10次隨機字符變化
+            let iterations = 0;
+            const maxIterations = 10;
+            const interval = 30; // 每次變化的間隔 (毫秒)
+
+            // 設置定時器進行字符變化
+            const timer = setInterval(() => {
+                // 生成隨機字符
+                const randomChar = charset[Math.floor(Math.random() * charset.length)];
+
+                // 將最後一個字符替換為隨機字符 (模擬解碼效果)
+                const inputValue = inputElement.value;
+                const newValue = inputValue.substring(0, inputValue.length - 1) + randomChar;
+
+                // 更新輸入框值
+                inputElement.value = newValue;
+
+                iterations++;
+
+                // 達到最大迭代次數後，恢復原始字符
+                if (iterations >= maxIterations) {
+                    clearInterval(timer);
+                    inputElement.value = inputValue; // 恢復原始輸入值
+                }
+            }, interval);
+        }
+    });
 </script>
 {% endblock %}
