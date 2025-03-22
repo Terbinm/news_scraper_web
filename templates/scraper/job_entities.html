@@ -421,9 +421,9 @@
 
         // 初始化類別標籤篩選
         initTagFilters({
-            // 所有標籤
+            // 類別標籤選擇器
             tagSelector: '.filter-tag:has(.category-checkbox)',
-            // 類別標籤
+            // 類別複選框選擇器
             categoryTagSelector: '.category-checkbox',
             // 全選和取消全選按鈕
             selectAllBtnId: 'selectAllCategories',
@@ -433,11 +433,28 @@
             crossCategoryContainerId: 'crossCategorySwitch'
         });
 
-        // 初始化實體類型標籤篩選
-        initTagFilters({
-            tagSelector: '.filter-tag:has(.entity-type-checkbox)',
-            selectAllBtnId: 'selectAllEntityTypes',
-            deselectAllBtnId: 'deselectAllEntityTypes'
+        // 實體類型篩選按鈕處理
+        $('#selectAllEntityTypes').click(function() {
+            $('.entity-type-checkbox').prop('checked', true);
+            $('.filter-tag:has(.entity-type-checkbox)').addClass('active');
+        });
+
+        $('#deselectAllEntityTypes').click(function() {
+            $('.entity-type-checkbox').prop('checked', false);
+            $('.filter-tag:has(.entity-type-checkbox)').removeClass('active');
+        });
+
+        // 實體類型標籤點擊事件
+        $('.filter-tag:has(.entity-type-checkbox)').click(function(e) {
+            e.preventDefault();
+            const checkbox = $(this).find('.entity-type-checkbox');
+            checkbox.prop('checked', !checkbox.prop('checked'));
+            $(this).toggleClass('active', checkbox.prop('checked'));
+        });
+
+        // 初始化已選擇的實體類型標籤
+        $('.entity-type-checkbox:checked').each(function() {
+            $(this).closest('.filter-tag').addClass('active');
         });
 
         // 命名實體類別分布詳情

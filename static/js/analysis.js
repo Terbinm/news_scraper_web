@@ -248,7 +248,7 @@ function initSelectAll(selectAllId, targetName) {
 }
 
 /**
- * 標籤篩選控制器 - 新版本
+ * 標籤篩選控制器 - 修正版本
  * 處理各種類型標籤（類別、詞性、實體類型）的選擇與UI狀態
  * @param {Object} options - 設定選項
  */
@@ -274,6 +274,11 @@ function initTagFilters(options) {
     // 獲取所有標籤元素
     const allTags = document.querySelectorAll(settings.tagSelector);
 
+    if (allTags.length === 0) {
+        console.warn(`標籤選擇器 "${settings.tagSelector}" 未找到任何元素`);
+        return; // 如果沒有找到元素，提前結束函數
+    }
+
     // 處理所有標籤的點擊事件
     allTags.forEach(tag => {
         // 移除現有的事件監聽器，防止重複綁定
@@ -287,7 +292,10 @@ function initTagFilters(options) {
 
             // 找到與標籤關聯的複選框
             const checkbox = this.querySelector('input[type="checkbox"]');
-            if (!checkbox) return;
+            if (!checkbox) {
+                console.warn('標籤內未找到複選框');
+                return;
+            }
 
             // 切換複選框狀態
             checkbox.checked = !checkbox.checked;
@@ -310,69 +318,91 @@ function initTagFilters(options) {
         const checkbox = newTag.querySelector('input[type="checkbox"]');
         if (checkbox && checkbox.checked) {
             newTag.classList.add('active');
-        } else {
+        } else if (checkbox) {
             newTag.classList.remove('active');
         }
     });
 
     // 全選按鈕
     if (settings.selectAllBtnId) {
-        document.getElementById(settings.selectAllBtnId).addEventListener('click', function() {
-            // 找到所有相關的複選框並設置為選中
-            const checkboxes = document.querySelectorAll(
-                settings.categoryTagSelector || `${settings.tagSelector} input[type="checkbox"]`
-            );
-            checkboxes.forEach(checkbox => {
-                checkbox.checked = true;
-                checkbox.closest(settings.tagSelector).classList.add('active');
+        const selectAllBtn = document.getElementById(settings.selectAllBtnId);
+        if (selectAllBtn) {
+            selectAllBtn.addEventListener('click', function() {
+                // 找到所有相關的複選框並設置為選中
+                const checkboxSelector = settings.categoryTagSelector ||
+                    `${settings.tagSelector} input[type="checkbox"]`;
+
+                const checkboxes = document.querySelectorAll(checkboxSelector);
+
+                checkboxes.forEach(checkbox => {
+                    checkbox.checked = true;
+                    const parentTag = checkbox.closest(settings.tagSelector);
+                    if (parentTag) {
+                        parentTag.classList.add('active');
+                    }
+                });
+
+                // 檢查跨類別可用性
+                if (settings.crossCategoryId) {
+                    checkCrossCategoryAvailability();
+                }
+
+                // 如果有回調函數，則調用
+                if (typeof settings.onSelectionChange === 'function') {
+                    settings.onSelectionChange();
+                }
             });
-
-            // 檢查跨類別可用性
-            if (settings.crossCategoryId) {
-                checkCrossCategoryAvailability();
-            }
-
-            // 如果有回調函數，則調用
-            if (typeof settings.onSelectionChange === 'function') {
-                settings.onSelectionChange();
-            }
-        });
+        } else {
+            console.warn(`全選按鈕ID "${settings.selectAllBtnId}" 未找到對應元素`);
+        }
     }
 
     // 取消全選按鈕
     if (settings.deselectAllBtnId) {
-        document.getElementById(settings.deselectAllBtnId).addEventListener('click', function() {
-            // 找到所有相關的複選框並設置為未選中
-            const checkboxes = document.querySelectorAll(
-                settings.categoryTagSelector || `${settings.tagSelector} input[type="checkbox"]`
-            );
-            checkboxes.forEach(checkbox => {
-                checkbox.checked = false;
-                checkbox.closest(settings.tagSelector).classList.remove('active');
+        const deselectAllBtn = document.getElementById(settings.deselectAllBtnId);
+        if (deselectAllBtn) {
+            deselectAllBtn.addEventListener('click', function() {
+                // 找到所有相關的複選框並設置為未選中
+                const checkboxSelector = settings.categoryTagSelector ||
+                    `${settings.tagSelector} input[type="checkbox"]`;
+
+                const checkboxes = document.querySelectorAll(checkboxSelector);
+
+                checkboxes.forEach(checkbox => {
+                    checkbox.checked = false;
+                    const parentTag = checkbox.closest(settings.tagSelector);
+                    if (parentTag) {
+                        parentTag.classList.remove('active');
+                    }
+                });
+
+                // 檢查跨類別可用性
+                if (settings.crossCategoryId) {
+                    checkCrossCategoryAvailability();
+                }
+
+                // 如果有回調函數，則調用
+                if (typeof settings.onSelectionChange === 'function') {
+                    settings.onSelectionChange();
+                }
             });
-
-            // 檢查跨類別可用性
-            if (settings.crossCategoryId) {
-                checkCrossCategoryAvailability();
-            }
-
-            // 如果有回調函數，則調用
-            if (typeof settings.onSelectionChange === 'function') {
-                settings.onSelectionChange();
-            }
-        });
+        } else {
+            console.warn(`取消全選按鈕ID "${settings.deselectAllBtnId}" 未找到對應元素`);
+        }
     }
 
     // 檢查跨類別分析可用性
     function checkCrossCategoryAvailability() {
         if (!settings.crossCategoryId) return;
 
+        const crossCategoryCheckbox = document.getElementById(settings.crossCategoryId);
+        if (!crossCategoryCheckbox) {
+            console.warn(`跨類別切換ID "${settings.crossCategoryId}" 未找到對應元素`);
+            return;
+        }
+
         const categoryCheckboxes = document.querySelectorAll(settings.categoryTagSelector);
         const selectedCount = Array.from(categoryCheckboxes).filter(cb => cb.checked).length;
-
-        // 獲取跨類別切換元素
-        const crossCategoryCheckbox = document.getElementById(settings.crossCategoryId);
-        if (!crossCategoryCheckbox) return;
 
         // 如果選擇的類別數量為1或0，禁用跨類別分析
         if (selectedCount <= 1) {
@@ -381,14 +411,20 @@ function initTagFilters(options) {
 
             // 如果指定了容器，則添加禁用樣式
             if (settings.crossCategoryContainerId) {
-                document.getElementById(settings.crossCategoryContainerId).classList.add('text-muted');
+                const container = document.getElementById(settings.crossCategoryContainerId);
+                if (container) {
+                    container.classList.add('text-muted');
+                }
             }
         } else {
             crossCategoryCheckbox.disabled = false;
 
             // 如果指定了容器，則移除禁用樣式
             if (settings.crossCategoryContainerId) {
-                document.getElementById(settings.crossCategoryContainerId).classList.remove('text-muted');
+                const container = document.getElementById(settings.crossCategoryContainerId);
+                if (container) {
+                    container.classList.remove('text-muted');
+                }
             }
         }
     }
