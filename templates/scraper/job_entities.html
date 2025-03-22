@@ -24,9 +24,85 @@
         box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
     }
 
-    /* 實體詳情按鈕樣式 */
-    .entity-detail-btn.active {
-        background-color: rgba(23, 162, 184, 0.2);
+    /* 命名實體標記樣式 */
+    .entity-type-PERSON {
+        background-color: rgba(255, 99, 132, 0.7);
+        border: 1px solid rgba(255, 99, 132, 1);
+    }
+
+    .entity-type-LOC {
+        background-color: rgba(54, 162, 235, 0.7);
+        border: 1px solid rgba(54, 162, 235, 1);
+    }
+
+    .entity-type-ORG {
+        background-color: rgba(255, 206, 86, 0.7);
+        border: 1px solid rgba(255, 206, 86, 1);
+    }
+
+    .entity-type-TIME {
+        background-color: rgba(75, 192, 192, 0.7);
+        border: 1px solid rgba(75, 192, 192, 1);
+    }
+
+    .entity-type-MISC {
+        background-color: rgba(153, 102, 255, 0.7);
+        border: 1px solid rgba(153, 102, 255, 1);
+    }
+
+    /* 篩選按鈕特效 */
+    #selectAllCategories, #deselectAllCategories, #selectAllEntityTypes, #deselectAllEntityTypes {
+        transition: all 0.3s ease;
+    }
+
+    #selectAllCategories:hover, #deselectAllCategories:hover, #selectAllEntityTypes:hover, #deselectAllEntityTypes:hover {
+        transform: translateY(-2px);
+    }
+
+    /* 強化篩選標籤選中效果 */
+    .filter-tag {
+        display: inline-block;
+        padding: 0.4rem 0.8rem;
+        border-radius: 20px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        opacity: 0.7;
+        position: relative;
+        border: 2px solid transparent;
+    }
+
+    .filter-tag:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        opacity: 1;
+    }
+
+    .filter-tag.active {
+        opacity: 1;
+        border: 2px solid #fff;
+        box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+    }
+
+    /* 添加選中指示器 */
+    .filter-tag.active::after {
+        content: "✓";
+        position: absolute;
+        top: -8px;
+        right: -3px;
+        background-color: #17a2b8;
+        color: white;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        font-size: 11px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .filter-tag input[type="checkbox"] {
+        display: none;
     }
 </style>
 {% endblock %}
@@ -62,43 +138,59 @@
                         <h6 class="mb-0 text-info">
                             <i class="bi bi-tag-fill me-2"></i>選擇要分析的新聞類別
                         </h6>
-                        <div class="form-check form-switch ms-2">
+                        <div class="form-check form-switch ms-2" id="crossCategorySwitch">
                             {{ form.cross_category }}
                             <label class="form-check-label" for="id_cross_category">啟用跨類別統計</label>
                         </div>
                     </div>
 
                     <div id="categoriesSelectionArea">
-                        <div class="row">
-                            <div class="col-12 mb-2">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="selectAllCategories">
-                                    <label class="form-check-label" for="selectAllCategories">
-                                        <strong>全選/取消全選</strong>
-                                    </label>
-                                </div>
-                            </div>
-                            {% for choice_val, choice_label in form.fields.selected_categories.choices %}
-                            <div class="col-md-4 mb-2">
-                                <div class="form-check">
-                                    <input class="form-check-input category-checkbox" type="checkbox"
-                                           name="selected_categories" value="{{ choice_val }}"
-                                           id="category_{{ choice_val }}"
-                                           {% if choice_val in form.selected_categories.value %}checked{% endif %}>
-                                    <label class="form-check-label category-label" for="category_{{ choice_val }}">
-                                        {{ choice_label }}
-                                    </label>
-                                </div>
-                            </div>
+                        <div class="d-flex flex-wrap" id="categoryTags">
+                            {% for category in available_categories %}
+                            <label class="filter-tag me-2 mb-2" style="background-color: {{ category_colors|get_item:category|get_item:'bg' }}; border: 1px solid {{ category_colors|get_item:category|get_item:'border' }}">
+                                <input class="form-check-input category-checkbox" type="checkbox"
+                                       name="selected_categories" value="{{ category }}"
+                                       id="category_{{ category }}"
+                                       {% if category in form.selected_categories.value %}checked{% endif %}>
+                                {{ category }}
+                            </label>
                             {% endfor %}
+                        </div>
+                        <div class="mt-2">
+                            <button type="button" class="btn btn-sm btn-outline-info" id="selectAllCategories">
+                                <i class="bi bi-check-all me-1"></i>全選
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" id="deselectAllCategories">
+                                <i class="bi bi-x-lg me-1"></i>取消全選
+                            </button>
                         </div>
                     </div>
                 </div>
             </div>
 
             <div class="row">
+                <!-- 實體類型選擇區域 - 標籤式選擇器 -->
                 <div class="col-md-6 mb-3">
-                    {{ form.entity_type|as_crispy_field }}
+                    <label for="entityTypeSelection" class="form-label text-info">
+                        <i class="bi bi-tag-fill me-2"></i>實體類型篩選
+                    </label>
+                    <div id="entityTypeSelection" class="d-flex flex-wrap">
+                        {% for entity_type in available_entity_types %}
+                        <label class="filter-tag me-2 mb-2" style="background-color: {{ entity_type_colors|get_item:entity_type|get_item:'bg' }}; border: 1px solid {{ entity_type_colors|get_item:entity_type|get_item:'border' }}">
+                            <input type="checkbox" name="entity_type" value="{{ entity_type }}"
+                                   class="entity-type-checkbox" {% if entity_type in selected_entity_types %}checked{% endif %}>
+                            {{ entity_type_names|get_item:entity_type|default:entity_type }}
+                        </label>
+                        {% endfor %}
+                    </div>
+                    <div class="mt-2">
+                        <button type="button" class="btn btn-sm btn-outline-info" id="selectAllEntityTypes">
+                            <i class="bi bi-check-all me-1"></i>全選實體類型
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" id="deselectAllEntityTypes">
+                            <i class="bi bi-x-lg me-1"></i>取消全選
+                        </button>
+                    </div>
                 </div>
                 <div class="col-md-6 mb-3">
                     {{ form.min_frequency|as_crispy_field }}
@@ -319,11 +411,56 @@
         // 初始化數據表格
         initializeDataTable('entitiesTable');
 
+        // 匯出CSV
+        $('#exportEntitiesBtn').click(function() {
+            exportTableToCSV('entitiesTable', '命名實體分析.csv');
+        });
+
         // 顯示滑桿值
         bindRangeValue('id_limit', 'limitValue');
 
-        // 全選/取消全選類別
-        initSelectAll('selectAllCategories', 'selected_categories');
+        // 標籤選擇效果
+        $('.filter-tag').click(function() {
+            const checkbox = $(this).find('input[type="checkbox"]');
+            checkbox.prop('checked', !checkbox.prop('checked'));
+            $(this).toggleClass('active');
+
+            // 如果這是類別複選框，檢查跨類別可用性
+            if ($(checkbox).hasClass('category-checkbox')) {
+                checkCrossCategoryAvailability();
+            }
+        });
+
+        // 初始化設置已選擇的標籤
+        $('.filter-tag input:checked').each(function() {
+            $(this).closest('.filter-tag').addClass('active');
+        });
+
+        // 類別全選按鈕
+        $('#selectAllCategories').click(function() {
+            $('.category-checkbox').prop('checked', true);
+            $('.category-checkbox').closest('.filter-tag').addClass('active');
+            checkCrossCategoryAvailability();
+        });
+
+        // 類別取消全選按鈕
+        $('#deselectAllCategories').click(function() {
+            $('.category-checkbox').prop('checked', false);
+            $('.category-checkbox').closest('.filter-tag').removeClass('active');
+            checkCrossCategoryAvailability();
+        });
+
+        // 實體類型全選按鈕
+        $('#selectAllEntityTypes').click(function() {
+            $('.entity-type-checkbox').prop('checked', true);
+            $('.entity-type-checkbox').closest('.filter-tag').addClass('active');
+        });
+
+        // 實體類型取消全選按鈕
+        $('#deselectAllEntityTypes').click(function() {
+            $('.entity-type-checkbox').prop('checked', false);
+            $('.entity-type-checkbox').closest('.filter-tag').removeClass('active');
+        });
 
         // 命名實體類別分布詳情
         $('.entity-detail-btn').click(function() {
@@ -349,13 +486,38 @@
             });
         });
 
-        // CSV 匯出功能
-        $('#exportEntitiesBtn').click(function() {
-            exportTableToCSV('entitiesTable', '命名實體分析.csv');
-        });
+        // 檢查跨類別分析可用性
+        function checkCrossCategoryAvailability() {
+            const selectedCount = $('.category-checkbox:checked').length;
+
+            // 如果選擇的類別數量為1或0，禁用跨類別分析
+            if (selectedCount <= 1) {
+                $('#id_cross_category').prop('checked', false).prop('disabled', true);
+                $('#crossCategorySwitch').addClass('text-muted');
+            } else {
+                $('#id_cross_category').prop('disabled', false);
+                $('#crossCategorySwitch').removeClass('text-muted');
+            }
+        }
+
+        // 初始化時檢查跨類別分析可用性
+        checkCrossCategoryAvailability();
+
+        // 禁用跨類別分析（當僅有一個類別時）
+        {% if disable_cross_category %}
+        $('#id_cross_category').prop('checked', false).prop('disabled', true);
+        $('#crossCategorySwitch').addClass('text-muted');
+        {% endif %}
 
         // 初始化圖表
         initializeCharts();
+
+        // 如果任務仍在執行中，每5秒自動刷新頁面
+        {% if job.status == 'running' or job.status == 'pending' %}
+        setTimeout(function() {
+            location.reload();
+        }, 5000);
+        {% endif %}
     });
 
     // 初始化圖表
@@ -490,12 +652,5 @@
             }
         });
     }
-
-    // 如果任務仍在執行中，每5秒自動刷新頁面
-    {% if job.status == 'running' or job.status == 'pending' %}
-    setTimeout(function() {
-        location.reload();
-    }, 5000);
-    {% endif %}
 </script>
 {% endblock %}

@@ -246,3 +246,139 @@ function initSelectAll(selectAllId, targetName) {
         $(`input[name="${targetName}"]`).prop('checked', isChecked);
     });
 }
+/**
+ * 初始化類別標籤選擇
+ * @param {string} filterFormId - 篩選表單ID
+ */
+function initCategoryFilters(filterFormId) {
+    // 標籤選擇效果
+    $('.filter-tag').click(function() {
+        const checkbox = $(this).find('input[type="checkbox"]');
+        checkbox.prop('checked', !checkbox.prop('checked'));
+        $(this).toggleClass('active');
+        checkCrossCategoryAvailability();
+    });
+
+    // 初始化設置已選擇的類別標籤
+    $('.filter-tag input:checked').each(function() {
+        $(this).parent().addClass('active');
+    });
+
+    // 全選按鈕
+    $('#selectAllCategories').click(function() {
+        $('.category-checkbox').prop('checked', true);
+        $('.filter-tag').addClass('active');
+        checkCrossCategoryAvailability();
+    });
+
+    // 取消全選按鈕
+    $('#deselectAllCategories').click(function() {
+        $('.category-checkbox').prop('checked', false);
+        $('.filter-tag').removeClass('active');
+        checkCrossCategoryAvailability();
+    });
+
+    // 檢查跨類別分析可用性
+    function checkCrossCategoryAvailability() {
+        const selectedCount = $('.category-checkbox:checked').length;
+
+        // 如果選擇的類別數量為1或0，禁用跨類別分析
+        if (selectedCount <= 1) {
+            $('#id_cross_category').prop('checked', false).prop('disabled', true);
+            $('#crossCategorySwitch').addClass('text-muted');
+        } else {
+            $('#id_cross_category').prop('disabled', false);
+            $('#crossCategorySwitch').removeClass('text-muted');
+        }
+    }
+
+    // 初始化時檢查跨類別分析可用性
+    checkCrossCategoryAvailability();
+}
+
+/**
+ * 高亮搜尋關鍵字
+ * @param {string} keyword - 搜尋關鍵字
+ */
+function highlightKeyword(keyword) {
+    if (!keyword) return;
+
+    const regex = new RegExp(keyword, 'gi');
+
+    // 高亮文章標題
+    $('.article-title').each(function() {
+        const title = $(this).text();
+        if (regex.test(title)) {
+            $(this).html(title.replace(regex, match => `<mark class="highlight">${match}</mark>`));
+        }
+    });
+
+    // 高亮作者名稱
+    $('.article-meta').each(function() {
+        const text = $(this).html();
+        if (regex.test(text)) {
+            $(this).html(text.replace(regex, match => `<mark class="highlight">${match}</mark>`));
+        }
+    });
+}
+
+/**
+ * 文章搜尋和篩選功能
+ */
+function initArticleFilter() {
+    // 客戶端篩選文章功能
+    function filterArticles() {
+        const selectedCategories = [];
+
+        // 獲取所有選中的類別
+        $('.category-checkbox:checked').each(function() {
+            selectedCategories.push($(this).val());
+        });
+
+        // 如果沒有選擇任何類別，顯示所有文章
+        if (selectedCategories.length === 0) {
+            $('.article-item').show();
+            updateArticleCount();
+            $('#noResultsAlert').hide();
+            return;
+        }
+
+        // 根據選擇的類別顯示/隱藏文章
+        let visibleCount = 0;
+        $('.article-item').each(function() {
+            const category = $(this).data('category');
+            if (selectedCategories.includes(category)) {
+                $(this).show();
+                visibleCount++;
+            } else {
+                $(this).hide();
+            }
+        });
+
+        // 更新文章計數
+        updateArticleCount(visibleCount);
+
+        // 顯示/隱藏無結果提示
+        if (visibleCount === 0) {
+            $('#noResultsAlert').show();
+            $('#pagination').hide();
+        } else {
+            $('#noResultsAlert').hide();
+            $('#pagination').show();
+        }
+    }
+
+    // 更新文章計數
+    function updateArticleCount(count) {
+        const totalVisible = count !== undefined ? count : $('.article-item:visible').length;
+        $('#article-count').text(totalVisible);
+    }
+
+    // 監聽類別複選框變化
+    $('.category-checkbox').change(function() {
+        filterArticles();
+    });
+
+    // 初始篩選（如果有篩選參數）
+    filterArticles();
+}

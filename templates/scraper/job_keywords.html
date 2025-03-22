@@ -24,6 +24,61 @@
         background-color: rgba(255, 193, 7, 0.8);
         border: 1px solid rgba(255, 193, 7, 1);
     }
+
+    /* 篩選按鈕特效 */
+    #selectAllCategories, #deselectAllCategories, #selectAllPos, #deselectAllPos {
+        transition: all 0.3s ease;
+    }
+
+    #selectAllCategories:hover, #deselectAllCategories:hover, #selectAllPos:hover, #deselectAllPos:hover {
+        transform: translateY(-2px);
+    }
+
+    /* 強化篩選標籤選中效果 */
+    .filter-tag {
+        display: inline-block;
+        padding: 0.4rem 0.8rem;
+        border-radius: 20px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        opacity: 0.7;
+        position: relative;
+        border: 2px solid transparent;
+    }
+
+    .filter-tag:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        opacity: 1;
+    }
+
+    .filter-tag.active {
+        opacity: 1;
+        border: 2px solid #fff;
+        box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+    }
+
+    /* 添加選中指示器 */
+    .filter-tag.active::after {
+        content: "✓";
+        position: absolute;
+        top: -8px;
+        right: -3px;
+        background-color: #17a2b8;
+        color: white;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        font-size: 11px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .filter-tag input[type="checkbox"] {
+        display: none;
+    }
 </style>
 {% endblock %}
 
@@ -58,43 +113,59 @@
                         <h6 class="mb-0 text-info">
                             <i class="bi bi-tag-fill me-2"></i>選擇要分析的新聞類別
                         </h6>
-                        <div class="form-check form-switch ms-2">
+                        <div class="form-check form-switch ms-2" id="crossCategorySwitch">
                             {{ form.cross_category }}
                             <label class="form-check-label" for="id_cross_category">啟用跨類別統計</label>
                         </div>
                     </div>
 
                     <div id="categoriesSelectionArea">
-                        <div class="row">
-                            <div class="col-12 mb-2">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="selectAllCategories">
-                                    <label class="form-check-label" for="selectAllCategories">
-                                        <strong>全選/取消全選</strong>
-                                    </label>
-                                </div>
-                            </div>
-                            {% for choice_val, choice_label in form.fields.selected_categories.choices %}
-                            <div class="col-md-4 mb-2">
-                                <div class="form-check">
-                                    <input class="form-check-input category-checkbox" type="checkbox"
-                                           name="selected_categories" value="{{ choice_val }}"
-                                           id="category_{{ choice_val }}"
-                                           {% if choice_val in form.selected_categories.value %}checked{% endif %}>
-                                    <label class="form-check-label category-label" for="category_{{ choice_val }}">
-                                        {{ choice_label }}
-                                    </label>
-                                </div>
-                            </div>
+                        <div class="d-flex flex-wrap" id="categoryTags">
+                            {% for category in available_categories %}
+                            <label class="filter-tag me-2 mb-2" style="background-color: {{ category_colors|get_item:category|get_item:'bg' }}; border: 1px solid {{ category_colors|get_item:category|get_item:'border' }}">
+                                <input class="form-check-input category-checkbox" type="checkbox"
+                                       name="selected_categories" value="{{ category }}"
+                                       id="category_{{ category }}"
+                                       {% if category in form.selected_categories.value %}checked{% endif %}>
+                                {{ category }}
+                            </label>
                             {% endfor %}
+                        </div>
+                        <div class="mt-2">
+                            <button type="button" class="btn btn-sm btn-outline-info" id="selectAllCategories">
+                                <i class="bi bi-check-all me-1"></i>全選
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" id="deselectAllCategories">
+                                <i class="bi bi-x-lg me-1"></i>取消全選
+                            </button>
                         </div>
                     </div>
                 </div>
             </div>
 
             <div class="row">
+                <!-- 詞性選擇區域 - 標籤式選擇器 -->
                 <div class="col-md-6 mb-3">
-                    {{ form.pos|as_crispy_field }}
+                    <label for="posSelection" class="form-label text-info">
+                        <i class="bi bi-tag-fill me-2"></i>詞性篩選
+                    </label>
+                    <div id="posSelection" class="d-flex flex-wrap">
+                        {% for pos in available_pos %}
+                        <label class="filter-tag me-2 mb-2" style="background-color: {{ pos_colors|get_item:pos|get_item:'bg' }}; border: 1px solid {{ pos_colors|get_item:pos|get_item:'border' }}">
+                            <input type="checkbox" name="pos" value="{{ pos }}"
+                                class="pos-checkbox" {% if pos in selected_pos %}checked{% endif %}>
+                            {{ pos_names|get_item:pos|default:pos }}
+                        </label>
+                        {% endfor %}
+                    </div>
+                    <div class="mt-2">
+                        <button type="button" class="btn btn-sm btn-outline-info" id="selectAllPos">
+                            <i class="bi bi-check-all me-1"></i>全選詞性
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" id="deselectAllPos">
+                            <i class="bi bi-x-lg me-1"></i>取消全選
+                        </button>
+                    </div>
                 </div>
                 <div class="col-md-6 mb-3">
                     {{ form.min_frequency|as_crispy_field }}
@@ -296,8 +367,8 @@
 <!-- 頁面特有腳本 -->
 <script>
     $(document).ready(function() {
-        // 初始化表格
-        initializeDataTable('keywordsTable', 15);
+        // 初始化數據表格
+        initializeDataTable('keywordsTable');
 
         // 匯出CSV
         $('#exportBtn').click(function() {
@@ -307,8 +378,48 @@
         // 顯示滑桿值
         bindRangeValue('id_limit', 'limitValue');
 
-        // 全選/取消全選類別
-        initSelectAll('selectAllCategories', 'selected_categories');
+        // 標籤選擇效果
+        $('.filter-tag').click(function() {
+            const checkbox = $(this).find('input[type="checkbox"]');
+            checkbox.prop('checked', !checkbox.prop('checked'));
+            $(this).toggleClass('active');
+
+            // 如果這是類別複選框，檢查跨類別可用性
+            if ($(checkbox).hasClass('category-checkbox')) {
+                checkCrossCategoryAvailability();
+            }
+        });
+
+        // 初始化設置已選擇的類別標籤
+        $('.filter-tag input:checked').each(function() {
+            $(this).closest('.filter-tag').addClass('active');
+        });
+
+        // 類別全選按鈕
+        $('#selectAllCategories').click(function() {
+            $('.category-checkbox').prop('checked', true);
+            $('.category-checkbox').closest('.filter-tag').addClass('active');
+            checkCrossCategoryAvailability();
+        });
+
+        // 類別取消全選按鈕
+        $('#deselectAllCategories').click(function() {
+            $('.category-checkbox').prop('checked', false);
+            $('.category-checkbox').closest('.filter-tag').removeClass('active');
+            checkCrossCategoryAvailability();
+        });
+
+        // 詞性全選按鈕
+        $('#selectAllPos').click(function() {
+            $('.pos-checkbox').prop('checked', true);
+            $('.pos-checkbox').closest('.filter-tag').addClass('active');
+        });
+
+        // 詞性取消全選按鈕
+        $('#deselectAllPos').click(function() {
+            $('.pos-checkbox').prop('checked', false);
+            $('.pos-checkbox').closest('.filter-tag').removeClass('active');
+        });
 
         // 類別詳情顯示
         $('.keyword-detail-btn').click(function() {
@@ -325,6 +436,29 @@
                 chartInstanceVar: 'categoryDetailChartInstance'
             });
         });
+
+        // 檢查跨類別分析可用性
+        function checkCrossCategoryAvailability() {
+            const selectedCount = $('.category-checkbox:checked').length;
+
+            // 如果選擇的類別數量為1或0，禁用跨類別分析
+            if (selectedCount <= 1) {
+                $('#id_cross_category').prop('checked', false).prop('disabled', true);
+                $('#crossCategorySwitch').addClass('text-muted');
+            } else {
+                $('#id_cross_category').prop('disabled', false);
+                $('#crossCategorySwitch').removeClass('text-muted');
+            }
+        }
+
+        // 初始化時檢查跨類別分析可用性
+        checkCrossCategoryAvailability();
+
+        // 禁用跨類別分析（當僅有一個類別時）
+        {% if disable_cross_category %}
+        $('#id_cross_category').prop('checked', false).prop('disabled', true);
+        $('#crossCategorySwitch').addClass('text-muted');
+        {% endif %}
 
         // 初始化圖表
         initializeCharts();

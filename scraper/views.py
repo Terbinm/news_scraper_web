@@ -110,8 +110,29 @@ def job_keywords_analysis(request, job_id):
     """關鍵詞分析視圖"""
     job = get_object_or_404(ScrapeJob, id=job_id, user=request.user)
 
-    # 獲取該任務下所有存在的類別
-    available_categories = KeywordAnalysis.objects.filter(job=job).values_list('category', flat=True).distinct()
+    # 獲取該任務下所有實際存在的類別 - 使用 set 去重
+    available_categories = set(KeywordAnalysis.objects.filter(job=job).values_list('category', flat=True))
+    available_categories = list(available_categories)  # 轉換為列表並排序
+    available_categories.sort()
+
+    # 獲取所有存在的詞性
+    available_pos = set(KeywordAnalysis.objects.filter(job=job).values_list('pos', flat=True))
+    available_pos = list(available_pos)
+    available_pos.sort()
+
+    # 詞性名稱映射
+    pos_names = {
+        'Na': '普通名詞 (Na)',
+        'Nb': '專有名詞 (Nb)',
+        'Nc': '地方名詞 (Nc)'
+    }
+
+    # 詞性顏色映射
+    pos_colors = {
+        'Na': {'bg': 'rgba(23, 162, 184, 0.7)', 'border': 'rgba(23, 162, 184, 1)'},
+        'Nb': {'bg': 'rgba(40, 167, 69, 0.7)', 'border': 'rgba(40, 167, 69, 1)'},
+        'Nc': {'bg': 'rgba(255, 193, 7, 0.7)', 'border': 'rgba(255, 193, 7, 1)'}
+    }
 
     # 處理篩選表單
     form = KeywordFilterForm(request.GET)
@@ -119,12 +140,15 @@ def job_keywords_analysis(request, job_id):
     # 設置初始表單數據
     if not request.GET:
         form = KeywordFilterForm(initial={
-            'selected_categories': list(available_categories),
+            'selected_categories': available_categories,
             'analysis_type': 'keywords'
         })
 
     # 根據請求參數獲取關鍵詞分析結果
     result = get_keywords_analysis(job, form, available_categories)
+
+    # 檢查類別數量是否為1，如果為1則禁用跨類別分析功能
+    disable_cross_category = len(available_categories) <= 1
 
     # 將分析結果添加到上下文
     context = {
@@ -132,20 +156,49 @@ def job_keywords_analysis(request, job_id):
         'keywords': result['keywords'],
         'form': form,
         'available_categories': available_categories,
+        'available_pos': available_pos,
+        'pos_names': pos_names,
+        'pos_colors': pos_colors,
         'is_cross_category': result['is_cross_category'],
         'category_colors': get_category_colors(),
+        'disable_cross_category': disable_cross_category,
+        'selected_pos': request.GET.getlist('pos', [])
     }
 
     return render(request, 'scraper/job_keywords.html', context)
-
 
 @login_required
 def job_entities_analysis(request, job_id):
     """命名實體分析視圖"""
     job = get_object_or_404(ScrapeJob, id=job_id, user=request.user)
 
-    # 獲取該任務下所有存在的類別
-    available_categories = NamedEntityAnalysis.objects.filter(job=job).values_list('category', flat=True).distinct()
+    # 獲取該任務下所有實際存在的類別 - 使用 set 去重
+    available_categories = set(NamedEntityAnalysis.objects.filter(job=job).values_list('category', flat=True))
+    available_categories = list(available_categories)  # 轉換為列表並排序
+    available_categories.sort()
+
+    # 獲取所有存在的實體類型
+    available_entity_types = set(NamedEntityAnalysis.objects.filter(job=job).values_list('entity_type', flat=True))
+    available_entity_types = list(available_entity_types)
+    available_entity_types.sort()
+
+    # 實體類型名稱映射
+    entity_type_names = {
+        'PERSON': '人物 (PERSON)',
+        'LOC': '地點 (LOC)',
+        'ORG': '組織 (ORG)',
+        'TIME': '時間 (TIME)',
+        'MISC': '其他 (MISC)'
+    }
+
+    # 實體類型顏色映射
+    entity_type_colors = {
+        'PERSON': {'bg': 'rgba(255, 99, 132, 0.7)', 'border': 'rgba(255, 99, 132, 1)'},
+        'LOC': {'bg': 'rgba(54, 162, 235, 0.7)', 'border': 'rgba(54, 162, 235, 1)'},
+        'ORG': {'bg': 'rgba(255, 206, 86, 0.7)', 'border': 'rgba(255, 206, 86, 1)'},
+        'TIME': {'bg': 'rgba(75, 192, 192, 0.7)', 'border': 'rgba(75, 192, 192, 1)'},
+        'MISC': {'bg': 'rgba(153, 102, 255, 0.7)', 'border': 'rgba(153, 102, 255, 1)'}
+    }
 
     # 處理篩選表單
     form = KeywordFilterForm(request.GET)
@@ -153,12 +206,15 @@ def job_entities_analysis(request, job_id):
     # 設置初始表單數據
     if not request.GET:
         form = KeywordFilterForm(initial={
-            'selected_categories': list(available_categories),
+            'selected_categories': available_categories,
             'analysis_type': 'entities'
         })
 
     # 根據請求參數獲取命名實體分析結果
     result = get_entities_analysis(job, form, available_categories)
+
+    # 檢查類別數量是否為1，如果為1則禁用跨類別分析功能
+    disable_cross_category = len(available_categories) <= 1
 
     # 將分析結果添加到上下文
     context = {
@@ -166,12 +222,16 @@ def job_entities_analysis(request, job_id):
         'entities': result['entities'],
         'form': form,
         'available_categories': available_categories,
+        'available_entity_types': available_entity_types,
+        'entity_type_names': entity_type_names,
+        'entity_type_colors': entity_type_colors,
         'is_cross_category': result['is_cross_category'],
         'category_colors': get_category_colors(),
+        'disable_cross_category': disable_cross_category,
+        'selected_entity_types': request.GET.getlist('entity_type', [])
     }
 
     return render(request, 'scraper/job_entities.html', context)
-
 
 @login_required
 def job_articles(request, job_id):
@@ -256,13 +316,11 @@ def job_articles(request, job_id):
 
     return render(request, 'scraper/job_articles.html', context)
 
-
 @login_required
 def article_detail(request, article_id):
     """文章詳情視圖"""
     article = get_object_or_404(Article, id=article_id, job__user=request.user)
     return render(request, 'scraper/article_detail.html', {'article': article})
-
 
 @login_required
 def job_delete(request, job_id):

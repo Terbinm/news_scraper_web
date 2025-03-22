@@ -25,7 +25,7 @@ def get_category_colors():
 
 def get_keywords_analysis(job, form, available_categories):
     """
-    獲取關鍵詞分析結果
+    獲取關鍵詞分析結果，支持多選詞性
 
     Args:
         job: ScrapeJob 實例
@@ -45,9 +45,10 @@ def get_keywords_analysis(job, form, available_categories):
     filter_args = {'job': job}
 
     if form.is_valid():
-        # 添加詞性過濾條件
-        if form.cleaned_data.get('pos'):
-            filter_args['pos'] = form.cleaned_data['pos']
+        # 添加詞性過濾條件 - 改為支持多選
+        selected_pos = form.data.getlist('pos')
+        if selected_pos:
+            filter_args['pos__in'] = selected_pos  # 使用 __in 查詢
 
         # 添加頻率過濾條件
         if form.cleaned_data.get('min_frequency'):
@@ -155,7 +156,7 @@ def get_keywords_analysis(job, form, available_categories):
 
 def get_entities_analysis(job, form, available_categories):
     """
-    獲取命名實體分析結果
+    獲取命名實體分析結果，支持多選實體類型
 
     Args:
         job: ScrapeJob 實例
@@ -175,11 +176,10 @@ def get_entities_analysis(job, form, available_categories):
     filter_args = {'job': job}
 
     if form.is_valid():
-        # 添加實體類型過濾條件
-        if form.cleaned_data.get('entity_type'):
-            entity_type = form.cleaned_data['entity_type']
-            if entity_type:
-                filter_args['entity_type'] = entity_type
+        # 添加實體類型過濾條件 - 改為支持多選
+        selected_entity_types = form.data.getlist('entity_type')
+        if selected_entity_types:
+            filter_args['entity_type__in'] = selected_entity_types  # 使用 __in 查詢
 
         # 添加頻率過濾條件
         if form.cleaned_data.get('min_frequency'):

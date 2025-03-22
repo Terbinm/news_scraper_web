@@ -164,3 +164,91 @@
 .modal-footer {
     border-top: 1px solid var(--border-color);
 }
+/* 篩選標籤樣式 */
+.filter-tag {
+    display: inline-block;
+    padding: 0.4rem 0.8rem;
+    border-radius: 20px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    opacity: 0.8;
+}
+
+.filter-tag:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    opacity: 1;
+}
+
+.filter-tag.active {
+    opacity: 1;
+    box-shadow: 0 0 0 2px #fff;
+}
+
+.filter-tag input[type="checkbox"] {
+    display: none;
+}
+
+/* 搜尋高亮 */
+.highlight {
+    background-color: rgba(255, 193, 7, 0.5);
+    padding: 2px;
+    border-radius: 2px;
+}
+
+/* 禁用狀態的樣式 */
+.text-muted {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+/* 篩選標籤樣式 - 改進標籤選中效果 */
+.filter-tag {
+    display: inline-block;
+    padding: 0.4rem 0.8rem;
+    border-radius: 20px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    opacity: 0.7;
+    position: relative;
+    border: 2px solid transparent;
+}
+
+.filter-tag:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    opacity: 1;
+}
+
+.filter-tag.active {
+    opacity: 1;
+    border: 2px solid #fff;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+}
+
+/* 添加選中指示器 */
+.filter-tag.active::after {
+    content: "✓";
+    position: absolute;
+    top: -8px;
+    right: -3px;
+    background-color: #17a2b8;
+    color: white;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.filter-tag input[type="checkbox"] {
+    display: none;
+}
+
+/* 強化其他選擇後的視覺效果 */
+.filter-option.active {
+    background-color: rgba(23, 162, 184, 0.2);
+    border-color: rgba(23, 162, 184, 0.6);
+}
