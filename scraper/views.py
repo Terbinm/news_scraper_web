@@ -1,4 +1,6 @@
 import logging
+
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
@@ -177,19 +179,82 @@ def job_articles(request, job_id):
     job = get_object_or_404(ScrapeJob, id=job_id, user=request.user)
 
     # 獲取該任務的所有文章
-    articles = Article.objects.filter(job=job).order_by('-date')
+    articles_query = Article.objects.filter(job=job)
 
-    # 篩選條件處理
-    category = request.GET.get('category', '')
-    if category:
-        articles = articles.filter(category=category)
+    # 從任務中獲取實際存在的類別
+    available_categories = {}
+    categories_used = articles_query.values_list('category', flat=True).distinct()
 
-    return render(request, 'scraper/job_articles.html', {
+    # 建立類別與顏色的對應關係
+    category_colors = get_category_colors()
+    for category in categories_used:
+        if category in category_colors:
+            available_categories[category] = category_colors[category]
+
+    # 處理搜尋關鍵字
+    search_keyword = request.GET.get('keyword', '')
+    content_only = 'content_only' in request.GET
+
+    if search_keyword:
+        if content_only:
+            # 僅搜尋內容
+            articles_query = articles_query.filter(content__icontains=search_keyword)
+        else:
+            # 搜尋標題、內容和作者
+            articles_query = articles_query.filter(
+                models.Q(title__icontains=search_keyword) |
+                models.Q(content__icontains=search_keyword) |
+                models.Q(author__icontains=search_keyword)
+            )
+
+    # 處理類別篩選
+    selected_categories = request.GET.getlist('categories', [])
+    if selected_categories:
+        articles_query = articles_query.filter(category__in=selected_categories)
+
+    # 處理排序
+    sort_by = request.GET.get('sort', 'date_desc')
+    if sort_by == 'date_desc':
+        articles_query = articles_query.order_by('-date')
+    elif sort_by == 'date_asc':
+        articles_query = articles_query.order_by('date')
+    elif sort_by == 'title':
+        articles_query = articles_query.order_by('title')
+    else:
+        articles_query = articles_query.order_by('-date')  # 默認排序
+
+    # 準備分頁
+    paginator = Paginator(articles_query, 12)  # 每頁顯示12篇文章
+    page = request.GET.get('page')
+
+    try:
+        articles = paginator.page(page)
+    except PageNotAnInteger:
+        # 如果頁碼不是整數，返回第一頁
+        articles = paginator.page(1)
+    except EmptyPage:
+        # 如果頁碼超出範圍，返回最後一頁
+        articles = paginator.page(paginator.num_pages)
+
+    # 構建查詢參數字符串，用於分頁連結
+    search_params = request.GET.copy()
+    if 'page' in search_params:
+        search_params.pop('page')
+    search_params_str = search_params.urlencode()
+
+    context = {
         'job': job,
         'articles': articles,
-        'articles_len': len(articles),
-        'category_filter': category,
-    })
+        'articles_len': articles_query.count(),
+        'available_categories': available_categories,
+        'selected_categories': selected_categories,
+        'search_keyword': search_keyword,
+        'content_only': content_only,
+        'sort_by': sort_by,
+        'search_params': search_params_str
+    }
+
+    return render(request, 'scraper/job_articles.html', context)
 
 
 @login_required

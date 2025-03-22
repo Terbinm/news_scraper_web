@@ -37,9 +37,8 @@
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     }
 
-    .category-filter.active::after {
-        content: '✓';
-        margin-left: 5px;
+    .category-filter input[type="checkbox"] {
+        margin-right: 5px;
     }
 
     .article-card {
@@ -56,6 +55,45 @@
         padding: 0.25rem 0.5rem;
         font-size: 0.75rem;
     }
+
+    .filter-group {
+        margin-bottom: 1rem;
+    }
+
+    .filter-checkbox {
+        margin-right: 8px;
+    }
+
+    /* 醒目的搜尋高亮 */
+    .highlight {
+        background-color: rgba(255, 193, 7, 0.5);
+        padding: 2px;
+        border-radius: 2px;
+    }
+
+    /* 添加分類標籤樣式 */
+    .filter-tag {
+        display: inline-block;
+        padding: 0.25rem 0.5rem;
+        margin-right: 0.5rem;
+        margin-bottom: 0.5rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .filter-tag:hover {
+        opacity: 0.8;
+    }
+
+    .filter-tag.active {
+        box-shadow: 0 0 0 2px #fff;
+    }
+
+    .filter-tag input[type="checkbox"] {
+        display: none;
+    }
 </style>
 {% endblock %}
 
@@ -65,7 +103,7 @@
         <h1 class="display-6 fw-bold text-info">
             <i class="bi bi-newspaper me-2"></i>文章列表
         </h1>
-        <p class="text-light">任務 #{{ job.id }} - {{ job.categories }} - 共 {{ articles_len }} 篇文章</p>
+        <p class="text-light">任務 #{{ job.id }} - {{ job.categories }} - 共 <span id="article-count">{{ articles_len }}</span> 篇文章</p>
     </div>
     <div class="col-md-4 text-md-end">
         <a href="{% url 'job_detail' job.id %}" class="btn btn-outline-secondary">
@@ -74,48 +112,99 @@
     </div>
 </div>
 
-<!-- 類別篩選 -->
+<!-- 搜尋與篩選卡片 -->
 <div class="card mb-4 analysis-card" data-aos="fade-up">
     <div class="card-header d-flex justify-content-between align-items-center">
         <h5 class="mb-0">
-            <i class="bi bi-funnel me-2"></i>類別篩選
+            <i class="bi bi-funnel me-2"></i>搜尋與篩選
         </h5>
         <button class="btn btn-sm btn-outline-info" id="clearFilters">
             <i class="bi bi-x-circle me-1"></i>清除篩選
         </button>
     </div>
     <div class="card-body">
-        <div class="d-flex flex-wrap">
-            <a href="{% url 'job_articles' job.id %}" class="category-filter {% if not category_filter %}active{% endif %}"
-               style="background-color: rgba(23, 162, 184, 0.2);">
-                全部
-            </a>
+        <form id="searchForm" method="get" class="mb-4">
+            <!-- 關鍵字搜尋區域 -->
+            <div class="row mb-3">
+                <div class="col-md-8">
+                    <div class="input-group">
+                        <span class="input-group-text bg-dark border-secondary">
+                            <i class="bi bi-search text-light"></i>
+                        </span>
+                        <input type="text" class="form-control bg-dark text-light border-secondary"
+                               placeholder="搜尋標題、內容、作者..."
+                               id="keyword" name="keyword" value="{{ search_keyword }}">
+                        <button type="submit" class="btn btn-info">搜尋</button>
+                    </div>
+                    <div class="form-text text-light">搜尋同時會在標題、內容和作者欄位進行</div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-check form-switch ms-2">
+                        <input class="form-check-input" type="checkbox" id="searchContentOnly" name="content_only" {% if content_only %}checked{% endif %}>
+                        <label class="form-check-label" for="searchContentOnly">僅搜尋文章內容</label>
+                    </div>
+                </div>
+            </div>
 
-            {% for category in categories_list %}
-            <a href="{% url 'job_articles' job.id %}?category={{ category }}"
-               class="category-filter {% if category_filter == category %}active{% endif %}"
-               style="background-color:
-                      {% if category == '財經' %}rgba(54, 162, 235, 0.2)
-                      {% elif category == '政治' %}rgba(255, 99, 132, 0.2)
-                      {% elif category == '社會' %}rgba(255, 159, 64, 0.2)
-                      {% elif category == '科技' %}rgba(75, 192, 192, 0.2)
-                      {% elif category == '國際' %}rgba(153, 102, 255, 0.2)
-                      {% elif category == '娛樂' %}rgba(255, 205, 86, 0.2)
-                      {% elif category == '生活' %}rgba(201, 203, 207, 0.2)
-                      {% elif category == '言論' %}rgba(0, 204, 150, 0.2)
-                      {% elif category == '軍事' %}rgba(255, 0, 110, 0.2)
-                      {% else %}rgba(100, 100, 100, 0.2){% endif %}">
-                {{ category }}
-            </a>
-            {% endfor %}
+            <!-- 類別篩選區域 -->
+            <div class="filter-group">
+                <h6 class="mb-2 text-info">
+                    <i class="bi bi-tags me-2"></i>類別篩選
+                </h6>
+                <div class="d-flex flex-wrap" id="categoryFilters">
+                    {% for category, color in available_categories.items %}
+                    <label class="filter-tag" style="background-color: {{ color.bg }}; border: 1px solid {{ color.border }}">
+                        <input type="checkbox" name="categories" value="{{ category }}"
+                               class="category-checkbox" {% if category in selected_categories %}checked{% endif %}>
+                        {{ category }}
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- 排序選項 -->
+            <div class="filter-group">
+                <h6 class="mb-2 text-info">
+                    <i class="bi bi-sort-down me-2"></i>排序方式
+                </h6>
+                <div class="d-flex">
+                    <div class="form-check me-3">
+                        <input class="form-check-input" type="radio" name="sort" id="sortDateDesc" value="date_desc" {% if sort_by == 'date_desc' or not sort_by %}checked{% endif %}>
+                        <label class="form-check-label" for="sortDateDesc">
+                            日期 (新到舊)
+                        </label>
+                    </div>
+                    <div class="form-check me-3">
+                        <input class="form-check-input" type="radio" name="sort" id="sortDateAsc" value="date_asc" {% if sort_by == 'date_asc' %}checked{% endif %}>
+                        <label class="form-check-label" for="sortDateAsc">
+                            日期 (舊到新)
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="sort" id="sortTitle" value="title" {% if sort_by == 'title' %}checked{% endif %}>
+                        <label class="form-check-label" for="sortTitle">
+                            標題
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </form>
+
+        <!-- 活動篩選標籤顯示 -->
+        <div id="activeFilters" class="d-flex flex-wrap align-items-center mt-2" style="display: none !important;">
+            <span class="me-2 text-light">活動中篩選: </span>
+            <div id="activeFilterTags"></div>
         </div>
     </div>
 </div>
 
 <!-- 文章列表 -->
-<div class="row">
+<div class="row" id="articlesList">
     {% for article in articles %}
-    <div class="col-md-6 col-lg-4 mb-4" data-aos="fade-up" data-aos-delay="{{ forloop.counter|add:100 }}">
+    <div class="col-md-6 col-lg-4 mb-4 article-item"
+         data-category="{{ article.category }}"
+         data-aos="fade-up"
+         data-aos-delay="{{ forloop.counter|add:100 }}">
         <div class="card article-card">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <span class="badge"
@@ -161,25 +250,30 @@
     {% empty %}
     <div class="col-12">
         <div class="alert alert-info">
-            <i class="bi bi-info-circle me-2"></i>尚無爬取的文章
+            <i class="bi bi-info-circle me-2"></i>尚無符合條件的文章
         </div>
     </div>
     {% endfor %}
 </div>
 
+<!-- 沒有找到搜尋結果時顯示的區塊 -->
+<div id="noResultsAlert" class="alert alert-warning" style="display: none;">
+    <i class="bi bi-exclamation-triangle me-2"></i>沒有找到符合搜尋條件的文章
+</div>
+
 <!-- 分頁控制 -->
 {% if articles.has_other_pages %}
-<div class="d-flex justify-content-center mt-4">
+<div class="d-flex justify-content-center mt-4" id="pagination">
     <nav aria-label="頁面導航">
         <ul class="pagination">
             {% if articles.has_previous %}
             <li class="page-item">
-                <a class="page-link" href="?page=1{% if category_filter %}&category={{ category_filter }}{% endif %}" aria-label="首頁">
+                <a class="page-link" href="?page=1{% if search_params %}&{{ search_params }}{% endif %}" aria-label="首頁">
                     <span aria-hidden="true">&laquo;&laquo;</span>
                 </a>
             </li>
             <li class="page-item">
-                <a class="page-link" href="?page={{ articles.previous_page_number }}{% if category_filter %}&category={{ category_filter }}{% endif %}" aria-label="上一頁">
+                <a class="page-link" href="?page={{ articles.previous_page_number }}{% if search_params %}&{{ search_params }}{% endif %}" aria-label="上一頁">
                     <span aria-hidden="true">&laquo;</span>
                 </a>
             </li>
@@ -200,18 +294,18 @@
                 {% if articles.number == i %}
                 <li class="page-item active"><a class="page-link" href="#">{{ i }}</a></li>
                 {% elif i > articles.number|add:'-3' and i < articles.number|add:'3' %}
-                <li class="page-item"><a class="page-link" href="?page={{ i }}{% if category_filter %}&category={{ category_filter }}{% endif %}">{{ i }}</a></li>
+                <li class="page-item"><a class="page-link" href="?page={{ i }}{% if search_params %}&{{ search_params }}{% endif %}">{{ i }}</a></li>
                 {% endif %}
             {% endfor %}
 
             {% if articles.has_next %}
             <li class="page-item">
-                <a class="page-link" href="?page={{ articles.next_page_number }}{% if category_filter %}&category={{ category_filter }}{% endif %}" aria-label="下一頁">
+                <a class="page-link" href="?page={{ articles.next_page_number }}{% if search_params %}&{{ search_params }}{% endif %}" aria-label="下一頁">
                     <span aria-hidden="true">&raquo;</span>
                 </a>
             </li>
             <li class="page-item">
-                <a class="page-link" href="?page={{ articles.paginator.num_pages }}{% if category_filter %}&category={{ category_filter }}{% endif %}" aria-label="末頁">
+                <a class="page-link" href="?page={{ articles.paginator.num_pages }}{% if search_params %}&{{ search_params }}{% endif %}" aria-label="末頁">
                     <span aria-hidden="true">&raquo;&raquo;</span>
                 </a>
             </li>
@@ -231,6 +325,13 @@
     </nav>
 </div>
 {% endif %}
+
+<!-- 返回頂部按鈕 -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 5">
+    <button id="backToTop" class="btn btn-info rounded-circle" style="width: 45px; height: 45px; display: none;">
+        <i class="bi bi-arrow-up"></i>
+    </button>
+</div>
 
 <!-- 文章預覽模態框 -->
 <div class="modal fade" id="articleModal" tabindex="-1" aria-hidden="true">
@@ -268,6 +369,66 @@
 <!-- 頁面特有腳本 -->
 <script>
     $(document).ready(function() {
+        // 類別標籤點擊事件
+        $('.filter-tag').click(function() {
+            const checkbox = $(this).find('input[type="checkbox"]');
+            checkbox.prop('checked', !checkbox.prop('checked'));
+            $(this).toggleClass('active');
+            filterArticles();
+        });
+
+        // 初始化設置已選擇的類別標籤
+        $('.filter-tag input:checked').each(function() {
+            $(this).parent().addClass('active');
+        });
+
+        // 設置排序選項改變事件
+        $('input[name="sort"]').change(function() {
+            $('#searchForm').submit();
+        });
+
+        // 關鍵字高亮處理
+        const keyword = '{{ search_keyword|escapejs }}';
+        if (keyword) {
+            highlightKeyword(keyword);
+
+            // 顯示活動篩選標籤
+            updateActiveFilters();
+        }
+
+        // 監聽類別複選框變化
+        $('.category-checkbox').change(function() {
+            filterArticles();
+        });
+
+        // 清除所有篩選
+        $('#clearFilters').click(function() {
+            // 清除搜尋框
+            $('#keyword').val('');
+
+            // 清除類別篩選
+            $('.category-checkbox').prop('checked', false);
+            $('.filter-tag').removeClass('active');
+
+            // 重置排序為默認
+            $('#sortDateDesc').prop('checked', true);
+
+            // 清除僅內容搜尋
+            $('#searchContentOnly').prop('checked', false);
+
+            // 重置所有文章顯示狀態
+            $('.article-item').show();
+
+            // 更新計數
+            updateArticleCount();
+
+            // 隱藏無結果提示
+            $('#noResultsAlert').hide();
+
+            // 清除URL參數並重新載入頁面
+            window.location.href = "{% url 'job_articles' job.id %}";
+        });
+
         // 顯示文章詳情
         $('.view-article').click(function() {
             const id = $(this).data('id');
@@ -282,7 +443,16 @@
             $('#articleCategory').text(category);
             $('#articleDate').text(date);
             $('#articleAuthor').text('作者: ' + author);
-            $('#articleContent').html(content.replace(/\n/g, '<br>'));
+
+            // 如果搜尋關鍵字存在，高亮顯示在文章內容中
+            if (keyword) {
+                const highlightedContent = content.replace(new RegExp(keyword, 'gi'),
+                    match => `<mark class="highlight">${match}</mark>`);
+                $('#articleContent').html(highlightedContent.replace(/\n/g, '<br>'));
+            } else {
+                $('#articleContent').html(content.replace(/\n/g, '<br>'));
+            }
+
             $('#articleLink').attr('href', link);
             $('#articleDetailLink').attr('href', `/articles/${id}/`);
 
@@ -290,10 +460,139 @@
             articleModal.show();
         });
 
-        // 清除過濾器
-        $('#clearFilters').click(function() {
-            window.location.href = "{% url 'job_articles' job.id %}";
+        // 返回頂部按鈕
+        $(window).scroll(function() {
+            if ($(this).scrollTop() > 300) {
+                $('#backToTop').fadeIn();
+            } else {
+                $('#backToTop').fadeOut();
+            }
         });
+
+        $('#backToTop').click(function() {
+            $('html, body').animate({scrollTop: 0}, 800);
+            return false;
+        });
+
+        // 客戶端篩選文章功能
+        function filterArticles() {
+            const selectedCategories = [];
+
+            // 獲取所有選中的類別
+            $('.category-checkbox:checked').each(function() {
+                selectedCategories.push($(this).val());
+            });
+
+            // 如果沒有選擇任何類別，顯示所有文章
+            if (selectedCategories.length === 0) {
+                $('.article-item').show();
+                updateArticleCount();
+                $('#noResultsAlert').hide();
+                return;
+            }
+
+            // 根據選擇的類別顯示/隱藏文章
+            let visibleCount = 0;
+            $('.article-item').each(function() {
+                const category = $(this).data('category');
+                if (selectedCategories.includes(category)) {
+                    $(this).show();
+                    visibleCount++;
+                } else {
+                    $(this).hide();
+                }
+            });
+
+            // 更新文章計數
+            updateArticleCount(visibleCount);
+
+            // 顯示/隱藏無結果提示
+            if (visibleCount === 0) {
+                $('#noResultsAlert').show();
+                $('#pagination').hide();
+            } else {
+                $('#noResultsAlert').hide();
+                $('#pagination').show();
+            }
+
+            // 更新活動篩選標籤
+            updateActiveFilters();
+        }
+
+        // 高亮搜尋關鍵字
+        function highlightKeyword(keyword) {
+            if (!keyword) return;
+
+            const regex = new RegExp(keyword, 'gi');
+
+            // 高亮文章標題
+            $('.article-title').each(function() {
+                const title = $(this).text();
+                if (regex.test(title)) {
+                    $(this).html(title.replace(regex, match => `<mark class="highlight">${match}</mark>`));
+                }
+            });
+
+            // 高亮作者名稱
+            $('.article-meta').each(function() {
+                const text = $(this).html();
+                if (regex.test(text)) {
+                    $(this).html(text.replace(regex, match => `<mark class="highlight">${match}</mark>`));
+                }
+            });
+        }
+
+        // 更新文章計數
+        function updateArticleCount(count) {
+            const totalVisible = count !== undefined ? count : $('.article-item:visible').length;
+            $('#article-count').text(totalVisible);
+        }
+
+        // 更新活動篩選標籤顯示
+        function updateActiveFilters() {
+            const keyword = $('#keyword').val();
+            const selectedCategories = [];
+            const isContentOnly = $('#searchContentOnly').prop('checked');
+            let hasActiveFilters = false;
+
+            // 收集選中的類別
+            $('.category-checkbox:checked').each(function() {
+                selectedCategories.push($(this).val());
+            });
+
+            // 清空現有標籤
+            $('#activeFilterTags').empty();
+
+            // 添加關鍵字標籤
+            if (keyword) {
+                hasActiveFilters = true;
+                const searchType = isContentOnly ? '內容' : '全文';
+                $('#activeFilterTags').append(
+                    `<span class="badge bg-info me-2 mb-1">
+                        ${searchType}搜尋: ${keyword}
+                    </span>`
+                );
+            }
+
+            // 添加類別標籤
+            if (selectedCategories.length > 0) {
+                hasActiveFilters = true;
+                selectedCategories.forEach(category => {
+                    $('#activeFilterTags').append(
+                        `<span class="badge bg-secondary me-2 mb-1">
+                            類別: ${category}
+                        </span>`
+                    );
+                });
+            }
+
+            // 顯示或隱藏活動篩選區域
+            if (hasActiveFilters) {
+                $('#activeFilters').show();
+            } else {
+                $('#activeFilters').hide();
+            }
+        }
 
         // 如果任務仍在執行中，每5秒自動刷新頁面
         {% if job.status == 'running' or job.status == 'pending' %}
@@ -301,6 +600,9 @@
             location.reload();
         }, 5000);
         {% endif %}
+
+        // 初始篩選（如果有篩選參數）
+        filterArticles();
     });
 </script>
 {% endblock %}
