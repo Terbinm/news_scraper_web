@@ -75,3 +75,27 @@ class KeywordAnalysis(models.Model):
             models.Index(fields=['job', 'category']),
             models.Index(fields=['job', 'frequency']),
         ]
+
+
+class NamedEntityAnalysis(models.Model):
+    """命名實體分析模型"""
+
+    job = models.ForeignKey(ScrapeJob, on_delete=models.CASCADE, related_name='named_entities', verbose_name='爬蟲任務')
+    entity = models.CharField(max_length=100, verbose_name='實體')
+    entity_type = models.CharField(max_length=20, verbose_name='實體類型')
+    frequency = models.IntegerField(verbose_name='頻率')
+    category = models.CharField(max_length=50, verbose_name='類別')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='創建時間')
+
+    def __str__(self):
+        return f"{self.entity} ({self.entity_type}) - {self.frequency}"
+
+    class Meta:
+        verbose_name = '命名實體分析'
+        verbose_name_plural = '命名實體分析'
+        ordering = ['-frequency']
+        indexes = [
+            models.Index(fields=['job', 'category']),
+            models.Index(fields=['job', 'entity_type']),
+            models.Index(fields=['job', 'frequency']),
+        ]

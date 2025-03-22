@@ -1,0 +1,306 @@
+{% extends 'base.html' %}
+{% load custom_filters %}
+
+{% block title %}文章列表 | 新聞爬蟲系統{% endblock %}
+
+{% block extra_css %}
+<!-- 引入共用樣式 -->
+<link rel="stylesheet" href="/static/css/analysis.css">
+<!-- 頁面特有樣式 -->
+<style>
+    .article-title {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        height: 48px;
+    }
+
+    .article-meta {
+        font-size: 0.85rem;
+        color: rgba(255, 255, 255, 0.7);
+    }
+
+    .category-filter {
+        display: inline-block;
+        margin-right: 5px;
+        margin-bottom: 5px;
+        cursor: pointer;
+        border-radius: 5px;
+        padding: 5px 10px;
+        transition: all 0.3s ease;
+    }
+
+    .category-filter:hover, .category-filter.active {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .category-filter.active::after {
+        content: '✓';
+        margin-left: 5px;
+    }
+
+    .article-card {
+        height: 100%;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .article-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .article-preview-btn, .article-detail-btn {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h1 class="display-6 fw-bold text-info">
+            <i class="bi bi-newspaper me-2"></i>文章列表
+        </h1>
+        <p class="text-light">任務 #{{ job.id }} - {{ job.categories }} - 共 {{ articles_len }} 篇文章</p>
+    </div>
+    <div class="col-md-4 text-md-end">
+        <a href="{% url 'job_detail' job.id %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>返回概覽
+        </a>
+    </div>
+</div>
+
+<!-- 類別篩選 -->
+<div class="card mb-4 analysis-card" data-aos="fade-up">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">
+            <i class="bi bi-funnel me-2"></i>類別篩選
+        </h5>
+        <button class="btn btn-sm btn-outline-info" id="clearFilters">
+            <i class="bi bi-x-circle me-1"></i>清除篩選
+        </button>
+    </div>
+    <div class="card-body">
+        <div class="d-flex flex-wrap">
+            <a href="{% url 'job_articles' job.id %}" class="category-filter {% if not category_filter %}active{% endif %}"
+               style="background-color: rgba(23, 162, 184, 0.2);">
+                全部
+            </a>
+
+            {% for category in categories_list %}
+            <a href="{% url 'job_articles' job.id %}?category={{ category }}"
+               class="category-filter {% if category_filter == category %}active{% endif %}"
+               style="background-color:
+                      {% if category == '財經' %}rgba(54, 162, 235, 0.2)
+                      {% elif category == '政治' %}rgba(255, 99, 132, 0.2)
+                      {% elif category == '社會' %}rgba(255, 159, 64, 0.2)
+                      {% elif category == '科技' %}rgba(75, 192, 192, 0.2)
+                      {% elif category == '國際' %}rgba(153, 102, 255, 0.2)
+                      {% elif category == '娛樂' %}rgba(255, 205, 86, 0.2)
+                      {% elif category == '生活' %}rgba(201, 203, 207, 0.2)
+                      {% elif category == '言論' %}rgba(0, 204, 150, 0.2)
+                      {% elif category == '軍事' %}rgba(255, 0, 110, 0.2)
+                      {% else %}rgba(100, 100, 100, 0.2){% endif %}">
+                {{ category }}
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- 文章列表 -->
+<div class="row">
+    {% for article in articles %}
+    <div class="col-md-6 col-lg-4 mb-4" data-aos="fade-up" data-aos-delay="{{ forloop.counter|add:100 }}">
+        <div class="card article-card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span class="badge"
+                      style="background-color:
+                      {% if article.category == '財經' %}rgba(54, 162, 235, 0.7)
+                      {% elif article.category == '政治' %}rgba(255, 99, 132, 0.7)
+                      {% elif article.category == '社會' %}rgba(255, 159, 64, 0.7)
+                      {% elif article.category == '科技' %}rgba(75, 192, 192, 0.7)
+                      {% elif article.category == '國際' %}rgba(153, 102, 255, 0.7)
+                      {% elif article.category == '娛樂' %}rgba(255, 205, 86, 0.7)
+                      {% elif article.category == '生活' %}rgba(201, 203, 207, 0.7)
+                      {% elif article.category == '言論' %}rgba(0, 204, 150, 0.7)
+                      {% elif article.category == '軍事' %}rgba(255, 0, 110, 0.7)
+                      {% else %}rgba(100, 100, 100, 0.7){% endif %}">
+                    {{ article.category }}
+                </span>
+                <span class="text-light">{{ article.date|date:"Y-m-d" }}</span>
+            </div>
+            <div class="card-body">
+                <h5 class="card-title article-title">{{ article.title }}</h5>
+                <p class="article-meta mb-3">
+                    <i class="bi bi-person-circle me-1"></i>{{ article.author }}
+                    <i class="bi bi-clock ms-2 me-1"></i>{{ article.date|date:"H:i" }}
+                </p>
+                <div class="d-flex justify-content-between mt-auto">
+                    <a href="{% url 'article_detail' article.id %}" class="btn btn-sm btn-outline-info article-detail-btn">
+                        <i class="bi bi-info-circle me-1"></i>詳情
+                    </a>
+                    <button type="button" class="btn btn-sm btn-outline-info article-preview-btn view-article"
+                            data-id="{{ article.id }}"
+                            data-title="{{ article.title }}"
+                            data-category="{{ article.category }}"
+                            data-date="{{ article.date|date:"Y-m-d H:i" }}"
+                            data-author="{{ article.author }}"
+                            data-content="{{ article.content }}"
+                            data-link="{{ article.link }}">
+                        <i class="bi bi-eye me-1"></i>預覽
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle me-2"></i>尚無爬取的文章
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- 分頁控制 -->
+{% if articles.has_other_pages %}
+<div class="d-flex justify-content-center mt-4">
+    <nav aria-label="頁面導航">
+        <ul class="pagination">
+            {% if articles.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page=1{% if category_filter %}&category={{ category_filter }}{% endif %}" aria-label="首頁">
+                    <span aria-hidden="true">&laquo;&laquo;</span>
+                </a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?page={{ articles.previous_page_number }}{% if category_filter %}&category={{ category_filter }}{% endif %}" aria-label="上一頁">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+            {% else %}
+            <li class="page-item disabled">
+                <a class="page-link" href="#" aria-label="首頁">
+                    <span aria-hidden="true">&laquo;&laquo;</span>
+                </a>
+            </li>
+            <li class="page-item disabled">
+                <a class="page-link" href="#" aria-label="上一頁">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+            {% endif %}
+
+            {% for i in articles.paginator.page_range %}
+                {% if articles.number == i %}
+                <li class="page-item active"><a class="page-link" href="#">{{ i }}</a></li>
+                {% elif i > articles.number|add:'-3' and i < articles.number|add:'3' %}
+                <li class="page-item"><a class="page-link" href="?page={{ i }}{% if category_filter %}&category={{ category_filter }}{% endif %}">{{ i }}</a></li>
+                {% endif %}
+            {% endfor %}
+
+            {% if articles.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ articles.next_page_number }}{% if category_filter %}&category={{ category_filter }}{% endif %}" aria-label="下一頁">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?page={{ articles.paginator.num_pages }}{% if category_filter %}&category={{ category_filter }}{% endif %}" aria-label="末頁">
+                    <span aria-hidden="true">&raquo;&raquo;</span>
+                </a>
+            </li>
+            {% else %}
+            <li class="page-item disabled">
+                <a class="page-link" href="#" aria-label="下一頁">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+            <li class="page-item disabled">
+                <a class="page-link" href="#" aria-label="末頁">
+                    <span aria-hidden="true">&raquo;&raquo;</span>
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+</div>
+{% endif %}
+
+<!-- 文章預覽模態框 -->
+<div class="modal fade" id="articleModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content bg-dark text-white">
+            <div class="modal-header">
+                <h5 class="modal-title" id="articleTitle"></h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <div class="badge bg-info me-2" id="articleCategory"></div>
+                    <small class="text-white" id="articleDate"></small>
+                    <small class="text-white ms-2" id="articleAuthor"></small>
+                </div>
+                <div class="article-content" id="articleContent"></div>
+            </div>
+            <div class="modal-footer">
+                <a href="#" class="btn btn-outline-info" id="articleLink" target="_blank">
+                    <i class="bi bi-box-arrow-up-right me-1"></i>原始文章
+                </a>
+                <a href="#" class="btn btn-info" id="articleDetailLink">
+                    <i class="bi bi-info-circle me-1"></i>查看詳情
+                </a>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">關閉</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- 引入共用腳本 -->
+<script src="/static/js/analysis.js"></script>
+<!-- 頁面特有腳本 -->
+<script>
+    $(document).ready(function() {
+        // 顯示文章詳情
+        $('.view-article').click(function() {
+            const id = $(this).data('id');
+            const title = $(this).data('title');
+            const category = $(this).data('category');
+            const date = $(this).data('date');
+            const author = $(this).data('author');
+            const content = $(this).data('content');
+            const link = $(this).data('link');
+
+            $('#articleTitle').text(title);
+            $('#articleCategory').text(category);
+            $('#articleDate').text(date);
+            $('#articleAuthor').text('作者: ' + author);
+            $('#articleContent').html(content.replace(/\n/g, '<br>'));
+            $('#articleLink').attr('href', link);
+            $('#articleDetailLink').attr('href', `/articles/${id}/`);
+
+            const articleModal = new bootstrap.Modal(document.getElementById('articleModal'));
+            articleModal.show();
+        });
+
+        // 清除過濾器
+        $('#clearFilters').click(function() {
+            window.location.href = "{% url 'job_articles' job.id %}";
+        });
+
+        // 如果任務仍在執行中，每5秒自動刷新頁面
+        {% if job.status == 'running' or job.status == 'pending' %}
+        setTimeout(function() {
+            location.reload();
+        }, 5000);
+        {% endif %}
+    });
+</script>
+{% endblock %}

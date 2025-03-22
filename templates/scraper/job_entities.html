@@ -1,0 +1,501 @@
+{% extends 'base.html' %}
+{% load custom_filters %}
+{% load crispy_forms_tags %}
+
+{% block title %}命名實體分析 | 新聞爬蟲系統{% endblock %}
+
+{% block extra_css %}
+<!-- 引入共用樣式 -->
+<link rel="stylesheet" href="/static/css/analysis.css">
+<!-- 頁面特有樣式 -->
+<style>
+    /* 圓餅圖容器樣式 */
+    .pie-chart-container {
+        height: 250px;
+    }
+
+    /* 實體類型統計卡片樣式 */
+    .entity-type-stat {
+        transition: all 0.3s ease;
+    }
+
+    .entity-type-stat:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    /* 實體詳情按鈕樣式 */
+    .entity-detail-btn.active {
+        background-color: rgba(23, 162, 184, 0.2);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h1 class="display-6 fw-bold text-info">
+            <i class="bi bi-people me-2"></i>命名實體分析
+        </h1>
+        <p class="text-light">任務 #{{ job.id }} - {{ job.categories }}</p>
+    </div>
+    <div class="col-md-4 text-md-end">
+        <a href="{% url 'job_detail' job.id %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>返回概覽
+        </a>
+    </div>
+</div>
+
+<!-- 篩選卡片 -->
+<div class="card mb-4 analysis-card" data-aos="fade-up">
+    <div class="card-header">
+        <h5 class="mb-0">
+            <i class="bi bi-funnel me-2"></i>命名實體篩選
+        </h5>
+    </div>
+    <div class="card-body">
+        <form method="get" id="filterForm">
+            <!-- 統一選擇類別區域 -->
+            <div class="filter-section mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="mb-0 text-info">
+                            <i class="bi bi-tag-fill me-2"></i>選擇要分析的新聞類別
+                        </h6>
+                        <div class="form-check form-switch ms-2">
+                            {{ form.cross_category }}
+                            <label class="form-check-label" for="id_cross_category">啟用跨類別統計</label>
+                        </div>
+                    </div>
+
+                    <div id="categoriesSelectionArea">
+                        <div class="row">
+                            <div class="col-12 mb-2">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="selectAllCategories">
+                                    <label class="form-check-label" for="selectAllCategories">
+                                        <strong>全選/取消全選</strong>
+                                    </label>
+                                </div>
+                            </div>
+                            {% for choice_val, choice_label in form.fields.selected_categories.choices %}
+                            <div class="col-md-4 mb-2">
+                                <div class="form-check">
+                                    <input class="form-check-input category-checkbox" type="checkbox"
+                                           name="selected_categories" value="{{ choice_val }}"
+                                           id="category_{{ choice_val }}"
+                                           {% if choice_val in form.selected_categories.value %}checked{% endif %}>
+                                    <label class="form-check-label category-label" for="category_{{ choice_val }}">
+                                        {{ choice_label }}
+                                    </label>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    {{ form.entity_type|as_crispy_field }}
+                </div>
+                <div class="col-md-6 mb-3">
+                    {{ form.min_frequency|as_crispy_field }}
+                </div>
+            </div>
+
+            <div class="row align-items-end">
+                <div class="col-md-8 mb-3">
+                    <label for="id_limit" class="form-label">顯示數量: <span id="limitValue">{{ form.limit.value|default:"20" }}</span></label>
+                    <input type="range" class="form-range" name="limit" id="id_limit" min="5" max="100" step="1" value="{{ form.limit.value|default:"20" }}">
+                </div>
+                <div class="col-md-4 text-md-end mb-3">
+                    <button type="submit" class="btn btn-info">
+                        <i class="bi bi-search me-1"></i>篩選
+                    </button>
+                    <a href="{% url 'job_entities' job.id %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-counterclockwise me-1"></i>重設
+                    </a>
+                </div>
+            </div>
+
+            <!-- 隱藏欄位，確保分析類型為 entities -->
+            <input type="hidden" name="analysis_type" value="entities">
+        </form>
+    </div>
+</div>
+
+<!-- 命名實體分析結果部分 -->
+<div id="entitiesResults">
+    <!-- 圖表卡片 -->
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card mb-4 analysis-card" data-aos="fade-up" data-aos-delay="100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="bi bi-bar-chart-fill me-2"></i>命名實體頻率圖表
+                    </h5>
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-sm btn-outline-info active" id="barChartBtn">
+                            <i class="bi bi-bar-chart me-1"></i>長條圖
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-info" id="pieChartBtn">
+                            <i class="bi bi-pie-chart me-1"></i>圓餅圖
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="entitiesChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card mb-4 analysis-card" data-aos="fade-up" data-aos-delay="200">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-pie-chart-fill me-2"></i>實體類型分布
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="pie-chart-container">
+                        <canvas id="entityTypeChart"></canvas>
+                    </div>
+                    <div class="mt-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2 entity-type-stat">
+                            <span class="badge entity-type-PERSON">PERSON: 人物</span>
+                            <span id="personCount" class="badge bg-dark">0</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-2 entity-type-stat">
+                            <span class="badge entity-type-LOC">LOC: 地點</span>
+                            <span id="locCount" class="badge bg-dark">0</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-2 entity-type-stat">
+                            <span class="badge entity-type-ORG">ORG: 組織</span>
+                            <span id="orgCount" class="badge bg-dark">0</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-2 entity-type-stat">
+                            <span class="badge entity-type-TIME">TIME: 時間</span>
+                            <span id="timeCount" class="badge bg-dark">0</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center entity-type-stat">
+                            <span class="badge entity-type-MISC">MISC: 其他</span>
+                            <span id="miscCount" class="badge bg-dark">0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 命名實體列表卡片 -->
+    <div class="card analysis-card" data-aos="fade-up" data-aos-delay="300">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">
+                <i class="bi bi-list-ul me-2"></i>命名實體列表
+            </h5>
+            <button class="btn btn-sm btn-outline-info" id="exportEntitiesBtn">
+                <i class="bi bi-download me-1"></i>匯出CSV
+            </button>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-dark table-hover data-table" id="entitiesTable">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>實體</th>
+                            <th>類型</th>
+                            <th>頻率</th>
+                            <th>{% if is_cross_category %}主要類別{% else %}類別{% endif %}</th>
+                            {% if is_cross_category %}
+                            <th>類別分布</th>
+                            {% endif %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for entity in entities %}
+                        <tr class="data-item">
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ entity.entity }}</td>
+                            <td>
+                                {% if entity.entity_type == 'PERSON' %}
+                                    <span class="badge entity-type-PERSON">PERSON (人物)</span>
+                                {% elif entity.entity_type == 'LOC' %}
+                                    <span class="badge entity-type-LOC">LOC (地點)</span>
+                                {% elif entity.entity_type == 'ORG' %}
+                                    <span class="badge entity-type-ORG">ORG (組織)</span>
+                                {% elif entity.entity_type == 'TIME' %}
+                                    <span class="badge entity-type-TIME">TIME (時間)</span>
+                                {% else %}
+                                    <span class="badge entity-type-MISC">MISC (其他)</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ entity.frequency }}</td>
+                            <td>
+                                {% if is_cross_category %}
+                                    {% with top_category=entity.top_category %}
+                                        <span class="badge" style="background-color: {{ category_colors|get_item:top_category|get_item:'bg' }}; border: 1px solid {{ category_colors|get_item:top_category|get_item:'border' }}">
+                                            {{ top_category }}
+                                        </span>
+                                    {% endwith %}
+                                {% else %}
+                                    <span class="badge" style="background-color: {{ category_colors|get_item:entity.category|get_item:'bg' }}; border: 1px solid {{ category_colors|get_item:entity.category|get_item:'border' }}">
+                                        {{ entity.category }}
+                                    </span>
+                                {% endif %}
+                            </td>
+                            {% if is_cross_category %}
+                            <td class="category-distribution">
+                                <div class="d-flex align-items-center">
+                                    <div class="category-badges me-2">
+                                        {% with categories=entity.category_list %}
+                                            {% for cat in categories %}
+                                                <span class="badge category-badge" style="background-color: {{ category_colors|get_item:cat|get_item:'bg' }}; border: 1px solid {{ category_colors|get_item:cat|get_item:'border' }}">
+                                                    {{ cat }}
+                                                </span>
+                                            {% endfor %}
+                                        {% endwith %}
+                                    </div>
+                                    <button type="button" class="btn btn-sm btn-outline-info detail-btn ms-auto entity-detail-btn"
+                                            data-details="{{ entity.category_details }}"
+                                            data-entity="{{ entity.entity }}"
+                                            data-entity-type="{{ entity.entity_type }}">
+                                        <i class="bi bi-info-circle-fill"></i>
+                                    </button>
+                                </div>
+                            </td>
+                            {% endif %}
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="{% if is_cross_category %}6{% else %}5{% endif %}" class="text-center py-4">
+                                <i class="bi bi-emoji-frown me-2"></i>沒有符合條件的命名實體
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 命名實體類別分布模態框 -->
+<div class="modal fade" id="entityDetailModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-dark">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-pie-chart-fill me-2 text-info"></i>
+                    <span id="detailEntity">實體</span>
+                    <small class="badge entity-type-PERSON" id="detailEntityType">類型</small> - 類別分布
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="entityDetailContent"></div>
+                <div class="mt-3">
+                    <canvas id="entityDetailChart" height="200"></canvas>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">關閉</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- 引入共用腳本 -->
+<script src="/static/js/analysis.js"></script>
+<!-- 頁面特有腳本 -->
+<script>
+    $(document).ready(function() {
+        // 初始化數據表格
+        initializeDataTable('entitiesTable');
+
+        // 顯示滑桿值
+        bindRangeValue('id_limit', 'limitValue');
+
+        // 全選/取消全選類別
+        initSelectAll('selectAllCategories', 'selected_categories');
+
+        // 命名實體類別分布詳情
+        $('.entity-detail-btn').click(function() {
+            const details = $(this).data('details');
+            const entity = $(this).data('entity');
+            const entityType = $(this).data('entity-type');
+
+            // 設置徽章樣式
+            $('#detailEntityType')
+                .removeClass()
+                .addClass('badge entity-type-' + entityType)
+                .text(entityType);
+
+            // 顯示詳情模態框
+            showDetailModal({
+                modalId: 'entityDetailModal',
+                titleText: entity,
+                details: details,
+                chartId: 'entityDetailChart',
+                chartInstanceVar: 'entityDetailChartInstance',
+                titleElement: '#detailEntity',
+                contentElement: '#entityDetailContent'
+            });
+        });
+
+        // CSV 匯出功能
+        $('#exportEntitiesBtn').click(function() {
+            exportTableToCSV('entitiesTable', '命名實體分析.csv');
+        });
+
+        // 初始化圖表
+        initializeCharts();
+    });
+
+    // 初始化圖表
+    function initializeCharts() {
+        // 命名實體頻率圖表
+        const entitiesCtx = document.getElementById('entitiesChart').getContext('2d');
+        const entitiesData = {
+            labels: [
+                {% for entity in entities %}
+                    "{{ entity.entity|escapejs }} ({{ entity.entity_type|escapejs }})",
+                {% endfor %}
+            ],
+            datasets: [{
+                label: '頻率',
+                data: [
+                    {% for entity in entities %}
+                        {{ entity.frequency }},
+                    {% endfor %}
+                ],
+                backgroundColor: 'rgba(153, 102, 255, 0.6)',
+                borderColor: 'rgba(153, 102, 255, 1)',
+                borderWidth: 1
+            }]
+        };
+
+        // 長條圖初始化
+        const entitiesChart = new Chart(entitiesCtx, {
+            type: 'bar',
+            data: entitiesData,
+            options: {
+                indexAxis: 'y',
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: 'rgba(255, 255, 255, 0.7)'
+                        }
+                    },
+                    y: {
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: 'rgba(255, 255, 255, 0.7)'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: 'rgba(255, 255, 255, 0.7)'
+                        }
+                    }
+                }
+            }
+        });
+
+        // 初始化圖表切換按鈕
+        initChartToggle(entitiesChart);
+
+        // 實體類型分布圖表
+        const entityTypeCtx = document.getElementById('entityTypeChart').getContext('2d');
+
+        // 統計實體類型數量
+        const entityTypeCount = {
+            'PERSON': 0,
+            'LOC': 0,
+            'ORG': 0,
+            'TIME': 0,
+            'MISC': 0
+        };
+
+        {% for entity in entities %}
+        // 使用安全的方式獲取實體類型
+        var entityType = "{{ entity.entity_type|escapejs }}";
+        // 確保entityType是有效值，否則使用'MISC'
+        if (!entityTypeCount.hasOwnProperty(entityType)) {
+            entityType = 'MISC';
+        }
+        entityTypeCount[entityType] = entityTypeCount[entityType] + 1;
+        {% endfor %}
+
+        // 更新計數器顯示
+        $('#personCount').text(entityTypeCount['PERSON']);
+        $('#locCount').text(entityTypeCount['LOC']);
+        $('#orgCount').text(entityTypeCount['ORG']);
+        $('#timeCount').text(entityTypeCount['TIME']);
+        $('#miscCount').text(entityTypeCount['MISC']);
+
+        const entityTypeChart = new Chart(entityTypeCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['人物 (PERSON)', '地點 (LOC)', '組織 (ORG)', '時間 (TIME)', '其他 (MISC)'],
+                datasets: [{
+                    data: [
+                        entityTypeCount['PERSON'],
+                        entityTypeCount['LOC'],
+                        entityTypeCount['ORG'],
+                        entityTypeCount['TIME'],
+                        entityTypeCount['MISC']
+                    ],
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.8)',
+                        'rgba(54, 162, 235, 0.8)',
+                        'rgba(255, 206, 86, 0.8)',
+                        'rgba(75, 192, 192, 0.8)',
+                        'rgba(153, 102, 255, 0.8)'
+                    ],
+                    borderColor: [
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 206, 86, 1)',
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(153, 102, 255, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: 'rgba(255, 255, 255, 0.7)'
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // 如果任務仍在執行中，每5秒自動刷新頁面
+    {% if job.status == 'running' or job.status == 'pending' %}
+    setTimeout(function() {
+        location.reload();
+    }, 5000);
+    {% endif %}
+</script>
+{% endblock %}

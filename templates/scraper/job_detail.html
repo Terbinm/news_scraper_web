@@ -1,156 +1,61 @@
 {% extends 'base.html' %}
-{% load custom_filters %}
-{% load crispy_forms_tags %}
 
-{% block title %}爬蟲任務詳情 | 新聞爬蟲系統{% endblock %}
+{% block title %}爬蟲任務概覽 | 新聞爬蟲系統{% endblock %}
 
 {% block extra_css %}
 <style>
-    .card {
+    .overview-card {
         border: none;
         border-radius: 10px;
         background: linear-gradient(145deg, #2a2d3a, #212330);
         box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
 
-    .card-header {
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        background: transparent;
+    .overview-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
     }
 
-    .nav-tabs .nav-link {
-        color: #6c757d;
-        border: none;
-        border-bottom: 2px solid transparent;
+    .stat-icon {
+        font-size: 2.5rem;
+        margin-bottom: 10px;
+        display: inline-block;
+    }
+
+    .stat-value {
+        font-size: 1.8rem;
+        font-weight: bold;
+    }
+
+    .stat-label {
+        font-size: 1rem;
+        color: rgba(255, 255, 255, 0.7);
+    }
+
+    .action-link {
+        color: var(--primary-color);
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        margin-top: 10px;
         transition: all 0.3s ease;
     }
 
-    .nav-tabs .nav-link:hover {
-        color: #f8f9fa;
-        border-color: transparent;
+    .action-link:hover {
+        transform: translateX(3px);
     }
 
-    .nav-tabs .nav-link.active {
-        color: #17a2b8;
-        background-color: transparent;
-        border-color: #17a2b8;
-    }
-
-    .keyword-item {
-        transition: transform 0.2s, box-shadow 0.2s;
-    }
-
-    .keyword-item:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 5px 15px rgba(23, 162, 184, 0.2);
-    }
-
-    .chart-container {
-        position: relative;
-        height: 50vh;
-        width: 100%;
-    }
-
-    .form-range::-webkit-slider-thumb {
-        background: #17a2b8;
-    }
-
-    /* 篩選區的軌道顏色 */
-    .form-range::-webkit-slider-runnable-track {
-        background-color: rgba(54, 162, 235, 0.2);
-    }
-
-    .form-range::-moz-range-track {
-        background-color: rgba(54, 162, 235, 0.2);
-    }
-
-    /* 表格分頁樣式 */
-    .dataTables_paginate .paginate_button {
-        color: #fff !important;
-    }
-
-    /* 類別詳情卡片樣式 */
-    .category-detail-card {
-        background-color: rgba(40, 44, 52, 0.8);
-        border-left: 3px solid #17a2b8;
-    }
-
-    /* 統一選擇類別區域樣式 */
-    .unified-category-selection {
-        background: var(--gradient-primary);
-        padding: 1px;
-        border-radius: 8px;
-    }
-
-    .unified-category-selection .card-body {
-        background: var(--lighter-bg);
-        border-radius: 7px;
-    }
-
-    /* 類別分布顯示樣式 */
-    .category-distribution {
-        max-width: 300px;
-    }
-
-    .category-badges {
-        flex: 1;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
+    .action-icon {
+        margin-left: 5px;
     }
 
     .category-badge {
-        margin-right: 3px;
-        margin-bottom: 3px;
-        font-size: 0.75rem;
         padding: 0.25rem 0.5rem;
-    }
-
-    /* 詳情按鈕 - 使用斜切效果 */
-    .category-detail-btn {
-        position: relative;
         border-radius: 0.25rem;
-        overflow: hidden;
-        padding: 0.25rem 0.6rem;
-        z-index: 1;
-    }
-
-    .category-detail-btn::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -15px;
-        width: 30px;
-        height: 100%;
-        background: var(--primary-color);
-        opacity: 0.2;
-        transform: skewX(-20deg);
-        z-index: -1;
-        transition: all 0.3s ease;
-    }
-
-    .category-detail-btn:hover::before {
-        left: -5px;
-        opacity: 0.4;
-    }
-
-    /* 表格樣式增強 */
-    #keywordsTable tbody tr:hover td,
-    #articlesTable tbody tr:hover td {
-        background-color: rgba(23, 162, 184, 0.1);
-    }
-
-    /* 關鍵詞詳情模態框 */
-    .modal-content {
-        border: 1px solid var(--border-color);
-    }
-
-    .modal-header {
-        border-bottom: 1px solid var(--border-color);
-    }
-
-    .modal-footer {
-        border-top: 1px solid var(--border-color);
+        margin-right: 0.25rem;
+        margin-bottom: 0.25rem;
+        display: inline-block;
     }
 </style>
 {% endblock %}
@@ -159,9 +64,9 @@
 <div class="row mb-4">
     <div class="col-md-8">
         <h1 class="display-6 fw-bold text-info">
-            <i class="bi bi-search me-2"></i>爬蟲任務詳情 #{{ job.id }}
+            <i class="bi bi-search me-2"></i>爬蟲任務概覽 #{{ job.id }}
         </h1>
-        <p class="text-light">查看爬蟲任務結果與關鍵詞分析</p>
+        <p class="text-light">查看爬蟲任務結果摘要</p>
     </div>
     <div class="col-md-4 text-md-end">
         <a href="{% url 'job_list' %}" class="btn btn-outline-secondary">
@@ -214,7 +119,7 @@
                     <div class="col-md-2">
                         <div class="mb-3 mb-md-0">
                             <h6 class="text-white mb-0">文章數</h6>
-                            <h5 class="mb-0">每類{{ job.limit_per_category }}篇，共{{ articles_len }}篇</h5>
+                            <h5 class="mb-0">每類{{ job.limit_per_category }}篇，共{{ articles_count }}篇</h5>
                         </div>
                     </div>
                     <div class="col-md-2">
@@ -229,371 +134,118 @@
     </div>
 </div>
 
-<!-- 頁籤切換 -->
-<ul class="nav nav-tabs mb-4" id="myTab" role="tablist">
-    <li class="nav-item" role="presentation">
-        <button class="nav-link active" id="keywords-tab" data-bs-toggle="tab" data-bs-target="#keywords" type="button" role="tab" aria-controls="keywords" aria-selected="true">
-            <i class="bi bi-bar-chart me-1"></i>關鍵詞分析
-        </button>
-    </li>
-    <li class="nav-item" role="presentation">
-        <button class="nav-link" id="articles-tab" data-bs-toggle="tab" data-bs-target="#articles" type="button" role="tab" aria-controls="articles" aria-selected="false">
-            <i class="bi bi-newspaper me-1"></i>文章列表
-        </button>
-    </li>
-</ul>
+<!-- 數據概覽卡片 -->
+<div class="row mb-4">
+    <!-- 文章數量統計 -->
+    <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="100">
+        <div class="card overview-card">
+            <div class="card-body p-4 text-center">
+                <i class="bi bi-newspaper stat-icon text-info"></i>
+                <h3 class="stat-value">{{ articles_count }}</h3>
+                <p class="stat-label">爬取的文章數量</p>
+                <a href="{% url 'job_articles' job.id %}" class="action-link">
+                    查看所有文章 <i class="bi bi-arrow-right action-icon"></i>
+                </a>
+            </div>
+        </div>
+    </div>
 
-<!-- 頁籤內容 -->
-<div class="tab-content" id="myTabContent">
-    <!-- 關鍵詞分析頁籤 -->
-    <div class="tab-pane fade show active" id="keywords" role="tabpanel" aria-labelledby="keywords-tab">
-        <!-- 篩選卡片 -->
-        <div class="card mb-4" data-aos="fade-up">
+    <!-- 關鍵詞統計 -->
+    <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="200">
+        <div class="card overview-card">
+            <div class="card-body p-4 text-center">
+                <i class="bi bi-key stat-icon text-success"></i>
+                <h3 class="stat-value">{{ keywords_count }}</h3>
+                <p class="stat-label">識別的關鍵詞數量</p>
+                <a href="{% url 'job_keywords' job.id %}" class="action-link">
+                    查看關鍵詞分析 <i class="bi bi-arrow-right action-icon"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- 命名實體統計 -->
+    <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="300">
+        <div class="card overview-card">
+            <div class="card-body p-4 text-center">
+                <i class="bi bi-people stat-icon text-warning"></i>
+                <h3 class="stat-value">{{ entities_count }}</h3>
+                <p class="stat-label">識別的命名實體數量</p>
+                <a href="{% url 'job_entities' job.id %}" class="action-link">
+                    查看命名實體分析 <i class="bi bi-arrow-right action-icon"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 類別分布卡片 -->
+<div class="row">
+    <div class="col-md-6 mb-4" data-aos="fade-up" data-aos-delay="400">
+        <div class="card">
             <div class="card-header">
                 <h5 class="mb-0">
-                    <i class="bi bi-funnel me-2"></i>關鍵詞篩選
+                    <i class="bi bi-pie-chart-fill me-2"></i>類別分布
                 </h5>
             </div>
             <div class="card-body">
-                <form method="get" id="filterForm">
-                    <!-- 統一選擇類別區域 -->
-                    <div class="unified-category-selection mb-4">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <h6 class="mb-0 text-info">
-                                    <i class="bi bi-tag-fill me-2"></i>選擇要分析的新聞類別
-                                </h6>
-                                <div class="form-check form-switch ms-2">
-                                    {{ form.cross_category }}
-                                    <label class="form-check-label" for="id_cross_category">啟用跨類別統計</label>
-                                </div>
-                            </div>
-
-                            <div id="categoriesSelectionArea">
-                                <div class="row">
-                                    <div class="col-12 mb-2">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" id="selectAllCategories">
-                                            <label class="form-check-label" for="selectAllCategories">
-                                                <strong>全選/取消全選</strong>
-                                            </label>
-                                        </div>
-                                    </div>
-                                    {% for choice_val, choice_label in form.fields.selected_categories.choices %}
-                                    <div class="col-md-4 mb-2">
-                                        <div class="form-check">
-                                            <input class="form-check-input category-checkbox" type="checkbox"
-                                                   name="selected_categories" value="{{ choice_val }}"
-                                                   id="category_{{ choice_val }}"
-                                                   {% if choice_val in form.selected_categories.value %}checked{% endif %}>
-                                            <label class="form-check-label category-label" for="category_{{ choice_val }}">
-                                                {{ choice_label }}
-                                            </label>
-                                        </div>
-                                    </div>
-                                    {% endfor %}
-                                </div>
-<!--                                <div id="singleCategoryDescription" class="mt-2 text-muted small" style="display: none;">-->
-<!--                                    <i class="bi bi-info-circle me-1"></i>不啟用跨類別統計時，僅分析第一個選中的類別-->
-<!--                                </div>-->
-<!--                                <div id="multiCategoryDescription" class="mt-2 text-muted small">-->
-<!--                                    <i class="bi bi-info-circle me-1"></i>啟用跨類別統計時，分析所有選中類別的綜合數據-->
-<!--                                </div>-->
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            {{ form.pos|as_crispy_field }}
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            {{ form.min_frequency|as_crispy_field }}
-                        </div>
-                    </div>
-
-                    <div class="row align-items-end">
-                        <div class="col-md-8 mb-3">
-                            <label for="id_limit" class="form-label">顯示關鍵詞數量: <span id="limitValue">{{ form.limit.value|default:"20" }}</span></label>
-                            <input type="range" class="form-range" name="limit" id="id_limit" min="5" max="100" step="1" value="{{ form.limit.value|default:"20" }}">
-                        </div>
-                        <div class="col-md-4 text-md-end mb-3">
-                            <button type="submit" class="btn btn-info">
-                                <i class="bi bi-search me-1"></i>篩選
-                            </button>
-                            <a href="{% url 'job_detail' job.id %}" class="btn btn-outline-secondary">
-                                <i class="bi bi-arrow-counterclockwise me-1"></i>重設
-                            </a>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <!-- 圖表卡片 -->
-        <div class="row">
-            <div class="col-lg-8">
-                <div class="card mb-4" data-aos="fade-up" data-aos-delay="100">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0">
-                            <i class="bi bi-bar-chart-fill me-2"></i>關鍵詞頻率圖表
-                        </h5>
-                        <div class="btn-group" role="group">
-                            <button type="button" class="btn btn-sm btn-outline-info active" id="barChartBtn">
-                                <i class="bi bi-bar-chart me-1"></i>長條圖
-                            </button>
-                            <button type="button" class="btn btn-sm btn-outline-info" id="pieChartBtn">
-                                <i class="bi bi-pie-chart me-1"></i>圓餅圖
-                            </button>
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        <div class="chart-container">
-                            <canvas id="keywordsChart"></canvas>
-                        </div>
-                    </div>
+                {% if category_stats %}
+                <div class="chart-container">
+                    <canvas id="categoryChart" height="250"></canvas>
                 </div>
-            </div>
-
-            <div class="col-lg-4">
-                <div class="card mb-4" data-aos="fade-up" data-aos-delay="200">
-                    <div class="card-header">
-                        <h5 class="mb-0">
-                            <i class="bi bi-pie-chart-fill me-2"></i>詞性分布
-                        </h5>
+                <div class="mt-3">
+                    {% for stat in category_stats %}
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="category-badge" style="background-color: rgba({{ forloop.counter0|add:30 }}, {{ forloop.counter|add:100 }}, {{ forloop.counter0|add:150 }}, 0.7);">
+                            {{ stat.category }}
+                        </span>
+                        <span class="badge bg-dark">{{ stat.count }}</span>
                     </div>
-                    <div class="card-body">
-                        <div class="chart-container" style="height: 250px;">
-                            <canvas id="posChart"></canvas>
-                        </div>
-                        <div class="mt-3">
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <span class="badge bg-info text-white">Na: 普通名詞</span>
-                                <span id="naCount" class="badge bg-dark">0</span>
-                            </div>
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <span class="badge bg-success text-white">Nb: 專有名詞</span>
-                                <span id="nbCount" class="badge bg-dark">0</span>
-                            </div>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <span class="badge bg-warning text-dark">Nc: 地方名詞</span>
-                                <span id="ncCount" class="badge bg-dark">0</span>
-                            </div>
-                        </div>
-                    </div>
+                    {% endfor %}
                 </div>
-            </div>
-        </div>
-
-        <!-- 關鍵詞列表卡片 -->
-        <div class="card" data-aos="fade-up" data-aos-delay="300">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">
-                    <i class="bi bi-list-ul me-2"></i>關鍵詞列表
-                </h5>
-                <button class="btn btn-sm btn-outline-info" id="exportBtn">
-                    <i class="bi bi-download me-1"></i>匯出CSV
-                </button>
-            </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-dark table-hover" id="keywordsTable">
-                        <thead>
-                            <tr>
-                                <th scope="col">#</th>
-                                <th scope="col">關鍵詞</th>
-                                <th scope="col">詞性</th>
-                                <th scope="col">頻率</th>
-                                <th scope="col">{% if is_cross_category %}主要類別{% else %}類別{% endif %}</th>
-                                {% if is_cross_category %}
-                                <th scope="col">類別分布</th>
-                                {% endif %}
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for keyword in keywords %}
-                            <tr class="keyword-item">
-                                <th scope="row">{{ forloop.counter }}</th>
-                                <td>{{ keyword.word }}</td>
-                                <td>
-                                    {% if keyword.pos == 'Na' %}
-                                        <span class="badge bg-info">Na (普通名詞)</span>
-                                    {% elif keyword.pos == 'Nb' %}
-                                        <span class="badge bg-success">Nb (專有名詞)</span>
-                                    {% elif keyword.pos == 'Nc' %}
-                                        <span class="badge bg-warning text-dark">Nc (地方名詞)</span>
-                                    {% else %}
-                                        <span class="badge bg-secondary">{{ keyword.pos }}</span>
-                                    {% endif %}
-                                </td>
-                                <td>{{ keyword.frequency }}</td>
-                                <td>
-                                    {% if is_cross_category %}
-                                        {% with top_category=keyword.top_category %}
-                                            <span class="badge" style="background-color: {{ category_colors|get_item:top_category|get_item:'bg' }}; border: 1px solid {{ category_colors|get_item:top_category|get_item:'border' }}">
-                                                {{ top_category }}
-                                            </span>
-                                        {% endwith %}
-                                    {% else %}
-                                        <span class="badge" style="background-color: {{ category_colors|get_item:keyword.category|get_item:'bg' }}; border: 1px solid {{ category_colors|get_item:keyword.category|get_item:'border' }}">
-                                            {{ keyword.category }}
-                                        </span>
-                                    {% endif %}
-                                </td>
-                                {% if is_cross_category %}
-                                <td class="category-distribution">
-                                    <div class="d-flex align-items-center">
-                                        <div class="category-badges me-2">
-                                            {% with categories=keyword.category_list %}
-                                                {% for cat in categories %}
-                                                    <span class="badge category-badge" style="background-color: {{ category_colors|get_item:cat|get_item:'bg' }}; border: 1px solid {{ category_colors|get_item:cat|get_item:'border' }}">
-                                                        {{ cat }}
-                                                    </span>
-                                                {% endfor %}
-                                            {% endwith %}
-                                        </div>
-                                        <button type="button" class="btn btn-sm btn-outline-info category-detail-btn ms-auto"
-                                                data-details="{{ keyword.category_details }}"
-                                                data-word="{{ keyword.word }}">
-                                            <i class="bi bi-info-circle-fill"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                                {% endif %}
-                            </tr>
-                            {% empty %}
-                            <tr>
-                                <td {% if is_cross_category %}colspan="6"{% else %}colspan="5"{% endif %} class="text-center py-4">
-                                    <i class="bi bi-emoji-frown me-2"></i>沒有符合條件的關鍵詞
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                {% else %}
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle me-2"></i>尚無類別統計數據
                 </div>
+                {% endif %}
             </div>
         </div>
     </div>
 
-    <!-- 文章列表頁籤 -->
-    <div class="tab-pane fade" id="articles" role="tabpanel" aria-labelledby="articles-tab">
-        <div class="card" data-aos="fade-up">
+    <!-- 最新文章卡片 -->
+    <div class="col-md-6 mb-4" data-aos="fade-up" data-aos-delay="500">
+        <div class="card">
             <div class="card-header">
                 <h5 class="mb-0">
-                    <i class="bi bi-newspaper me-2"></i>爬取文章列表
+                    <i class="bi bi-clock-history me-2"></i>最新文章
                 </h5>
             </div>
             <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-dark table-hover" id="articlesTable">
-                        <thead>
-                            <tr>
-                                <th scope="col">#</th>
-                                <th scope="col">標題</th>
-                                <th scope="col">類別</th>
-                                <th scope="col">發布日期</th>
-                                <th scope="col">作者</th>
-                                <th scope="col">操作</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for article in articles %}
-                            <tr>
-                                <th scope="row">{{ forloop.counter }}</th>
-                                <td>{{ article.title }}</td>
-                                <td>{{ article.category }}</td>
-                                <td>{{ article.date|date:"Y-m-d H:i" }}</td>
-                                <td>{{ article.author }}</td>
-                                <td>
-{#                                    <div class="btn-group" role="group">#}
-                                        <a href="{% url 'article_detail' article.id %}" class="btn btn-sm btn-outline-info category-detail-btn ms-auto">
-                                            <i class="bi bi-info-circle-fill"></i>
-                                            詳情
-                                        </a>
-{#                                        <button type="button" class="btn btn-sm btn-outline-info view-article"#}
-{#                                                data-id="{{ article.id }}"#}
-{#                                                data-title="{{ article.title }}"#}
-{#                                                data-category="{{ article.category }}"#}
-{#                                                data-date="{{ article.date|date:"Y-m-d H:i" }}"#}
-{#                                                data-author="{{ article.author }}"#}
-{#                                                data-content="{{ article.content }}"#}
-{#                                                data-link="{{ article.link }}">#}
-{#                                            <i class="bi bi-search"></i>#}
-{#                                        </button>#}
-{#                                    </div>#}
-
-                                    <button type="button" class="btn btn-sm btn-outline-info category-detail-btn ms-auto view-article"
-                                                data-id="{{ article.id }}"
-                                                data-title="{{ article.title }}"
-                                                data-category="{{ article.category }}"
-                                                data-date="{{ article.date|date:"Y-m-d H:i" }}"
-                                                data-author="{{ article.author }}"
-                                                data-content="{{ article.content }}"
-                                                data-link="{{ article.link }}">
-                                            <i class="bi bi-eye"></i>
-                                            預覽
-                                    </button>
-                                </td>
-                            </tr>
-                            {% empty %}
-                            <tr>
-                                <td colspan="6" class="text-center py-4">
-                                    <i class="bi bi-emoji-frown me-2"></i>沒有爬取到文章或任務尚未完成
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                {% if recent_articles %}
+                <div class="list-group list-group-flush">
+                    {% for article in recent_articles %}
+                    <a href="{% url 'article_detail' article.id %}" class="list-group-item list-group-item-action bg-transparent text-white border-bottom border-secondary">
+                        <div class="d-flex w-100 justify-content-between align-items-center">
+                            <h6 class="mb-1 text-truncate" style="max-width: 80%;">{{ article.title }}</h6>
+                            <small class="text-info">{{ article.date|date:"m-d H:i" }}</small>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="badge" style="background-color: rgba(100, 100, 200, 0.7);">{{ article.category }}</small>
+                            <small class="text-muted">{{ article.author }}</small>
+                        </div>
+                    </a>
+                    {% endfor %}
                 </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- 文章查看模態框 -->
-<div class="modal fade" id="articleModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-scrollable">
-        <div class="modal-content bg-dark text-white">
-            <div class="modal-header">
-                <h5 class="modal-title" id="articleTitle"></h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div class="mb-3">
-                    <div class="badge bg-info me-2" id="articleCategory"></div>
-                    <small class="text-white" id="articleDate"></small>
-                    <small class="text-white ms-2" id="articleAuthor"></small>
+                <div class="text-center py-3">
+                    <a href="{% url 'job_articles' job.id %}" class="btn btn-sm btn-outline-info">
+                        <i class="bi bi-list-ul me-1"></i>查看所有文章
+                    </a>
                 </div>
-                <div class="article-content" id="articleContent"></div>
-            </div>
-            <div class="modal-footer">
-                <a href="#" class="btn btn-outline-info" id="articleLink" target="_blank">
-                    <i class="bi bi-box-arrow-up-right me-1"></i>原始文章
-                </a>
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">關閉</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- 類別分布模態框 -->
-<div class="modal fade" id="categoryDetailModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content bg-dark">
-            <div class="modal-header">
-                <h5 class="modal-title">
-                    <i class="bi bi-pie-chart-fill me-2 text-info"></i><span id="detailKeyword">關鍵詞</span> - 類別分布
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div id="categoryDetailContent"></div>
-                <div class="mt-3">
-                    <canvas id="categoryDetailChart" height="200"></canvas>
+                {% else %}
+                <div class="alert alert-info m-3">
+                    <i class="bi bi-info-circle me-2"></i>尚無爬取的文章
                 </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">關閉</button>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -602,347 +254,45 @@
 
 {% block extra_js %}
 <script>
-    // 初始化DataTables
     $(document).ready(function() {
-        $('#keywordsTable').DataTable({
-            language: {
-                url: '//cdn.datatables.net/plug-ins/1.11.5/i18n/zh-HANT.json',
-                paginate: {
-                    previous: "上一頁",
-                    next: "下一頁"
-                },
-                search: "搜尋:",
-                lengthMenu: "顯示 _MENU_ 條記錄",
-                info: "顯示第 _START_ 至 _END_ 條記錄，共 _TOTAL_ 條",
-                infoEmpty: "沒有記錄",
-                infoFiltered: "(從 _MAX_ 條記錄過濾)",
-                zeroRecords: "沒有找到符合條件的記錄"
-            },
-            pageLength: 15,
-            responsive: true
-        });
-
-        $('#articlesTable').DataTable({
-            language: {
-                url: '//cdn.datatables.net/plug-ins/1.11.5/i18n/zh-HANT.json',
-                paginate: {
-                    previous: "上一頁",
-                    next: "下一頁"
-                },
-                search: "搜尋:",
-                lengthMenu: "顯示 _MENU_ 條記錄",
-                info: "顯示第 _START_ 至 _END_ 條記錄，共 _TOTAL_ 條",
-                infoEmpty: "沒有記錄",
-                infoFiltered: "(從 _MAX_ 條記錄過濾)",
-                zeroRecords: "沒有找到符合條件的記錄"
-            },
-            pageLength: 10,
-            responsive: true
-        });
-
-        // 顯示文章詳情
-        $('.view-article').click(function() {
-            const id = $(this).data('id');
-            const title = $(this).data('title');
-            const category = $(this).data('category');
-            const date = $(this).data('date');
-            const author = $(this).data('author');
-            const content = $(this).data('content');
-            const link = $(this).data('link');
-
-            $('#articleTitle').text(title);
-            $('#articleCategory').text(category);
-            $('#articleDate').text(date);
-            $('#articleAuthor').text('作者: ' + author);
-            $('#articleContent').html(content.replace(/\n/g, '<br>'));
-            $('#articleLink').attr('href', link);
-
-            const articleModal = new bootstrap.Modal(document.getElementById('articleModal'));
-            articleModal.show();
-        });
-
-        // 顯示滑桿值
-        $('#id_limit').on('input', function() {
-            $('#limitValue').text($(this).val());
-        });
-
-        // 跨類別統計選項邏輯
-        $('#id_cross_category').change(function() {
-            const isCrossCategoryEnabled = $(this).prop('checked');
-
-            // 切換提示文字顯示
-            if (isCrossCategoryEnabled) {
-                $('#singleCategoryDescription').hide();
-                $('#multiCategoryDescription').show();
-            } else {
-                $('#singleCategoryDescription').show();
-                $('#multiCategoryDescription').hide();
-            }
-        });
-
-        // 頁面加載時執行一次以設置初始狀態
-        $('#id_cross_category').trigger('change');
-
-        // 全選/取消全選類別
-        $('#selectAllCategories').click(function() {
-            const isChecked = $(this).prop('checked');
-            $('input[name="selected_categories"]').prop('checked', isChecked);
-        });
-
-        // 類別詳情顯示
-        $('.category-detail-btn').click(function() {
-            const details = $(this).data('details');
-            const keywordElement = $(this).closest('tr').find('td:nth-child(2)');
-            const keyword = keywordElement.text();
-
-            // 設置模態框標題
-            $('#detailKeyword').text(keyword);
-
-            // 解析分類詳情字符串 (格式如: "類別1: 頻率1, 類別2: 頻率2")
-            const categoryDetailPairs = details.split(', ');
-            const categories = [];
-            const frequencies = [];
-
-            // 創建表格HTML
-            let tableHtml = '<table class="table table-dark table-striped">';
-            tableHtml += '<thead><tr><th>類別</th><th>頻率</th><th>佔比</th></tr></thead><tbody>';
-
-            let totalFreq = 0;
-
-            // 解析每一組類別: 頻率
-            categoryDetailPairs.forEach(function(pair) {
-                const [category, frequency] = pair.split(': ');
-                const freqNum = parseInt(frequency);
-
-                categories.push(category);
-                frequencies.push(freqNum);
-                totalFreq += freqNum;
-            });
-
-            // 生成表格行
-            categoryDetailPairs.forEach(function(pair) {
-                const [category, frequency] = pair.split(': ');
-                const freqNum = parseInt(frequency);
-                const percentage = ((freqNum / totalFreq) * 100).toFixed(1);
-
-                tableHtml += `<tr>
-                    <td>${category}</td>
-                    <td>${frequency}</td>
-                    <td>${percentage}%</td>
-                </tr>`;
-            });
-
-            tableHtml += '</tbody></table>';
-
-            // 顯示詳情表格
-            $('#categoryDetailContent').html(tableHtml);
-
-            // 創建圓餅圖
-            const ctx = document.getElementById('categoryDetailChart').getContext('2d');
-
-            // 如果已有圖表，先銷毀
-            if (window.categoryDetailChartInstance) {
-                window.categoryDetailChartInstance.destroy();
-            }
-
-            // 創建新圖表
-            window.categoryDetailChartInstance = new Chart(ctx, {
-                type: 'pie',
-                data: {
-                    labels: categories,
-                    datasets: [{
-                        data: frequencies,
-                        backgroundColor: [
-                            'rgba(54, 162, 235, 0.7)',
-                            'rgba(75, 192, 192, 0.7)',
-                            'rgba(255, 206, 86, 0.7)',
-                            'rgba(255, 99, 132, 0.7)',
-                            'rgba(153, 102, 255, 0.7)',
-                            'rgba(255, 159, 64, 0.7)',
-                            'rgba(199, 199, 199, 0.7)',
-                            'rgba(83, 102, 255, 0.7)',
-                            'rgba(40, 159, 64, 0.7)'
-                        ],
-                        borderColor: [
-                            'rgba(54, 162, 235, 1)',
-                            'rgba(75, 192, 192, 1)',
-                            'rgba(255, 206, 86, 1)',
-                            'rgba(255, 99, 132, 1)',
-                            'rgba(153, 102, 255, 1)',
-                            'rgba(255, 159, 64, 1)',
-                            'rgba(199, 199, 199, 1)',
-                            'rgba(83, 102, 255, 1)',
-                            'rgba(40, 159, 64, 1)'
-                        ],
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: {
-                                color: 'rgba(255, 255, 255, 0.7)',
-                                padding: 10,
-                                boxWidth: 12
-                            }
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    const label = context.label || '';
-                                    const value = context.raw || 0;
-                                    const percentage = ((value / totalFreq) * 100).toFixed(1);
-                                    return `${label}: ${value} (${percentage}%)`;
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-
-            // 顯示模態框
-            const modal = new bootstrap.Modal(document.getElementById('categoryDetailModal'));
-            modal.show();
-        });
-
-        // CSV 匯出功能
-        $('#exportBtn').click(function() {
-            exportTableToCSV('關鍵詞分析.csv');
-        });
-
-        // 初始化圖表
-        initializeCharts();
-    });
-
-    // 匯出CSV功能
-    function exportTableToCSV(filename) {
-        const csv = [];
-        const rows = document.querySelectorAll('#keywordsTable tr');
-
-        for (let i = 0; i < rows.length; i++) {
-            const row = [], cols = rows[i].querySelectorAll('td, th');
-
-            for (let j = 0; j < cols.length; j++) {
-                // 跳過操作按鈕欄位
-                if (cols[j].querySelector('.btn-outline-info')) {
-                    continue;
-                }
-
-                // 處理特殊標籤內容
-                let cellText = cols[j].innerText;
-                if (cols[j].querySelector('.badge')) {
-                    cellText = cols[j].querySelector('.badge').innerText;
-                }
-
-                // 處理CSV中的逗號和引號
-                row.push('"' + cellText.replace(/"/g, '""') + '"');
-            }
-
-            csv.push(row.join(','));
-        }
-
-        // 下載CSV文件
-        const csvFile = new Blob([csv.join('\n')], {type: 'text/csv;charset=utf-8;'});
-        const downloadLink = document.createElement('a');
-        downloadLink.href = URL.createObjectURL(csvFile);
-        downloadLink.setAttribute('download', filename);
-        downloadLink.style.display = 'none';
-        document.body.appendChild(downloadLink);
-        downloadLink.click();
-        document.body.removeChild(downloadLink);
-    }
-
-    // 初始化圖表
-    function initializeCharts() {
-        // 關鍵詞頻率圖表
-        const keywordsCtx = document.getElementById('keywordsChart').getContext('2d');
-        const keywordsData = {
-            labels: [{% for keyword in keywords %}'{{ keyword.word }}',{% endfor %}],
+        // 繪製類別分布圖表
+        {% if category_stats %}
+        const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+        const categoryData = {
+            labels: [{% for stat in category_stats %}"{{ stat.category }}",{% endfor %}],
             datasets: [{
-                label: '頻率',
-                data: [{% for keyword in keywords %}{{ keyword.frequency }},{% endfor %}],
-                backgroundColor: 'rgba(23, 162, 184, 0.6)',
-                borderColor: 'rgba(23, 162, 184, 1)',
+                data: [{% for stat in category_stats %}{{ stat.count }},{% endfor %}],
+                backgroundColor: [
+                    'rgba(54, 162, 235, 0.7)',
+                    'rgba(255, 99, 132, 0.7)',
+                    'rgba(255, 206, 86, 0.7)',
+                    'rgba(75, 192, 192, 0.7)',
+                    'rgba(153, 102, 255, 0.7)',
+                    'rgba(255, 159, 64, 0.7)',
+                    'rgba(201, 203, 207, 0.7)',
+                    'rgba(0, 204, 150, 0.7)',
+                    'rgba(255, 0, 110, 0.7)'
+                ],
+                borderColor: [
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(255, 99, 132, 1)',
+                    'rgba(255, 206, 86, 1)',
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(153, 102, 255, 1)',
+                    'rgba(255, 159, 64, 1)',
+                    'rgba(201, 203, 207, 1)',
+                    'rgba(0, 204, 150, 1)',
+                    'rgba(255, 0, 110, 1)'
+                ],
                 borderWidth: 1
             }]
         };
 
-        // 長條圖初始化
-        const keywordsChart = new Chart(keywordsCtx, {
-            type: 'bar',
-            data: keywordsData,
-            options: {
-                indexAxis: 'y',
-                scales: {
-                    x: {
-                        beginAtZero: true,
-                        grid: {
-                            color: 'rgba(255, 255, 255, 0.1)'
-                        },
-                        ticks: {
-                            color: 'rgba(255, 255, 255, 0.7)'
-                        }
-                    },
-                    y: {
-                        grid: {
-                            color: 'rgba(255, 255, 255, 0.1)'
-                        },
-                        ticks: {
-                            color: 'rgba(255, 255, 255, 0.7)'
-                        }
-                    }
-                },
-                plugins: {
-                    legend: {
-                        labels: {
-                            color: 'rgba(255, 255, 255, 0.7)'
-                        }
-                    }
-                }
-            }
-        });
-
-        // 詞性分布圖表
-        const posCtx = document.getElementById('posChart').getContext('2d');
-
-        // 統計詞性數量
-        const posCount = {
-            'Na': 0,
-            'Nb': 0,
-            'Nc': 0
-        };
-
-        {% for keyword in keywords %}
-        posCount['{{ keyword.pos }}'] = posCount['{{ keyword.pos }}'] + 1;
-        {% endfor %}
-
-        // 更新計數器顯示
-        $('#naCount').text(posCount['Na']);
-        $('#nbCount').text(posCount['Nb']);
-        $('#ncCount').text(posCount['Nc']);
-
-        const posChart = new Chart(posCtx, {
+        const categoryChart = new Chart(categoryCtx, {
             type: 'doughnut',
-            data: {
-                labels: ['普通名詞 (Na)', '專有名詞 (Nb)', '地方名詞 (Nc)'],
-                datasets: [{
-                    data: [posCount['Na'], posCount['Nb'], posCount['Nc']],
-                    backgroundColor: [
-                        'rgba(23, 162, 184, 0.8)',
-                        'rgba(40, 167, 69, 0.8)',
-                        'rgba(255, 193, 7, 0.8)'
-                    ],
-                    borderColor: [
-                        'rgba(23, 162, 184, 1)',
-                        'rgba(40, 167, 69, 1)',
-                        'rgba(255, 193, 7, 1)'
-                    ],
-                    borderWidth: 1
-                }]
-            },
+            data: categoryData,
             options: {
+                responsive: true,
                 plugins: {
                     legend: {
                         position: 'bottom',
@@ -953,29 +303,14 @@
                 }
             }
         });
+        {% endif %}
 
-        // 切換圖表類型
-        $('#barChartBtn').click(function() {
-            $(this).addClass('active');
-            $('#pieChartBtn').removeClass('active');
-            keywordsChart.config.type = 'bar';
-            keywordsChart.config.options.indexAxis = 'y';
-            keywordsChart.update();
-        });
-
-        $('#pieChartBtn').click(function() {
-            $(this).addClass('active');
-            $('#barChartBtn').removeClass('active');
-            keywordsChart.config.type = 'pie';
-            keywordsChart.update();
-        });
-    }
-
-    // 如果任務仍在執行中，每5秒自動刷新頁面
-    {% if job.status == 'running' or job.status == 'pending' %}
-    setTimeout(function() {
-        location.reload();
-    }, 5000);
-    {% endif %}
+        // 如果任務仍在執行中，每5秒自動刷新頁面
+        {% if job.status == 'running' or job.status == 'pending' %}
+        setTimeout(function() {
+            location.reload();
+        }, 5000);
+        {% endif %}
+    });
 </script>
 {% endblock %}

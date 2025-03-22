@@ -1,0 +1,166 @@
+/* 數據分析頁面共用樣式 */
+
+/* 卡片樣式 */
+.analysis-card {
+    border: none;
+    border-radius: 10px;
+    background: linear-gradient(145deg, #2a2d3a, #212330);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.analysis-card:hover {
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+}
+
+/* 圖表容器 */
+.chart-container {
+    position: relative;
+    height: 50vh;
+    width: 100%;
+}
+
+/* 篩選區域樣式 */
+.filter-section {
+    background: var(--gradient-primary);
+    padding: 1px;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+}
+
+.filter-section .card-body {
+    background: var(--lighter-bg);
+    border-radius: 7px;
+}
+
+/* 表格相關樣式 */
+.data-table tbody tr {
+    transition: background-color 0.2s;
+}
+
+.data-table tbody tr:hover td {
+    background-color: rgba(23, 162, 184, 0.1);
+}
+
+.data-item {
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.data-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(23, 162, 184, 0.2);
+}
+
+/* 表格分頁樣式 */
+.dataTables_paginate .paginate_button {
+    color: #fff !important;
+}
+
+/* 類別標籤樣式 */
+.category-badge {
+    margin-right: 3px;
+    margin-bottom: 3px;
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+}
+
+.category-badges {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.category-distribution {
+    max-width: 300px;
+}
+
+/* 詳情按鈕樣式 */
+.detail-btn {
+    position: relative;
+    border-radius: 0.25rem;
+    overflow: hidden;
+    padding: 0.25rem 0.6rem;
+    z-index: 1;
+}
+
+.detail-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -15px;
+    width: 30px;
+    height: 100%;
+    background: var(--primary-color);
+    opacity: 0.2;
+    transform: skewX(-20deg);
+    z-index: -1;
+    transition: all 0.3s ease;
+}
+
+.detail-btn:hover::before {
+    left: -5px;
+    opacity: 0.4;
+}
+
+/* 篩選選項樣式 */
+.filter-options .form-check-input:checked + .form-check-label {
+    color: #17a2b8;
+    font-weight: bold;
+}
+
+.filter-options .form-check-label {
+    padding: 0.5rem 1rem;
+    border-radius: 5px;
+    transition: all 0.3s ease;
+}
+
+.filter-options .form-check-input:checked + .form-check-label {
+    background-color: rgba(23, 162, 184, 0.1);
+}
+
+/* 命名實體標記樣式 */
+.entity-badge {
+    font-size: 0.8rem;
+    padding: 0.2rem 0.6rem;
+    margin-right: 0.4rem;
+    border-radius: 4px;
+}
+
+.entity-type-PERSON {
+    background-color: rgba(255, 99, 132, 0.7);
+    border: 1px solid rgba(255, 99, 132, 1);
+}
+
+.entity-type-LOC {
+    background-color: rgba(54, 162, 235, 0.7);
+    border: 1px solid rgba(54, 162, 235, 1);
+}
+
+.entity-type-ORG {
+    background-color: rgba(255, 206, 86, 0.7);
+    border: 1px solid rgba(255, 206, 86, 1);
+}
+
+.entity-type-TIME {
+    background-color: rgba(75, 192, 192, 0.7);
+    border: 1px solid rgba(75, 192, 192, 1);
+}
+
+.entity-type-MISC {
+    background-color: rgba(153, 102, 255, 0.7);
+    border: 1px solid rgba(153, 102, 255, 1);
+}
+
+/* 模態框樣式 */
+.modal-content {
+    border: 1px solid var(--border-color);
+}
+
+.modal-header {
+    border-bottom: 1px solid var(--border-color);
+}
+
+.modal-footer {
+    border-top: 1px solid var(--border-color);
+}

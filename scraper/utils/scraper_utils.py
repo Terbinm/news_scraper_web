@@ -722,13 +722,74 @@ class CTTextProcessor:
         """
         try:
             if self.ner is None:
+                self.logger.warning("未初始化CKIP NER模型，無法識別命名實體")
                 return []
 
+            # 確保輸入文字不為空
+            if not text or len(text.strip()) == 0:
+                return []
+
+            # 使用CKIP進行命名實體識別
             ner_results = self.ner([text])
+            self.logger.info(f"識別出 {len(ner_results[0])} 個命名實體")
             return ner_results[0]
         except Exception as e:
-            self.logger.error(f"命名實體識別失敗: {e}")
+            self.logger.error(f"命名實體識別失敗: {e}", exc_info=True)
             return []
+
+    def process_named_entities(self, articles):
+        """處理命名實體並輸出分析結果
+
+        Args:
+            articles (list): 文章列表
+
+        Returns:
+            dict: 按類別組織的命名實體統計
+        """
+        # 按類別分組
+        category_articles = defaultdict(list)
+        for article in articles:
+            category = article.get("category", "未知")
+            category_articles[category].append(article)
+
+        # 存儲每個類別的命名實體與詞頻結果
+        category_entities = {}
+
+        # 對每個類別進行分析
+        for category, category_data in category_articles.items():
+            self.logger.info(f"分析 {category} 類別的 {len(category_data)} 篇文章命名實體")
+
+            # 合併該類別所有文章內容
+            category_text = ""
+            for article in category_data:
+                category_text += article.get("content", "") + "\n"
+
+            # 使用CKIP NER分析
+            named_entities = self.identify_named_entities(category_text)
+
+            # 統計實體頻率
+            entity_freq = defaultdict(int)
+            entity_type_map = {}  # 記錄每個實體的類型
+
+            for entity in named_entities:
+                entity_key = f"{entity.word}_{entity.ner}"  # 使用實體+類型作為唯一鍵
+                entity_freq[entity_key] += 1
+                entity_type_map[entity_key] = {"entity": entity.word, "type": entity.ner}
+
+            # 轉換為排序列表
+            entities_with_freq = []
+            for entity_key, freq in sorted(entity_freq.items(), key=lambda x: x[1], reverse=True):
+                entity_info = entity_type_map[entity_key]
+                entities_with_freq.append({
+                    "entity": entity_info["entity"],
+                    "entity_type": entity_info["type"],
+                    "frequency": freq,
+                    "category": category
+                })
+
+            category_entities[category] = entities_with_freq
+
+        return category_entities
 
     def extract_keywords(self, words_with_pos, topK=20):
         """根據詞性和詞頻提取關鍵詞
@@ -846,8 +907,11 @@ class CTTextProcessor:
         # 按類別分析關鍵詞統計
         category_keywords_stats = self.analyze_by_category(articles)
 
-        # 獲取每篇文章的關鍵詞
-        articles_keywords = []
+        # 按類別分析命名實體統計
+        category_entities_stats = self.process_named_entities(articles)
+
+        # 獲取每篇文章的關鍵詞和命名實體
+        articles_analysis = []
         for article in articles:
             if "content" in article and article["content"]:
                 title = article.get("title", "未知標題")
@@ -855,10 +919,11 @@ class CTTextProcessor:
                 article_keywords = self.extract_keywords(article_words_with_pos, topK=10)
                 article_entities = self.identify_named_entities(article["content"])
 
-                articles_keywords.append({
+                articles_analysis.append({
                     "title": title,
                     "keywords": article_keywords,
-                    "named_entities": [{'word': entity.word, 'type': entity.ner} for entity in article_entities]
+                    "named_entities": [{'entity': entity.word, 'entity_type': entity.ner} for entity in
+                                       article_entities]
                 })
 
         result = {
@@ -867,9 +932,10 @@ class CTTextProcessor:
             "unique_words": len(word_freq),
             "top_words": sorted_word_freq[:50],  # 前50個高頻詞
             "keywords": keywords,
-            "named_entities": [{'word': entity.word, 'type': entity.ner} for entity in named_entities],
-            "articles_keywords": articles_keywords,
-            "category_keywords_stats": category_keywords_stats  # 按類別的關鍵詞統計
+            "named_entities": [{'entity': entity.word, 'entity_type': entity.ner} for entity in named_entities],
+            "articles_analysis": articles_analysis,
+            "category_keywords_stats": category_keywords_stats,  # 按類別的關鍵詞統計
+            "category_entities_stats": category_entities_stats  # 按類別的命名實體統計
         }
 
         return result
@@ -882,7 +948,7 @@ class CTTextProcessor:
             output_file (str, optional): 輸出檔案路徑，如果不指定，將使用預設路徑
         """
         try:
-            # 只保存類別關鍵詞統計結果到JSON，並轉換為扁平化結構
+            # 保存類別關鍵詞統計結果到JSON，並轉換為扁平化結構
             if "category_keywords_stats" in result:
                 category_keywords_file = os.path.join(self.output_dir, "category_keywords_stats.json")
 
@@ -899,6 +965,22 @@ class CTTextProcessor:
                 with open(category_keywords_file, 'w', encoding='utf-8') as f:
                     json.dump(flat_keywords, f, ensure_ascii=False, indent=2)
                 self.logger.info(f"類別關鍵詞統計已保存到: {category_keywords_file}")
+
+            # 保存類別命名實體統計結果到JSON，並轉換為扁平化結構
+            if "category_entities_stats" in result:
+                category_entities_file = os.path.join(self.output_dir, "category_entities_stats.json")
+
+                # 將巢狀結構轉換為扁平化列表
+                flat_entities = []
+                for category, entities in result["category_entities_stats"].items():
+                    for entity in entities:
+                        # 確保每個實體項目都已包含類別資訊
+                        flat_entities.append(entity)
+
+                # 寫入扁平化結構到檔案
+                with open(category_entities_file, 'w', encoding='utf-8') as f:
+                    json.dump(flat_entities, f, ensure_ascii=False, indent=2)
+                self.logger.info(f"類別命名實體統計已保存到: {category_entities_file}")
 
             return True
         except Exception as e:

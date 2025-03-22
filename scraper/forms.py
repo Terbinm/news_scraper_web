@@ -111,6 +111,15 @@ class KeywordFilterForm(forms.Form):
         ('Nc', '地方名詞 (Nc)')
     ]
 
+    ENTITY_TYPE_CHOICES = [
+        ('', '所有實體類型'),
+        ('PERSON', '人物 (PERSON)'),
+        ('LOC', '地點 (LOC)'),
+        ('ORG', '組織 (ORG)'),
+        ('TIME', '時間 (TIME)'),
+        ('MISC', '其他 (MISC)')
+    ]
+
     # 單選類別，用於非跨類別模式
     category = forms.ChoiceField(
         label='類別',
@@ -131,6 +140,13 @@ class KeywordFilterForm(forms.Form):
     pos = forms.ChoiceField(
         label='詞性',
         choices=POS_CHOICES,
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
+
+    entity_type = forms.ChoiceField(
+        label='實體類型',
+        choices=ENTITY_TYPE_CHOICES,
         required=False,
         widget=forms.Select(attrs={'class': 'form-select'})
     )
@@ -157,6 +173,20 @@ class KeywordFilterForm(forms.Form):
         required=False,
         help_text='啟用跨類別統計可合併相同關鍵詞在不同類別的頻率，並顯示分類詳情',
         widget=forms.CheckboxInput(attrs={'class': 'form-check-input'})
+    )
+
+    # 分析類型選擇
+    ANALYSIS_TYPE_CHOICES = [
+        ('keywords', '關鍵詞分析'),
+        ('entities', '命名實體分析')
+    ]
+
+    analysis_type = forms.ChoiceField(
+        label='分析類型',
+        choices=ANALYSIS_TYPE_CHOICES,
+        initial='keywords',
+        required=False,
+        widget=forms.RadioSelect(attrs={'class': 'form-check-input'})
     )
 
     # 清理表單數據

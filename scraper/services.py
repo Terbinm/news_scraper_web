@@ -7,7 +7,7 @@ from datetime import datetime
 from django.conf import settings
 from django.utils import timezone
 
-from .models import ScrapeJob, Article, KeywordAnalysis
+from .models import ScrapeJob, Article, KeywordAnalysis, NamedEntityAnalysis
 
 
 def run_scraper(job_id):
@@ -139,9 +139,120 @@ def process_scraper_results(job, result_file_path):
             for i in range(0, len(keyword_objects), batch_size):
                 KeywordAnalysis.objects.bulk_create(keyword_objects[i:i + batch_size])
 
+        # 處理 category_entities_stats.json 文件
+        entities_file = os.path.join(os.path.dirname(result_file_path), 'category_entities_stats.json')
+        if os.path.exists(entities_file):
+            with open(entities_file, 'r', encoding='utf-8') as f:
+                entities_data = json.load(f)
+
+            # 批量創建命名實體分析記錄
+            entity_objects = []
+            for entity_data in entities_data:
+                entity_objects.append(NamedEntityAnalysis(
+                    job=job,
+                    entity=entity_data.get('entity', ''),
+                    entity_type=entity_data.get('entity_type', ''),
+                    frequency=entity_data.get('frequency', 0),
+                    category=entity_data.get('category', '')
+                ))
+
+            # 批量保存 (分批次以避免過大的查詢)
+            batch_size = 100
+            for i in range(0, len(entity_objects), batch_size):
+                NamedEntityAnalysis.objects.bulk_create(entity_objects[i:i + batch_size])
+
     except Exception as e:
         logging.error(f"處理爬蟲結果時發生錯誤: {e}", exc_info=True)
         raise
+
+def generate_entity_chart_data(job_id, filters=None):
+    """
+    生成命名實體圖表數據
+
+    Args:
+        job_id: ScrapeJob ID
+        filters: 篩選條件字典
+
+    Returns:
+        dict: 圖表數據
+    """
+    # 準備篩選條件
+    if filters is None:
+        filters = {}
+
+    query_filters = {'job_id': job_id}
+
+    if 'category' in filters and filters['category']:
+        query_filters['category'] = filters['category']
+
+    if 'entity_type' in filters and filters['entity_type']:
+        query_filters['entity_type'] = filters['entity_type']
+
+    if 'min_frequency' in filters and filters['min_frequency']:
+        query_filters['frequency__gte'] = filters['min_frequency']
+
+    # 獲取並限制命名實體數量
+    limit = filters.get('limit', 20)
+    cross_category = filters.get('cross_category', False)
+
+    # 獲取符合篩選條件的命名實體
+    entities = NamedEntityAnalysis.objects.filter(**query_filters)
+
+    # 如果啟用跨類別統計，則合併相同實體在不同類別的頻率
+    if cross_category:
+        from django.db.models import Sum
+
+        # 將category從篩選條件中移除（如果有的話）
+        if 'category' in query_filters:
+            del query_filters['category']
+
+        # 如果有選擇特定類別，則限制查詢範圍
+        selected_categories = filters.get('selected_categories', [])
+        if selected_categories:
+            query_filters['category__in'] = selected_categories
+
+        # 重新查詢命名實體，按照實體和類型分組，並計算頻率總和
+        entities = (NamedEntityAnalysis.objects
+                   .filter(**query_filters)
+                   .values('entity', 'entity_type')
+                   .annotate(frequency=Sum('frequency'))
+                   .order_by('-frequency')[:limit])
+
+        # 準備圖表數據
+        labels = [f"{e['entity']} ({e['entity_type']})" for e in entities]
+        data = [e['frequency'] for e in entities]
+
+        # 設置類別為"跨類別統計"
+        if selected_categories:
+            category_label = "、".join(selected_categories) + " 跨類別統計"
+        else:
+            category_label = "所有類別跨類別統計"
+    else:
+        # 不進行跨類別統計時，直接按頻率排序取前N個
+        entities = entities.order_by('-frequency')[:limit]
+
+        # 準備圖表數據
+        labels = [f"{e.entity} ({e.entity_type})" for e in entities]
+        data = [e.frequency for e in entities]
+
+        # 設置類別標籤
+        if 'category' in filters and filters['category']:
+            category_label = filters['category']
+        else:
+            category_label = "所有類別"
+
+    # 返回 Chart.js 格式數據
+    return {
+        'labels': labels,
+        'datasets': [{
+            'label': f'{category_label}命名實體頻率',
+            'data': data,
+            'backgroundColor': 'rgba(153, 102, 255, 0.6)',
+            'borderColor': 'rgba(153, 102, 255, 1)',
+            'borderWidth': 1
+        }]
+    }
+
 
 
 def get_categories_list():
