@@ -177,10 +177,6 @@ def job_entities_analysis(request, job_id):
     available_categories = list(available_categories)  # 轉換為列表並排序
     available_categories.sort()
 
-    # 獲取所有存在的實體類型
-    available_entity_types = set(NamedEntityAnalysis.objects.filter(job=job).values_list('entity_type', flat=True))
-    available_entity_types = list(available_entity_types)
-    available_entity_types.sort()
 
     # 實體類型名稱映射
     entity_type_names = {
@@ -190,6 +186,12 @@ def job_entities_analysis(request, job_id):
         'TIME': '時間 (TIME)',
         'MISC': '其他 (MISC)'
     }
+
+    # 獲取所有存在的實體類型
+    # available_entity_types = set(NamedEntityAnalysis.objects.filter(job=job).values_list('entity_type', flat=True))
+    # available_entity_types = list(available_entity_types)
+    available_entity_types = list(entity_type_names)
+    available_entity_types.sort()
 
     # 實體類型顏色映射
     entity_type_colors = {

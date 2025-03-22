@@ -419,47 +419,25 @@
         // 顯示滑桿值
         bindRangeValue('id_limit', 'limitValue');
 
-        // 標籤選擇效果
-        $('.filter-tag').click(function() {
-            const checkbox = $(this).find('input[type="checkbox"]');
-            checkbox.prop('checked', !checkbox.prop('checked'));
-            $(this).toggleClass('active');
-
-            // 如果這是類別複選框，檢查跨類別可用性
-            if ($(checkbox).hasClass('category-checkbox')) {
-                checkCrossCategoryAvailability();
-            }
+        // 初始化類別標籤篩選
+        initTagFilters({
+            // 所有標籤
+            tagSelector: '.filter-tag:has(.category-checkbox)',
+            // 類別標籤
+            categoryTagSelector: '.category-checkbox',
+            // 全選和取消全選按鈕
+            selectAllBtnId: 'selectAllCategories',
+            deselectAllBtnId: 'deselectAllCategories',
+            // 跨類別相關設置
+            crossCategoryId: 'id_cross_category',
+            crossCategoryContainerId: 'crossCategorySwitch'
         });
 
-        // 初始化設置已選擇的標籤
-        $('.filter-tag input:checked').each(function() {
-            $(this).closest('.filter-tag').addClass('active');
-        });
-
-        // 類別全選按鈕
-        $('#selectAllCategories').click(function() {
-            $('.category-checkbox').prop('checked', true);
-            $('.category-checkbox').closest('.filter-tag').addClass('active');
-            checkCrossCategoryAvailability();
-        });
-
-        // 類別取消全選按鈕
-        $('#deselectAllCategories').click(function() {
-            $('.category-checkbox').prop('checked', false);
-            $('.category-checkbox').closest('.filter-tag').removeClass('active');
-            checkCrossCategoryAvailability();
-        });
-
-        // 實體類型全選按鈕
-        $('#selectAllEntityTypes').click(function() {
-            $('.entity-type-checkbox').prop('checked', true);
-            $('.entity-type-checkbox').closest('.filter-tag').addClass('active');
-        });
-
-        // 實體類型取消全選按鈕
-        $('#deselectAllEntityTypes').click(function() {
-            $('.entity-type-checkbox').prop('checked', false);
-            $('.entity-type-checkbox').closest('.filter-tag').removeClass('active');
+        // 初始化實體類型標籤篩選
+        initTagFilters({
+            tagSelector: '.filter-tag:has(.entity-type-checkbox)',
+            selectAllBtnId: 'selectAllEntityTypes',
+            deselectAllBtnId: 'deselectAllEntityTypes'
         });
 
         // 命名實體類別分布詳情
@@ -485,23 +463,6 @@
                 contentElement: '#entityDetailContent'
             });
         });
-
-        // 檢查跨類別分析可用性
-        function checkCrossCategoryAvailability() {
-            const selectedCount = $('.category-checkbox:checked').length;
-
-            // 如果選擇的類別數量為1或0，禁用跨類別分析
-            if (selectedCount <= 1) {
-                $('#id_cross_category').prop('checked', false).prop('disabled', true);
-                $('#crossCategorySwitch').addClass('text-muted');
-            } else {
-                $('#id_cross_category').prop('disabled', false);
-                $('#crossCategorySwitch').removeClass('text-muted');
-            }
-        }
-
-        // 初始化時檢查跨類別分析可用性
-        checkCrossCategoryAvailability();
 
         // 禁用跨類別分析（當僅有一個類別時）
         {% if disable_cross_category %}

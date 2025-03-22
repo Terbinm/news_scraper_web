@@ -246,6 +246,164 @@ function initSelectAll(selectAllId, targetName) {
         $(`input[name="${targetName}"]`).prop('checked', isChecked);
     });
 }
+
+/**
+ * 標籤篩選控制器 - 新版本
+ * 處理各種類型標籤（類別、詞性、實體類型）的選擇與UI狀態
+ * @param {Object} options - 設定選項
+ */
+function initTagFilters(options) {
+    // 處理默認選項
+    const settings = Object.assign({
+        // 標籤選擇器
+        tagSelector: '.filter-tag',
+        // 用於檢查跨類別可用性的類別標籤
+        categoryTagSelector: '.category-checkbox',
+        // 全選按鈕的ID
+        selectAllBtnId: '',
+        // 取消全選按鈕的ID
+        deselectAllBtnId: '',
+        // 跨類別切換ID (如果有的話)
+        crossCategoryId: '',
+        // 跨類別切換容器
+        crossCategoryContainerId: '',
+        // 處理數據變化的回調
+        onSelectionChange: null
+    }, options);
+
+    // 獲取所有標籤元素
+    const allTags = document.querySelectorAll(settings.tagSelector);
+
+    // 處理所有標籤的點擊事件
+    allTags.forEach(tag => {
+        // 移除現有的事件監聽器，防止重複綁定
+        const newTag = tag.cloneNode(true);
+        tag.parentNode.replaceChild(newTag, tag);
+
+        // 添加新的點擊事件處理器
+        newTag.addEventListener('click', function(e) {
+            // 防止標籤內部元素（如checkbox）的事件傳播
+            e.preventDefault();
+
+            // 找到與標籤關聯的複選框
+            const checkbox = this.querySelector('input[type="checkbox"]');
+            if (!checkbox) return;
+
+            // 切換複選框狀態
+            checkbox.checked = !checkbox.checked;
+
+            // 切換視覺效果
+            this.classList.toggle('active', checkbox.checked);
+
+            // 如果是類別複選框，檢查跨類別可用性
+            if (settings.crossCategoryId && checkbox.matches(settings.categoryTagSelector)) {
+                checkCrossCategoryAvailability();
+            }
+
+            // 如果有回調函數，則調用
+            if (typeof settings.onSelectionChange === 'function') {
+                settings.onSelectionChange();
+            }
+        });
+
+        // 設置初始狀態
+        const checkbox = newTag.querySelector('input[type="checkbox"]');
+        if (checkbox && checkbox.checked) {
+            newTag.classList.add('active');
+        } else {
+            newTag.classList.remove('active');
+        }
+    });
+
+    // 全選按鈕
+    if (settings.selectAllBtnId) {
+        document.getElementById(settings.selectAllBtnId).addEventListener('click', function() {
+            // 找到所有相關的複選框並設置為選中
+            const checkboxes = document.querySelectorAll(
+                settings.categoryTagSelector || `${settings.tagSelector} input[type="checkbox"]`
+            );
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = true;
+                checkbox.closest(settings.tagSelector).classList.add('active');
+            });
+
+            // 檢查跨類別可用性
+            if (settings.crossCategoryId) {
+                checkCrossCategoryAvailability();
+            }
+
+            // 如果有回調函數，則調用
+            if (typeof settings.onSelectionChange === 'function') {
+                settings.onSelectionChange();
+            }
+        });
+    }
+
+    // 取消全選按鈕
+    if (settings.deselectAllBtnId) {
+        document.getElementById(settings.deselectAllBtnId).addEventListener('click', function() {
+            // 找到所有相關的複選框並設置為未選中
+            const checkboxes = document.querySelectorAll(
+                settings.categoryTagSelector || `${settings.tagSelector} input[type="checkbox"]`
+            );
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = false;
+                checkbox.closest(settings.tagSelector).classList.remove('active');
+            });
+
+            // 檢查跨類別可用性
+            if (settings.crossCategoryId) {
+                checkCrossCategoryAvailability();
+            }
+
+            // 如果有回調函數，則調用
+            if (typeof settings.onSelectionChange === 'function') {
+                settings.onSelectionChange();
+            }
+        });
+    }
+
+    // 檢查跨類別分析可用性
+    function checkCrossCategoryAvailability() {
+        if (!settings.crossCategoryId) return;
+
+        const categoryCheckboxes = document.querySelectorAll(settings.categoryTagSelector);
+        const selectedCount = Array.from(categoryCheckboxes).filter(cb => cb.checked).length;
+
+        // 獲取跨類別切換元素
+        const crossCategoryCheckbox = document.getElementById(settings.crossCategoryId);
+        if (!crossCategoryCheckbox) return;
+
+        // 如果選擇的類別數量為1或0，禁用跨類別分析
+        if (selectedCount <= 1) {
+            crossCategoryCheckbox.checked = false;
+            crossCategoryCheckbox.disabled = true;
+
+            // 如果指定了容器，則添加禁用樣式
+            if (settings.crossCategoryContainerId) {
+                document.getElementById(settings.crossCategoryContainerId).classList.add('text-muted');
+            }
+        } else {
+            crossCategoryCheckbox.disabled = false;
+
+            // 如果指定了容器，則移除禁用樣式
+            if (settings.crossCategoryContainerId) {
+                document.getElementById(settings.crossCategoryContainerId).classList.remove('text-muted');
+            }
+        }
+    }
+
+    // 初始化時檢查跨類別可用性
+    if (settings.crossCategoryId) {
+        checkCrossCategoryAvailability();
+    }
+
+    // 返回工具物件
+    return {
+        checkCrossCategoryAvailability: checkCrossCategoryAvailability
+    };
+}
+
 /**
  * 初始化類別標籤選擇
  * @param {string} filterFormId - 篩選表單ID
