@@ -93,7 +93,7 @@ def job_detail(request, job_id):
                       .order_by('-count'))
 
     # 獲取最新的幾篇文章
-    recent_articles = Article.objects.filter(job=job).order_by('-date')[:5]
+    recent_articles = Article.objects.filter(job=job).order_by('-date')[:15]
 
     return render(request, 'scraper/job_detail.html', {
         'job': job,

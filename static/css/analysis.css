@@ -16,8 +16,20 @@
 /* 圖表容器 */
 .chart-container {
     position: relative;
-    height: 50vh;
+    min-height: 220px;
+    max-height: 500px;
+    height: auto !important;
     width: 100%;
+    margin-bottom: 1rem;
+    overflow: hidden;
+}
+
+/* 圓餅圖容器樣式 */
+.pie-chart-container {
+    height: 220px !important;
+    min-height: 220px;
+    width: 100%;
+    margin-bottom: 1rem;
 }
 
 /* 篩選區域樣式 */
