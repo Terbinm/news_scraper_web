@@ -25,10 +25,9 @@
 }
 
 /* 圓餅圖容器樣式 */
-.pie-chart-container {
+.pie-chart-container-1 {
     height: 220px !important;
     min-height: 220px;
-    width: 100%;
     margin-bottom: 1rem;
 }
 

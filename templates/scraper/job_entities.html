@@ -233,7 +233,7 @@
                         </button>
                     </div>
                 </div>
-                <div class="card-body" style="height: 560px;">
+                <div class="card-body" style="height:100%;">
                     <div class="chart-container">
                         <canvas id="entitiesChart"></canvas>
                     </div>
@@ -249,8 +249,10 @@
                     </h5>
                 </div>
                 <div class="card-body">
-                    <div class="pie-chart-container">
-                        <canvas id="entityTypeChart"></canvas>
+                    <div class="d-flex justify-content-center align-items-center">
+                        <div class="pie-chart-container-1">
+                            <canvas id="entityTypeChart"></canvas>
+                        </div>
                     </div>
                     <div class="mt-3">
                         <div class="d-flex justify-content-between align-items-center mb-2 entity-type-stat">
@@ -614,12 +616,16 @@
                 }]
             },
             options: {
-                responsive: true,
                 plugins: {
                     legend: {
-                        position: 'bottom',
-                        labels: {
-                            color: 'rgba(255, 255, 255, 0.7)'
+                        display: false // 移除標籤顯示
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const labels = ['普通名詞 (Na)', '專有名詞 (Nb)', '地方名詞 (Nc)'];
+                                return labels[context.dataIndex] + ': ' + context.raw;
+                            }
                         }
                     }
                 }
