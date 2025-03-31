@@ -17,4 +17,5 @@ urlpatterns = [
     path('jobs/<int:job_id>/keywords/', views.job_keywords_analysis, name='job_keywords'),
     path('jobs/<int:job_id>/entities/', views.job_entities_analysis, name='job_entities'),
     path('jobs/<int:job_id>/articles/', views.job_articles, name='job_articles'),
+    path('jobs/<int:job_id>/search-analysis/', views.job_search_analysis, name='job_search_analysis'),
 ]

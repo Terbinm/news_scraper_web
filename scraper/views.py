@@ -1,3 +1,4 @@
+import json
 import logging
 
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
@@ -9,7 +10,8 @@ from django.http import JsonResponse
 from django.db import models
 
 from .models import ScrapeJob, Article, KeywordAnalysis, NamedEntityAnalysis
-from .forms import LoginForm, ScrapeJobForm, KeywordFilterForm
+from .forms import LoginForm, ScrapeJobForm, KeywordFilterForm, AdvancedSearchForm
+from .services.search_service import SearchAnalysisService
 from .services.task_service import execute_scraper_task
 from .services.analysis_service import (
     get_keywords_analysis,
@@ -340,3 +342,77 @@ def job_delete(request, job_id):
 
     # 重定向到任務列表
     return redirect('job_list')
+
+
+@login_required
+def job_search_analysis(request, job_id):
+    """進階搜尋與分析視圖"""
+    job = get_object_or_404(ScrapeJob, id=job_id, user=request.user)
+
+    # 獲取所有可用類別 - 使用 set 去重
+    available_categories = set(Article.objects.filter(job=job).values_list('category', flat=True))
+    available_categories = sorted(list(available_categories))  # 轉換為列表並排序
+
+    # 從 services.analysis_service 引入類別顏色映射
+    from .services.analysis_service import get_category_colors
+    category_colors = get_category_colors()
+
+    # 初始化表單
+    form = AdvancedSearchForm(request.GET or None)
+
+    # 設置類別選項 - 使用已去重的類別
+    category_choices = [(cat, cat) for cat in available_categories]
+    if hasattr(form.fields['categories'], 'choices'):
+        form.fields['categories'].choices = category_choices
+
+    # 初始化分析結果變量
+    search_results = None
+    time_series_data = None
+    keywords_distribution = None
+    entities_distribution = None
+    cooccurrence_data = None
+    top_image_url = None
+
+    # 如果是搜尋請求且表單有效
+    if request.GET and form.is_valid():
+        # 實例化搜尋服務
+        search_service = SearchAnalysisService(job)
+
+        # 執行搜尋
+        search_results = search_service.search(form.cleaned_data)
+
+        if search_results and search_results.exists():
+            # 生成時間軸數據
+            time_series_data = search_service.generate_time_series(
+                search_results,
+                form.cleaned_data.get('time_grouping', 'day')
+            )
+
+            # 生成關鍵詞分布
+            keywords_distribution = search_service.get_keywords_distribution(search_results)
+
+            # 生成實體分布
+            entities_distribution = search_service.get_entity_distribution(search_results)
+
+            # 生成關鍵詞/實體共現數據
+            cooccurrence_data = search_service.generate_cooccurrence_data(search_results)
+
+            # 獲取頂部圖片
+            top_image_url = search_service.get_top_article_image(search_results)
+        else:
+            # 沒有搜尋結果
+            search_results = Article.objects.none()
+
+    # 渲染模板
+    return render(request, 'scraper/job_search_analysis.html', {
+        'job': job,
+        'form': form,
+        'results': search_results,
+        'available_categories': available_categories,
+        'category_colors': category_colors,
+        'time_series_data': json.dumps(time_series_data) if time_series_data else None,
+        'keywords_distribution': json.dumps(keywords_distribution) if keywords_distribution else None,
+        'entities_distribution': json.dumps(entities_distribution) if entities_distribution else None,
+        'cooccurrence_data': json.dumps(cooccurrence_data) if cooccurrence_data else None,
+        'top_image_url': top_image_url
+    })

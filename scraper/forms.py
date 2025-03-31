@@ -200,3 +200,153 @@ class KeywordFilterForm(forms.Form):
             cleaned_data['selected_categories'] = []
 
         return cleaned_data
+
+
+class AdvancedSearchForm(forms.Form):
+    """文章搜尋與分析的進階表單"""
+
+    search_terms = forms.CharField(
+        label='搜尋關鍵字或命名實體',
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': '輸入關鍵字或命名實體，多個請用逗號分隔'
+        })
+    )
+
+    search_mode = forms.ChoiceField(
+        label='搜尋模式',
+        choices=[
+            ('and', 'AND - 符合所有關鍵字'),
+            ('or', 'OR - 符合任一關鍵字')
+        ],
+        initial='and',
+        widget=forms.RadioSelect(attrs={'class': 'form-check-input'})
+    )
+
+    search_type = forms.ChoiceField(
+        label='搜尋類型',
+        choices=[
+            ('keyword', '關鍵字'),
+            ('entity', '命名實體'),
+            ('both', '兩者皆包含')
+        ],
+        initial='both',
+        widget=forms.RadioSelect(attrs={'class': 'form-check-input'})
+    )
+
+    include_title = forms.BooleanField(
+        label='包含標題',
+        initial=True,
+        required=False,
+        widget=forms.CheckboxInput(attrs={'class': 'form-check-input'})
+    )
+
+    include_content = forms.BooleanField(
+        label='包含內容',
+        initial=True,
+        required=False,
+        widget=forms.CheckboxInput(attrs={'class': 'form-check-input'})
+    )
+
+    entity_types = forms.MultipleChoiceField(
+        label='實體類型',
+        required=False,
+        choices=[
+            ('PERSON', '人物 (PERSON)'),
+            ('LOC', '地點 (LOC)'),
+            ('ORG', '組織 (ORG)'),
+            ('TIME', '時間 (TIME)'),
+            ('MISC', '其他 (MISC)')
+        ],
+        widget=forms.CheckboxSelectMultiple(attrs={'class': 'form-check-input'})
+    )
+
+    # 類別選擇欄位 - 將在視圖中動態設置選項
+    categories = forms.MultipleChoiceField(
+        label='新聞類別',
+        required=False,
+        widget=forms.CheckboxSelectMultiple(attrs={'class': 'form-check-input'})
+    )
+
+    date_from = forms.DateField(
+        label='開始日期',
+        required=False,
+        widget=forms.DateInput(attrs={
+            'type': 'date',
+            'class': 'form-control'
+        })
+    )
+
+    date_to = forms.DateField(
+        label='結束日期',
+        required=False,
+        widget=forms.DateInput(attrs={
+            'type': 'date',
+            'class': 'form-control'
+        })
+    )
+
+    min_keywords_count = forms.IntegerField(
+        label='最少關鍵詞數量',
+        required=False,
+        min_value=1,
+        widget=forms.NumberInput(attrs={
+            'class': 'form-control',
+            'placeholder': '最少包含幾個關鍵詞'
+        })
+    )
+
+    min_entities_count = forms.IntegerField(
+        label='最少實體數量',
+        required=False,
+        min_value=1,
+        widget=forms.NumberInput(attrs={
+            'class': 'form-control',
+            'placeholder': '最少包含幾個命名實體'
+        })
+    )
+
+    time_grouping = forms.ChoiceField(
+        label='時間軸分組',
+        choices=[
+            ('day', '依日統計'),
+            ('week', '依週統計'),
+            ('month', '依月統計')
+        ],
+        initial='day',
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
+
+    def clean_search_terms(self):
+        """處理搜尋詞，將逗號分隔的詞轉換為列表"""
+        search_terms = self.cleaned_data.get('search_terms', '')
+        if not search_terms:
+            return []
+
+        # 分割並清理每個搜尋詞
+        terms = [term.strip() for term in search_terms.split(',') if term.strip()]
+        return terms
+
+    def clean(self):
+        """驗證表單數據"""
+        cleaned_data = super().clean()
+        search_terms = cleaned_data.get('search_terms', [])
+        search_type = cleaned_data.get('search_type')
+        entity_types = cleaned_data.get('entity_types', [])
+
+        # 如果搜尋類型為實體但未選擇實體類型，添加提示
+        if search_type == 'entity' and not entity_types:
+            self.add_error('entity_types', '當選擇命名實體搜尋時，請至少選擇一種實體類型')
+
+        # 檢查是否有提供任何搜尋詞
+        if not search_terms:
+            self.add_error('search_terms', '請輸入至少一個搜尋詞')
+
+        # 檢查搜尋範圍
+        include_title = cleaned_data.get('include_title')
+        include_content = cleaned_data.get('include_content')
+        if not include_title and not include_content:
+            self.add_error('include_title', '請至少選擇一個搜尋範圍（標題或內容）')
+
+        return cleaned_data

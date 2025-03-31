@@ -137,7 +137,7 @@
 <!-- 數據概覽卡片 -->
 <div class="row mb-4">
     <!-- 文章數量統計 -->
-    <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="100">
+    <div class="col-md-3 mb-4" data-aos="fade-up" data-aos-delay="100">
         <div class="card overview-card">
             <div class="card-body p-4 text-center">
                 <i class="bi bi-newspaper stat-icon text-info"></i>
@@ -151,7 +151,7 @@
     </div>
 
     <!-- 關鍵詞統計 -->
-    <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="200">
+    <div class="col-md-3 mb-4" data-aos="fade-up" data-aos-delay="200">
         <div class="card overview-card">
             <div class="card-body p-4 text-center">
                 <i class="bi bi-key stat-icon text-success"></i>
@@ -165,7 +165,7 @@
     </div>
 
     <!-- 命名實體統計 -->
-    <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="300">
+    <div class="col-md-3 mb-4" data-aos="fade-up" data-aos-delay="300">
         <div class="card overview-card">
             <div class="card-body p-4 text-center">
                 <i class="bi bi-people stat-icon text-warning"></i>
@@ -173,6 +173,25 @@
                 <p class="stat-label">識別的命名實體數量</p>
                 <a href="{% url 'job_entities' job.id %}" class="action-link">
                     查看命名實體分析 <i class="bi bi-arrow-right action-icon"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- 進階搜尋與分析 -->
+    <div class="col-md-3 mb-4" data-aos="fade-up" data-aos-delay="300">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-search me-2"></i>進階搜尋與分析
+                </h5>
+            </div>
+            <div class="card-body">
+                <p class="text-white mb-3">
+                    使用進階搜尋功能，您可以根據關鍵字、命名實體、類別和日期等條件篩選文章，並獲得文章隨時間分布、關鍵詞與實體共現、詞頻分析等視覺化結果。
+                </p>
+                <a href="{% url 'job_search_analysis' job.id %}" class="btn btn-info">
+                    <i class="bi bi-search me-2"></i>進階搜尋與分析
                 </a>
             </div>
         </div>

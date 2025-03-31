@@ -1,0 +1,558 @@
+{% extends 'base.html' %}
+{% load custom_filters %}
+{% load crispy_forms_tags %}
+
+{% block title %}進階搜尋與分析 | 新聞爬蟲系統{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/static/css/search_analysis.css">
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h1 class="display-6 fw-bold text-info">
+            <i class="bi bi-search me-2"></i>進階搜尋與分析
+        </h1>
+        <p class="text-light">任務 #{{ job.id }} - {{ job.categories }}</p>
+    </div>
+    <div class="col-md-4 text-md-end">
+        <a href="{% url 'job_detail' job.id %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>返回概覽
+        </a>
+    </div>
+</div>
+
+<!-- 搜尋表單 -->
+<div class="search-form-card mb-4" data-aos="fade-up">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">
+            <i class="bi bi-funnel me-2"></i>搜尋條件
+        </h5>
+        {% if results %}
+        <span class="badge bg-info">找到 {{ results|length }} 篇符合的文章</span>
+        {% endif %}
+    </div>
+    <div class="card-body">
+        <form method="get" id="searchForm">
+            <!-- 搜尋詞與模式 -->
+            <div class="form-section">
+                <h5><i class="bi bi-key"></i>搜尋詞與模式</h5>
+                <div class="row">
+                    <div class="col-md-8 mb-3">
+                        <label for="id_search_terms" class="form-label">搜尋關鍵字或命名實體</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-dark border-secondary">
+                                <i class="bi bi-search text-light"></i>
+                            </span>
+                            {{ form.search_terms }}
+                        </div>
+                        <div class="form-text">多個關鍵字請用逗號分隔，如：台積電,中國,半導體</div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">搜尋模式</label>
+                        <div class="d-flex flex-column">
+                            {% for radio in form.search_mode %}
+                            <div class="form-check mb-2">
+                                {{ radio.tag }}
+                                <label class="form-check-label" for="{{ radio.id_for_label }}">
+                                    {{ radio.choice_label }}
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">搜尋類型</label>
+                        <div class="d-flex flex-column">
+                            {% for radio in form.search_type %}
+                            <div class="form-check mb-2">
+                                {{ radio.tag }}
+                                <label class="form-check-label" for="{{ radio.id_for_label }}">
+                                    {{ radio.choice_label }}
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">搜尋範圍</label>
+                        <div class="d-flex flex-column">
+                            <div class="form-check mb-2">
+                                {{ form.include_title }}
+                                <label class="form-check-label" for="{{ form.include_title.id_for_label }}">
+                                    包含標題
+                                </label>
+                            </div>
+                            <div class="form-check mb-2">
+                                {{ form.include_content }}
+                                <label class="form-check-label" for="{{ form.include_content.id_for_label }}">
+                                    包含內容
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4 mb-3" id="entityTypesSection">
+                        <label class="form-label">實體類型</label>
+                        <div class="d-flex flex-wrap">
+                            {% for checkbox in form.entity_types %}
+                            <label class="entity-tag entity-type-{{ checkbox.choice_value }}">
+                                {{ checkbox.tag }}
+                                {{ checkbox.choice_label }}
+                            </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 類別與日期篩選 -->
+            <div class="form-section">
+                <h5><i class="bi bi-funnel"></i>類別與日期篩選</h5>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">新聞類別</label>
+                        <div class="d-flex flex-wrap mb-2" id="categoryTags">
+                            {% for category in available_categories %}
+                            <label class="category-tag" style="background-color: {{ category_colors|get_item:category|get_item:'bg' }}; border: 1px solid {{ category_colors|get_item:category|get_item:'border' }}">
+                                <input type="checkbox" class="category-checkbox" name="categories" value="{{ category }}"
+                                    {% if form.is_bound and category in form.cleaned_data.categories %}checked{% endif %}>
+                                {{ category }}
+                            </label>
+                            {% endfor %}
+                        </div>
+                        <div class="mt-2">
+                            <button type="button" class="btn btn-sm btn-outline-info" id="selectAllCategories">
+                                <i class="bi bi-check-all me-1"></i>全選
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" id="deselectAllCategories">
+                                <i class="bi bi-x-lg me-1"></i>取消全選
+                            </button>
+                        </div>
+                    </div>
+
+                    
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">日期範圍</label>
+                        <div class="date-range-container">
+                            <div class="form-group">
+                                <label for="{{ form.date_from.id_for_label }}" class="form-label">開始日期</label>
+                                {{ form.date_from }}
+                            </div>
+                            <div class="form-group">
+                                <label for="{{ form.date_to.id_for_label }}" class="form-label">結束日期</label>
+                                {{ form.date_to }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 進階篩選與顯示選項 -->
+            <div class="form-section">
+                <h5><i class="bi bi-sliders"></i>進階篩選與顯示選項</h5>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="{{ form.min_keywords_count.id_for_label }}" class="form-label">最少關鍵詞數量</label>
+                        {{ form.min_keywords_count }}
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="{{ form.min_entities_count.id_for_label }}" class="form-label">最少實體數量</label>
+                        {{ form.min_entities_count }}
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="{{ form.time_grouping.id_for_label }}" class="form-label">時間軸分組</label>
+                        {{ form.time_grouping }}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-4 d-flex justify-content-between">
+                <button type="reset" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-counterclockwise me-1"></i>重設
+                </button>
+                <button type="submit" class="btn btn-info search-btn">
+                    <i class="bi bi-search me-1"></i>搜尋與分析
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% if results %}
+<!-- 結果分析區塊 -->
+<div class="row mb-4">
+    <!-- 搜尋結果統計 -->
+    <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="100">
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="bi bi-newspaper"></i>
+            </div>
+            <div class="stat-value">{{ results|length }}</div>
+            <div class="stat-label">符合條件的文章</div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="200">
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="bi bi-calendar-event"></i>
+            </div>
+            <div class="stat-value">{{ time_series_data|length }}</div>
+            <div class="stat-label">日期分布</div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="300">
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="bi bi-tags"></i>
+            </div>
+            <div class="stat-value">
+                {% if cooccurrence_data %}
+                {{ cooccurrence_data.nodes|length }}
+                {% else %}
+                0
+                {% endif %}
+            </div>
+            <div class="stat-label">關鍵詞與實體</div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <!-- 時間軸圖表 -->
+    <div class="col-lg-8 mb-4" data-aos="fade-up" data-aos-delay="400">
+        <div class="analysis-card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-graph-up me-2"></i>文章數量時間分布
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="time-series-container">
+                    <canvas id="timeSeriesChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 頂部文章圖片 -->
+    <div class="col-lg-4 mb-4" data-aos="fade-up" data-aos-delay="500">
+        <div class="top-article-card">
+            <img src="{{ top_image_url }}" alt="文章圖片" class="top-article-img">
+            <div class="top-article-overlay">
+                <div class="top-article-title">熱門相關報導</div>
+                <div class="top-article-meta">{{ results.0.date|date:"Y-m-d H:i" }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 資料分析圖表 -->
+<div class="row mb-4">
+    <!-- 關鍵詞分布 -->
+    <div class="col-md-6 mb-4" data-aos="fade-up" data-aos-delay="600">
+        <div class="analysis-card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-bar-chart me-2"></i>關鍵詞分布
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="distribution-chart-container">
+                    <canvas id="keywordsChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 實體分布 -->
+    <div class="col-md-6 mb-4" data-aos="fade-up" data-aos-delay="700">
+        <div class="analysis-card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-bar-chart me-2"></i>命名實體分布
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="distribution-chart-container">
+                    <canvas id="entitiesChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 關鍵詞與實體關聯圖 -->
+<div class="row mb-4">
+    <div class="col-12" data-aos="fade-up" data-aos-delay="800">
+        <div class="analysis-card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-diagram-3 me-2"></i>關鍵詞與實體關聯圖
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="network-container" id="cooccurrenceNetwork">
+                    <!-- D3.js將在此處渲染關係圖 -->
+                    <div class="d-flex align-items-center justify-content-center h-100 text-muted">
+                        <div class="text-center">
+                            <i class="bi bi-diagram-3 display-4 mb-3"></i>
+                            <p>關鍵詞與實體關聯圖正在載入...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 搜尋結果列表 -->
+<div class="results-table-card" data-aos="fade-up" data-aos-delay="900">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">
+            <i class="bi bi-list-ul me-2"></i>搜尋結果列表
+        </h5>
+        <button class="btn btn-sm btn-outline-info" id="exportResultsBtn">
+            <i class="bi bi-download me-1"></i>匯出CSV
+        </button>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-dark table-hover" id="articlesTable">
+                <thead>
+                    <tr>
+                        <th style="width: 50px">#</th>
+                        <th>標題</th>
+                        <th style="width: 100px">類別</th>
+                        <th style="width: 150px">日期</th>
+                        <th style="width: 150px">作者</th>
+                        <th style="width: 120px">操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for article in results %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ article.title }}</td>
+                        <td>
+                            <span class="badge" style="background-color: {% if article.category == '財經' %}rgba(54, 162, 235, 0.7){% elif article.category == '政治' %}rgba(255, 99, 132, 0.7){% elif article.category == '社會' %}rgba(255, 159, 64, 0.7){% elif article.category == '科技' %}rgba(75, 192, 192, 0.7){% elif article.category == '國際' %}rgba(153, 102, 255, 0.7){% elif article.category == '娛樂' %}rgba(255, 205, 86, 0.7){% elif article.category == '生活' %}rgba(201, 203, 207, 0.7){% elif article.category == '言論' %}rgba(0, 204, 150, 0.7){% elif article.category == '軍事' %}rgba(255, 0, 110, 0.7){% else %}rgba(100, 100, 100, 0.7){% endif %}">
+                                {{ article.category }}
+                            </span>
+                        </td>
+                        <td>{{ article.date|date:"Y-m-d H:i" }}</td>
+                        <td>{{ article.author }}</td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <button type="button" class="btn btn-sm btn-outline-info article-preview-btn"
+                                        data-id="{{ article.id }}"
+                                        data-title="{{ article.title }}"
+                                        data-content="{{ article.content }}"
+                                        data-category="{{ article.category }}"
+                                        data-date="{{ article.date|date:'Y-m-d H:i' }}"
+                                        data-author="{{ article.author }}"
+                                        data-link="{{ article.link }}">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                                <a href="{% url 'article_detail' article.id %}" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-info-circle"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- 文章預覽模態框 -->
+<div class="modal fade article-preview-modal" id="articlePreviewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="previewTitle"></h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <div class="badge bg-info me-2" id="previewCategory"></div>
+                    <small class="text-white" id="previewDate"></small>
+                    <small class="text-white ms-2" id="previewAuthor"></small>
+                </div>
+                <div class="article-content" id="previewContent"></div>
+            </div>
+            <div class="modal-footer">
+                <a href="#" class="btn btn-outline-info" id="previewLink" target="_blank">
+                    <i class="bi bi-box-arrow-up-right me-1"></i>原始文章
+                </a>
+                <a href="#" class="btn btn-info" id="previewDetailLink">
+                    <i class="bi bi-info-circle me-1"></i>查看詳情
+                </a>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">關閉</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% else %}
+<!-- 無搜尋結果顯示 -->
+{% if request.GET %}
+<div class="no-results-container" data-aos="fade-up">
+    <div class="no-results-icon">
+        <i class="bi bi-search"></i>
+    </div>
+    <h3 class="no-results-text">沒有符合條件的搜尋結果</h3>
+    <p class="no-results-subtext">請嘗試調整搜尋條件，例如使用不同的關鍵詞、選擇更多類別或擴大日期範圍</p>
+    <a href="{% url 'job_search_analysis' job.id %}" class="btn btn-outline-info">
+        <i class="bi bi-arrow-counterclockwise me-2"></i>重設搜尋條件
+    </a>
+</div>
+{% else %}
+<div class="no-results-container" data-aos="fade-up">
+    <div class="no-results-icon">
+        <i class="bi bi-search"></i>
+    </div>
+    <h3 class="no-results-text">開始您的進階搜尋</h3>
+    <p class="no-results-subtext">請使用上方表單設置搜尋條件，可以搜尋關鍵詞、命名實體，並透過類別與日期進行篩選</p>
+</div>
+{% endif %}
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<!-- 引入 D3.js -->
+<script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+<!-- 引入自定義JS -->
+<script src="/static/js/search_analysis.js"></script>
+
+<script>
+    // 將後端數據傳遞給前端JS
+    const timeSeriesData = {% if time_series_data %}{{ time_series_data|safe }}{% else %}null{% endif %};
+    const cooccurrenceData = {% if cooccurrence_data %}{{ cooccurrence_data|safe }}{% else %}null{% endif %};
+    const keywordsDistribution = {% if keywords_distribution %}{{ keywords_distribution|safe }}{% else %}null{% endif %};
+    const entitiesDistribution = {% if entities_distribution %}{{ entities_distribution|safe }}{% else %}null{% endif %};
+    
+    // 匯出CSV功能
+    document.getElementById('exportResultsBtn')?.addEventListener('click', function() {
+        // 準備CSV內容
+        const headers = ['標題', '類別', '日期', '作者', '連結'];
+        const rows = [];
+        
+        {% for article in results %}
+        rows.push([
+            '{{ article.title|escapejs }}',
+            '{{ article.category|escapejs }}',
+            '{{ article.date|date:"Y-m-d H:i"|escapejs }}',
+            '{{ article.author|escapejs }}',
+            '{{ article.link|escapejs }}'
+        ]);
+        {% endfor %}
+        
+        // 建立CSV內容
+        let csvContent = headers.join(',') + '\n';
+        
+        rows.forEach(row => {
+            // 處理CSV中的引號和逗號
+            const formattedRow = row.map(cell => {
+                // 如果數據包含逗號、引號或換行符，使用引號包裹並將內部引號轉換為雙引號
+                if (cell.includes(',') || cell.includes('"') || cell.includes('\n')) {
+                    return `"${cell.replace(/"/g, '""')}"`;
+                }
+                return cell;
+            });
+            
+            csvContent += formattedRow.join(',') + '\n';
+        });
+        
+        // 創建Blob並下載
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        
+        const link = document.createElement('a');
+        link.setAttribute('href', url);
+        link.setAttribute('download', '搜尋結果_{{ job.id }}.csv');
+        link.style.display = 'none';
+        
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    });
+    
+    // 標籤選擇功能
+    document.querySelectorAll('.category-tag').forEach(tag => {
+        const checkbox = tag.querySelector('input[type="checkbox"]');
+        if (checkbox && checkbox.checked) {
+            tag.classList.add('active');
+        }
+
+        tag.addEventListener('click', function(e) {
+            e.preventDefault();
+            checkbox.checked = !checkbox.checked;
+            this.classList.toggle('active');
+        });
+    });
+
+    // 全選類別
+    document.getElementById('selectAllCategories')?.addEventListener('click', function() {
+        document.querySelectorAll('.category-checkbox').forEach(checkbox => {
+            checkbox.checked = true;
+            const parentTag = checkbox.closest('.category-tag');
+            if (parentTag) {
+                parentTag.classList.add('active');
+            }
+        });
+    });
+
+    // 取消全選類別
+    document.getElementById('deselectAllCategories')?.addEventListener('click', function() {
+        document.querySelectorAll('.category-checkbox').forEach(checkbox => {
+            checkbox.checked = false;
+            const parentTag = checkbox.closest('.category-tag');
+            if (parentTag) {
+                parentTag.classList.remove('active');
+            }
+        });
+    });
+    
+    document.querySelectorAll('.entity-tag').forEach(tag => {
+        const checkbox = tag.querySelector('input[type="checkbox"]');
+        if (checkbox && checkbox.checked) {
+            tag.classList.add('active');
+        }
+        
+        tag.addEventListener('click', function(e) {
+            e.preventDefault();
+            checkbox.checked = !checkbox.checked;
+            this.classList.toggle('active');
+        });
+    });
+    
+    // 更新實體類型選擇區域顯示
+    function updateEntityTypeSection() {
+        const searchType = document.querySelector('input[name="search_type"]:checked').value;
+        const entityTypeSection = document.getElementById('entityTypesSection');
+        
+        if (searchType === 'entity' || searchType === 'both') {
+            entityTypeSection.classList.remove('d-none');
+        } else {
+            entityTypeSection.classList.add('d-none');
+        }
+    }
+    
+    // 監聽搜尋類型變更
+    document.querySelectorAll('input[name="search_type"]').forEach(radio => {
+        radio.addEventListener('change', updateEntityTypeSection);
+    });
+    
+    // 初始化時執行一次
+    updateEntityTypeSection();
+</script>
+{% endblock %}
