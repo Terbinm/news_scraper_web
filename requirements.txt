@@ -1,0 +1,40 @@
+# Django和關聯套件
+Django==4.2.20
+django-crispy-forms==2.0
+crispy-bootstrap5==0.7
+
+# 網頁爬蟲相關
+undetected-chromedriver==3.5.3
+selenium==4.16.0
+fake-useragent==1.2.1
+beautifulsoup4==4.12.2
+requests==2.31.0
+
+# 自然語言處理
+ckip-transformers==0.3.4
+torch==2.1.2
+transformers==4.36.2
+
+# 數據處理與可視化
+pandas==2.1.4
+numpy==1.26.2
+matplotlib==3.8.2
+seaborn==0.13.1
+
+# 實用工具
+python-dateutil==2.8.2
+pytz==2023.3
+tqdm==4.66.1
+
+# 非必要但建議安裝的套件
+# Gunicorn - 用於生產環境部署
+# gunicorn==21.2.0
+
+# Django Debug Toolbar - 用於開發環境調試
+# django-debug-toolbar==4.2.0
+
+# Redis - 用於緩存和任務隊列
+# redis==5.0.1
+
+# Celery - 用於後台任務處理 (可用於爬蟲任務排程)
+# celery==5.3.6

@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', function() {
     initSearchForm();
     setupDateRangeSlider();
     setupSearchTypeToggle();
+    setupEntityTypeFilters();
     initResultsDisplay();
     setupCalculateMatches();
 
@@ -114,7 +115,7 @@ function initSearchForm() {
         });
     }
 
-    // 處理表單提交
+     // 處理表單提交
     if (searchForm) {
         searchForm.addEventListener('submit', function(e) {
             // 檢查是否有搜尋詞
@@ -135,6 +136,19 @@ function initSearchForm() {
 
             // 根據複選框更新隱藏的搜尋類型
             updateHiddenSearchType();
+
+            // 檢查實體搜尋類型
+            if (document.getElementById('search_entity').checked) {
+                // 如果沒有選擇任何實體類型，則選中所有
+                const entityCheckboxes = document.querySelectorAll('input[name="entity_types"]');
+                const anyChecked = Array.from(entityCheckboxes).some(cb => cb.checked);
+
+                if (!anyChecked) {
+                    entityCheckboxes.forEach(cb => {
+                        cb.checked = true;
+                    });
+                }
+            }
         });
     }
 }
@@ -314,16 +328,24 @@ function setupCalculateMatches() {
         // 添加計算標記（後端可識別為僅計算數量而非真正搜尋）
         formData.append('calculate_only', 'true');
 
+        // 獲取CSRF令牌
+        const csrftoken = getCsrfToken();
+
         // 發送AJAX請求
         fetch(window.location.pathname, {
             method: 'POST',
             body: formData,
             headers: {
-                'X-CSRFToken': getCsrfToken(),
+                'X-CSRFToken': csrftoken,
                 'X-Requested-With': 'XMLHttpRequest'
             }
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            return response.json();
+        })
         .then(data => {
             // 隱藏計算中模態框
             calculatingModal.hide();
@@ -372,9 +394,22 @@ function setupCalculateMatches() {
  * 獲取 CSRF Token
  */
 function getCsrfToken() {
+    // 獲取cookie中的csrftoken
+    const cookieValue = document.cookie
+        .split('; ')
+        .find(row => row.startsWith('csrftoken='))
+        ?.split('=')[1];
+
+    // 如果cookie中找到，則返回
+    if (cookieValue) {
+        return cookieValue;
+    }
+
+    // 否則從表單中獲取
     const tokenElement = document.querySelector('[name=csrfmiddlewaretoken]');
     return tokenElement ? tokenElement.value : '';
 }
+
 
 /**
  * 分析搜尋詞
@@ -399,17 +434,25 @@ function analyzeSearchTerms(searchTerms) {
     document.querySelector('.terms-analysis-loading').style.display = 'block';
     document.querySelector('.terms-analysis-results').style.display = 'none';
 
+    // 獲取CSRF令牌
+    const csrftoken = getCsrfToken();
+
     // 發送AJAX請求
     fetch('/api/analyze_search_terms/', {
         method: 'POST',
         body: JSON.stringify({ terms: searchTerms }),
         headers: {
             'Content-Type': 'application/json',
-            'X-CSRFToken': getCsrfToken(),
+            'X-CSRFToken': csrftoken,
             'X-Requested-With': 'XMLHttpRequest'
         }
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return response.json();
+    })
     .then(data => {
         // 隱藏加載狀態
         document.querySelector('.terms-analysis-loading').style.display = 'none';
@@ -424,7 +467,7 @@ function analyzeSearchTerms(searchTerms) {
                     segmentedHtml += `<span class="badge bg-dark text-light border border-secondary me-2 mb-2">${term}</span>`;
                 });
             } else {
-                segmentedHtml = '<p class="text-muted">沒有找到可分析的詞彙</p>';
+                segmentedHtml = '<p class="text-white">沒有找到可分析的詞彙</p>';
             }
             segmentedTermsEl.innerHTML = segmentedHtml;
         }
@@ -443,7 +486,7 @@ function analyzeSearchTerms(searchTerms) {
                     keywordsHtml += `<span class="badge ${posClass} me-2 mb-2">${keyword.word} (${keyword.pos})</span>`;
                 });
             } else {
-                keywordsHtml = '<p class="text-muted">沒有識別出關鍵詞</p>';
+                keywordsHtml = '<p class="text-white">沒有識別出關鍵詞</p>';
             }
             keywordsEl.innerHTML = keywordsHtml;
         }
@@ -457,7 +500,7 @@ function analyzeSearchTerms(searchTerms) {
                     entitiesHtml += `<span class="badge entity-type-${entity.entity_type} me-2 mb-2">${entity.entity} (${entity.entity_type})</span>`;
                 });
             } else {
-                entitiesHtml = '<p class="text-muted">沒有識別出命名實體</p>';
+                entitiesHtml = '<p class="text-white">沒有識別出命名實體</p>';
             }
             entitiesEl.innerHTML = entitiesHtml;
         }
@@ -502,7 +545,6 @@ function analyzeSearchTerms(searchTerms) {
         document.getElementById('identifiedEntities').innerHTML = '<p class="text-danger">或聯繫系統管理員</p>';
     });
 }
-
 /**
  * 重設搜尋表單
  */
@@ -1143,6 +1185,35 @@ function exportSearchResults() {
         document.body.removeChild(link);
     });
 }
+
+// 實體類型篩選按鈕處理
+function setupEntityTypeFilters() {
+    // 全選按鈕
+    $('#selectAllEntityTypes').click(function() {
+        $('input[name="entity_types"]').prop('checked', true);
+        $('.filter-tag:has(input[name="entity_types"])').addClass('active');
+    });
+
+    // 取消全選按鈕
+    $('#deselectAllEntityTypes').click(function() {
+        $('input[name="entity_types"]').prop('checked', false);
+        $('.filter-tag:has(input[name="entity_types"])').removeClass('active');
+    });
+
+    // 實體類型標籤點擊事件
+    $('.filter-tag:has(input[name="entity_types"])').click(function(e) {
+        e.preventDefault();
+        const checkbox = $(this).find('input[name="entity_types"]');
+        checkbox.prop('checked', !checkbox.prop('checked'));
+        $(this).toggleClass('active', checkbox.prop('checked'));
+    });
+
+    // 初始化已選擇的實體類型標籤
+    $('input[name="entity_types"]:checked').each(function() {
+        $(this).closest('.filter-tag').addClass('active');
+    });
+}
+
 
 // 當視窗調整大小時重繪圖表
 window.addEventListener('resize', function() {

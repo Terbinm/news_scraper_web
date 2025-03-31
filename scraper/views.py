@@ -350,9 +350,9 @@ def job_search_analysis(request, job_id):
     """進階搜尋與分析視圖"""
     job = get_object_or_404(ScrapeJob, id=job_id, user=request.user)
 
-    # 獲取所有可用類別 - 使用 set 去重
+    # 獲取所有可用類別
     available_categories = set(Article.objects.filter(job=job).values_list('category', flat=True))
-    available_categories = sorted(list(available_categories))  # 轉換為列表並排序
+    available_categories = sorted(list(available_categories))
 
     # 從 services.analysis_service 引入類別顏色映射
     from .services.analysis_service import get_category_colors
@@ -361,7 +361,7 @@ def job_search_analysis(request, job_id):
     # 初始化表單
     form = AdvancedSearchForm(request.GET or None)
 
-    # 設置類別選項 - 使用已去重的類別
+    # 設置類別選項
     category_choices = [(cat, cat) for cat in available_categories]
     if hasattr(form.fields['categories'], 'choices'):
         form.fields['categories'].choices = category_choices

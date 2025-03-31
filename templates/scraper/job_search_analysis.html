@@ -40,6 +40,7 @@
     </div>
     <div class="card-body">
         <form method="get" id="searchForm">
+        {% csrf_token %}
             <!-- 搜尋詞與模式 -->
             <div class="form-section">
                 <h5><i class="bi bi-key me-2"></i>搜尋詞與模式</h5>
@@ -154,17 +155,31 @@
                     </div>
                 </div>
 
-                <!-- 實體類型選擇區域（條件性顯示） -->
+                <!-- 實體類型選擇區域（條件性顯示） --><!-- 實體類型選擇區域（條件性顯示） -->
                 <div id="entityTypesSection" class="search-conditional-section mb-3 {% if form.is_bound and form.search_type.value == 'keyword' %}d-none{% endif %}">
                     <label class="form-label">選擇實體類型</label>
                     <div class="d-flex flex-wrap">
-                        {% for checkbox in form.entity_types %}
-                        <div class="filter-tag me-2 mb-2 entity-type-{{ checkbox.choice_value }}">
-                            <input type="checkbox" name="entity_types" value="{{ checkbox.choice_value }}"
-                                   id="entity_{{ checkbox.choice_value }}" checked>
-                            {{ checkbox.choice_label }}
+                        <!-- 這部分需要修改，確保每個實體類型正確生成 -->
+                        <div class="filter-tag me-2 mb-2 entity-type-PERSON">
+                            <input type="checkbox" name="entity_types" value="PERSON" id="entity_PERSON" checked>
+                            人物 (PERSON)
                         </div>
-                        {% endfor %}
+                        <div class="filter-tag me-2 mb-2 entity-type-LOC">
+                            <input type="checkbox" name="entity_types" value="LOC" id="entity_LOC" checked>
+                            地點 (LOC)
+                        </div>
+                        <div class="filter-tag me-2 mb-2 entity-type-ORG">
+                            <input type="checkbox" name="entity_types" value="ORG" id="entity_ORG" checked>
+                            組織 (ORG)
+                        </div>
+                        <div class="filter-tag me-2 mb-2 entity-type-TIME">
+                            <input type="checkbox" name="entity_types" value="TIME" id="entity_TIME" checked>
+                            時間 (TIME)
+                        </div>
+                        <div class="filter-tag me-2 mb-2 entity-type-MISC">
+                            <input type="checkbox" name="entity_types" value="MISC" id="entity_MISC" checked>
+                            其他 (MISC)
+                        </div>
                     </div>
                     <div class="mt-2">
                         <button type="button" class="btn btn-sm btn-outline-info" id="selectAllEntityTypes">
@@ -379,7 +394,7 @@
             <div class="card-body">
                 <div class="network-container" id="cooccurrenceNetwork">
                     <!-- D3.js將在此處渲染關係圖 -->
-                    <div class="d-flex align-items-center justify-content-center h-100 text-muted">
+                    <div class="d-flex align-items-center justify-content-center h-100 text-white">
                         <div class="text-center">
                             <i class="bi bi-diagram-3 display-4 mb-3"></i>
                             <p>關鍵詞與實體關聯圖正在載入...</p>
@@ -595,5 +610,7 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script src="https://d3js.org/d3-force.v2.min.js"></script>
 <script src="/static/js/search_analysis.js"></script>
 {% endblock %}
