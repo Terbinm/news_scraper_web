@@ -179,19 +179,14 @@
     </div>
 
     <!-- 進階搜尋與分析 -->
-    <div class="col-md-3 mb-4" data-aos="fade-up" data-aos-delay="300">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0">
-                    <i class="bi bi-search me-2"></i>進階搜尋與分析
-                </h5>
-            </div>
-            <div class="card-body">
-                <p class="text-white mb-3">
-                    使用進階搜尋功能，您可以根據關鍵字、命名實體、類別和日期等條件篩選文章，並獲得文章隨時間分布、關鍵詞與實體共現、詞頻分析等視覺化結果。
-                </p>
-                <a href="{% url 'job_search_analysis' job.id %}" class="btn btn-info">
-                    <i class="bi bi-search me-2"></i>進階搜尋與分析
+    <div class="col-md-3 mb-4" data-aos="fade-up" data-aos-delay="400">
+        <div class="card overview-card">
+            <div class="card-body p-4 text-center">
+                <i class="bi bi-search stat-icon text-info"></i>
+                <h3 class="stat-value">進階</h3>
+                <p class="stat-label">搜尋與數據分析</p>
+                <a href="{% url 'job_search_analysis' job.id %}" class="action-link">
+                    開始進階分析 <i class="bi bi-arrow-right action-icon"></i>
                 </a>
             </div>
         </div>

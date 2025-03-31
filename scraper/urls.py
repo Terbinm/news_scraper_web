@@ -18,4 +18,6 @@ urlpatterns = [
     path('jobs/<int:job_id>/entities/', views.job_entities_analysis, name='job_entities'),
     path('jobs/<int:job_id>/articles/', views.job_articles, name='job_articles'),
     path('jobs/<int:job_id>/search-analysis/', views.job_search_analysis, name='job_search_analysis'),
+    path('api/analyze_search_terms/', views.analyze_search_terms, name='analyze_search_terms'),
+
 ]

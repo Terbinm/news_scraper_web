@@ -235,6 +235,19 @@ class AdvancedSearchForm(forms.Form):
         widget=forms.RadioSelect(attrs={'class': 'form-check-input'})
     )
 
+    # 新增的詞性多選欄位
+    pos_types = forms.MultipleChoiceField(
+        label='詞性選擇',
+        required=False,
+        choices=[
+            ('Na', '普通名詞 (Na)'),
+            ('Nb', '專有名詞 (Nb)'),
+            ('Nc', '地方名詞 (Nc)')
+        ],
+        initial=['Na', 'Nb', 'Nc'],
+        widget=forms.CheckboxSelectMultiple(attrs={'class': 'form-check-input'})
+    )
+
     include_title = forms.BooleanField(
         label='包含標題',
         initial=True,
@@ -259,6 +272,7 @@ class AdvancedSearchForm(forms.Form):
             ('TIME', '時間 (TIME)'),
             ('MISC', '其他 (MISC)')
         ],
+        initial=['PERSON', 'LOC', 'ORG', 'TIME', 'MISC'],
         widget=forms.CheckboxSelectMultiple(attrs={'class': 'form-check-input'})
     )
 
@@ -290,7 +304,8 @@ class AdvancedSearchForm(forms.Form):
     min_keywords_count = forms.IntegerField(
         label='最少關鍵詞數量',
         required=False,
-        min_value=1,
+        min_value=0,
+        initial=0,
         widget=forms.NumberInput(attrs={
             'class': 'form-control',
             'placeholder': '最少包含幾個關鍵詞'
@@ -300,7 +315,8 @@ class AdvancedSearchForm(forms.Form):
     min_entities_count = forms.IntegerField(
         label='最少實體數量',
         required=False,
-        min_value=1,
+        min_value=0,
+        initial=0,
         widget=forms.NumberInput(attrs={
             'class': 'form-control',
             'placeholder': '最少包含幾個命名實體'
@@ -334,19 +350,28 @@ class AdvancedSearchForm(forms.Form):
         search_terms = cleaned_data.get('search_terms', [])
         search_type = cleaned_data.get('search_type')
         entity_types = cleaned_data.get('entity_types', [])
+        pos_types = cleaned_data.get('pos_types', [])
 
-        # 如果搜尋類型為實體但未選擇實體類型，添加提示
-        if search_type == 'entity' and not entity_types:
-            self.add_error('entity_types', '當選擇命名實體搜尋時，請至少選擇一種實體類型')
+        # 檢查是否有提供任何搜尋詞或設置了最小數量條件
+        if not search_terms and not cleaned_data.get('min_keywords_count') and not cleaned_data.get('min_entities_count'):
+            self.add_error('search_terms', '請輸入至少一個搜尋詞或設置最小關鍵詞/實體數量條件')
 
-        # 檢查是否有提供任何搜尋詞
-        if not search_terms:
-            self.add_error('search_terms', '請輸入至少一個搜尋詞')
+        # 檢查實體類型選擇（如果搜尋類型為實體）
+        if search_type in ['entity', 'both'] and not entity_types:
+            # 如果未選擇任何實體類型，預設使用所有類型
+            cleaned_data['entity_types'] = ['PERSON', 'LOC', 'ORG', 'TIME', 'MISC']
+
+        # 檢查詞性選擇（如果搜尋類型為關鍵詞）
+        if search_type in ['keyword', 'both'] and not pos_types:
+            # 如果未選擇任何詞性，預設使用所有詞性
+            cleaned_data['pos_types'] = ['Na', 'Nb', 'Nc']
 
         # 檢查搜尋範圍
         include_title = cleaned_data.get('include_title')
         include_content = cleaned_data.get('include_content')
         if not include_title and not include_content:
             self.add_error('include_title', '請至少選擇一個搜尋範圍（標題或內容）')
+            # 預設啟用標題搜尋
+            cleaned_data['include_title'] = True
 
         return cleaned_data

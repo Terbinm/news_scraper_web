@@ -344,6 +344,7 @@ def job_delete(request, job_id):
     return redirect('job_list')
 
 
+##########################################
 @login_required
 def job_search_analysis(request, job_id):
     """進階搜尋與分析視圖"""
@@ -372,6 +373,26 @@ def job_search_analysis(request, job_id):
     entities_distribution = None
     cooccurrence_data = None
     top_image_url = None
+
+    # 處理AJAX計算請求 - 只返回匹配數量而不執行完整搜索
+    if request.method == 'POST' and request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        if request.POST.get('calculate_only') == 'true':
+            try:
+                # 使用表單數據進行查詢但不實際執行
+                search_service = SearchAnalysisService(job)
+
+                # 創建表單實例並手動設置數據
+                temp_form = AdvancedSearchForm(request.POST)
+                if temp_form.is_valid():
+                    # 獲取匹配計數
+                    query = search_service.build_search_query(temp_form.cleaned_data)
+                    count = query.count()
+                    return JsonResponse({'count': count, 'status': 'success'})
+                else:
+                    return JsonResponse({'count': 0, 'status': 'error', 'message': '表單驗證失敗'})
+            except Exception as e:
+                logger.error(f"計算匹配數量時出錯: {e}")
+                return JsonResponse({'count': 0, 'status': 'error', 'message': str(e)})
 
     # 如果是搜尋請求且表單有效
     if request.GET and form.is_valid():
@@ -416,3 +437,47 @@ def job_search_analysis(request, job_id):
         'cooccurrence_data': json.dumps(cooccurrence_data) if cooccurrence_data else None,
         'top_image_url': top_image_url
     })
+
+
+# 添加這個新的視圖函數用於分析搜索詞
+@login_required
+def analyze_search_terms(request):
+    """API視圖：分析搜索詞並返回斷詞、關鍵詞和命名實體"""
+    if request.method != 'POST' or not request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return JsonResponse({'status': 'error', 'message': '僅支持AJAX POST請求'})
+
+    try:
+        # 解析JSON請求
+        data = json.loads(request.body)
+        search_terms = data.get('terms', '')
+
+        if not search_terms:
+            return JsonResponse({'status': 'error', 'message': '未提供搜索詞'})
+
+        # 使用CTTextProcessor進行分析
+        from scraper.utils.scraper_utils import CTTextProcessor
+        processor = CTTextProcessor(output_dir=settings.MEDIA_ROOT)
+
+        # 進行斷詞
+        segmented_terms = processor.segment_text(search_terms)
+
+        # 提取所有斷詞結果（僅詞，不含詞性）
+        segmented_words = [word for word, _ in segmented_terms]
+
+        # 提取關鍵詞（帶詞性）
+        keywords = [{'word': word, 'pos': pos} for word, pos in segmented_terms]
+
+        # 提取命名實體
+        entities = processor.identify_named_entities(search_terms)
+        entities_data = [{'entity': entity.word, 'entity_type': entity.ner} for entity in entities]
+
+        return JsonResponse({
+            'status': 'success',
+            'segmented_terms': segmented_words,
+            'keywords': keywords,
+            'entities': entities_data
+        })
+
+    except Exception as e:
+        logger.error(f"分析搜索詞時出錯: {e}", exc_info=True)
+        return JsonResponse({'status': 'error', 'message': str(e)})

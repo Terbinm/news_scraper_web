@@ -1,30 +1,37 @@
 /**
- * 搜尋與分析頁面功能
+ * 進階搜尋與分析頁面功能
  * 提供進階搜尋、數據視覺化和結果顯示功能
  */
+
+// 日期範圍資料
+let minDate, maxDate;
+let dateSlider;
 
 // 在文檔就緒時執行
 document.addEventListener('DOMContentLoaded', function() {
     // 初始化所有組件
     initSearchForm();
+    setupDateRangeSlider();
+    setupSearchTypeToggle();
     initResultsDisplay();
+    setupCalculateMatches();
 
     // 如果有時間序列數據，初始化時間軸圖表
-    if (timeSeriesData) {
+    if (typeof timeSeriesData !== 'undefined' && timeSeriesData) {
         initTimeSeriesChart(timeSeriesData);
     }
 
     // 如果有共現數據，初始化關係圖
-    if (cooccurrenceData) {
+    if (typeof cooccurrenceData !== 'undefined' && cooccurrenceData) {
         initCooccurrenceNetwork(cooccurrenceData);
     }
 
     // 初始化關鍵詞和實體分布圖表
-    if (keywordsDistribution) {
+    if (typeof keywordsDistribution !== 'undefined' && keywordsDistribution) {
         initKeywordsChart(keywordsDistribution);
     }
 
-    if (entitiesDistribution) {
+    if (typeof entitiesDistribution !== 'undefined' && entitiesDistribution) {
         initEntitiesChart(entitiesDistribution);
     }
 });
@@ -35,29 +42,77 @@ document.addEventListener('DOMContentLoaded', function() {
 function initSearchForm() {
     // 獲取表單元素
     const searchForm = document.getElementById('searchForm');
-    const searchTypeRadios = document.querySelectorAll('input[name="search_type"]');
-    const entityTypesSection = document.getElementById('entityTypesSection');
     const searchTermsInput = document.getElementById('id_search_terms');
+    const analyzeTermsBtn = document.getElementById('analyzeTermsBtn');
     const minKeywordsInput = document.getElementById('id_min_keywords_count');
     const minEntitiesInput = document.getElementById('id_min_entities_count');
+    const keywordsSlider = document.getElementById('keywords_count_slider');
+    const entitiesSlider = document.getElementById('entities_count_slider');
+    const resetFormBtn = document.getElementById('resetFormBtn');
 
-    // 根據搜尋類型顯示/隱藏實體類型選擇區
-    function updateEntityTypesVisibility() {
-        const selectedType = document.querySelector('input[name="search_type"]:checked').value;
-        if (selectedType === 'entity' || selectedType === 'both') {
-            entityTypesSection.classList.remove('d-none');
-        } else {
-            entityTypesSection.classList.add('d-none');
-        }
+    // 同步滑塊與數字輸入
+    if (keywordsSlider && minKeywordsInput) {
+        keywordsSlider.addEventListener('input', function() {
+            minKeywordsInput.value = this.value;
+        });
+
+        minKeywordsInput.addEventListener('input', function() {
+            keywordsSlider.value = this.value;
+        });
     }
 
-    // 初始設置
-    updateEntityTypesVisibility();
+    if (entitiesSlider && minEntitiesInput) {
+        entitiesSlider.addEventListener('input', function() {
+            minEntitiesInput.value = this.value;
+        });
 
-    // 監聽搜尋類型變化
-    searchTypeRadios.forEach(radio => {
-        radio.addEventListener('change', updateEntityTypesVisibility);
+        minEntitiesInput.addEventListener('input', function() {
+            entitiesSlider.value = this.value;
+        });
+    }
+
+    // 搜尋選項點擊事件
+    document.querySelectorAll('.search-option').forEach(option => {
+        option.addEventListener('click', function() {
+            const radio = this.querySelector('input[type="radio"]');
+            if (radio) {
+                radio.checked = true;
+                document.querySelectorAll('.search-option').forEach(opt => {
+                    opt.classList.toggle('active', opt === this);
+                });
+            }
+        });
+
+        // 初始化狀態
+        const radio = option.querySelector('input[type="radio"]');
+        if (radio && radio.checked) {
+            option.classList.add('active');
+        }
     });
+
+    // 標籤選擇功能
+    initTagSelection('.category-tag', '.category-checkbox');
+    initTagSelection('.filter-tag', 'input[type="checkbox"]');
+
+    // 全選/取消全選類別
+    setupSelectAllButtons('selectAllCategories', 'deselectAllCategories', '.category-checkbox', '.category-tag');
+    setupSelectAllButtons('selectAllEntityTypes', 'deselectAllEntityTypes', 'input[name="entity_types"]', '.entity-type-PERSON, .entity-type-LOC, .entity-type-ORG, .entity-type-TIME, .entity-type-MISC');
+    setupSelectAllButtons('selectAllPos', 'deselectAllPos', 'input[name="pos_types"]', '.pos-na-badge, .pos-nb-badge, .pos-nc-badge');
+
+    // 分析關鍵詞按鈕
+    if (analyzeTermsBtn) {
+        analyzeTermsBtn.addEventListener('click', function() {
+            analyzeSearchTerms(searchTermsInput.value);
+        });
+    }
+
+    // 重設表單按鈕
+    if (resetFormBtn) {
+        resetFormBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            resetSearchForm();
+        });
+    }
 
     // 處理表單提交
     if (searchForm) {
@@ -77,63 +132,464 @@ function initSearchForm() {
                 });
                 return false;
             }
+
+            // 根據複選框更新隱藏的搜尋類型
+            updateHiddenSearchType();
         });
     }
-
-    // 日期範圍檢查
-    const dateFrom = document.getElementById('id_date_from');
-    const dateTo = document.getElementById('id_date_to');
-
-    if (dateFrom && dateTo) {
-        dateFrom.addEventListener('change', function() {
-            if (dateTo.value && new Date(dateFrom.value) > new Date(dateTo.value)) {
-                Swal.fire({
-                    title: '日期範圍錯誤',
-                    text: '開始日期不能晚於結束日期',
-                    icon: 'error',
-                    confirmButtonText: '確定'
-                });
-                dateFrom.value = '';
-            }
-        });
-
-        dateTo.addEventListener('change', function() {
-            if (dateFrom.value && new Date(dateFrom.value) > new Date(dateTo.value)) {
-                Swal.fire({
-                    title: '日期範圍錯誤',
-                    text: '結束日期不能早於開始日期',
-                    icon: 'error',
-                    confirmButtonText: '確定'
-                });
-                dateTo.value = '';
-            }
-        });
-    }
-
-    // 類別選擇處理
-    initCategorySelection();
 }
 
 /**
- * 初始化類別選擇功能
+ * 設置搜尋類型切換功能
  */
-function initCategorySelection() {
-    const selectAllBtn = document.getElementById('selectAllCategories');
-    const deselectAllBtn = document.getElementById('deselectAllCategories');
-    const categoryCheckboxes = document.querySelectorAll('.category-checkbox');
+function setupSearchTypeToggle() {
+    const searchKeywordCheckbox = document.getElementById('search_keyword');
+    const searchEntityCheckbox = document.getElementById('search_entity');
+    const posTypesSection = document.getElementById('posTypesSection');
+    const entityTypesSection = document.getElementById('entityTypesSection');
+
+    function updateSections() {
+        // 如果勾選了關鍵字，顯示詞性選擇區
+        if (searchKeywordCheckbox && searchKeywordCheckbox.checked) {
+            if (posTypesSection) posTypesSection.classList.remove('d-none');
+        } else {
+            if (posTypesSection) posTypesSection.classList.add('d-none');
+        }
+
+        // 如果勾選了命名實體，顯示實體類型選擇區
+        if (searchEntityCheckbox && searchEntityCheckbox.checked) {
+            if (entityTypesSection) entityTypesSection.classList.remove('d-none');
+        } else {
+            if (entityTypesSection) entityTypesSection.classList.add('d-none');
+        }
+    }
+
+    // 初始化
+    updateSections();
+
+    // 監聽變更
+    if (searchKeywordCheckbox) {
+        searchKeywordCheckbox.addEventListener('change', updateSections);
+    }
+
+    if (searchEntityCheckbox) {
+        searchEntityCheckbox.addEventListener('change', updateSections);
+    }
+}
+
+/**
+ * 根據複選框更新隱藏的搜尋類型欄位 (search_type)
+ */
+function updateHiddenSearchType() {
+    const searchKeywordCheckbox = document.getElementById('search_keyword');
+    const searchEntityCheckbox = document.getElementById('search_entity');
+    const hiddenSearchType = document.getElementById('hidden_search_type');
+
+    if (!hiddenSearchType) return;
+
+    if (searchKeywordCheckbox.checked && searchEntityCheckbox.checked) {
+        hiddenSearchType.value = 'both';
+    } else if (searchKeywordCheckbox.checked) {
+        hiddenSearchType.value = 'keyword';
+    } else if (searchEntityCheckbox.checked) {
+        hiddenSearchType.value = 'entity';
+    } else {
+        // 預設至少選一個
+        hiddenSearchType.value = 'both';
+        searchKeywordCheckbox.checked = true;
+        searchEntityCheckbox.checked = true;
+    }
+}
+
+/**
+ * 設置日期範圍滑動器
+ */
+function setupDateRangeSlider() {
+    const dateSliderElement = document.getElementById('dateRangeSlider');
+    const startDateValue = document.getElementById('startDateValue');
+    const endDateValue = document.getElementById('endDateValue');
+    const dateFromInput = document.getElementById('date_from');
+    const dateToInput = document.getElementById('date_to');
+
+    if (!dateSliderElement) return;
+
+    // 從資料庫獲取文章最早和最晚日期，或使用預設值
+    // 在實際應用中，這些應該從後端傳遞
+    const today = new Date();
+    minDate = new Date(today);
+    minDate.setMonth(today.getMonth() - 3); // 預設3個月前
+    maxDate = new Date(today);
+
+    // 從隱藏輸入框獲取已選日期，若有的話
+    let startDate = dateFromInput && dateFromInput.value ? new Date(dateFromInput.value) : minDate;
+    let endDate = dateToInput && dateToInput.value ? new Date(dateToInput.value) : maxDate;
+
+    // 確保日期在有效範圍內
+    if (startDate < minDate) startDate = minDate;
+    if (endDate > maxDate) endDate = maxDate;
+    if (startDate > endDate) startDate = endDate;
+
+    // 設置滑動器
+    if (typeof noUiSlider !== 'undefined') {
+        // 如果已經初始化過，先銷毀
+        if (dateSliderElement.noUiSlider) {
+            dateSliderElement.noUiSlider.destroy();
+        }
+
+        // 創建新的滑動器
+        noUiSlider.create(dateSliderElement, {
+            start: [startDate.getTime(), endDate.getTime()],
+            connect: true,
+            step: 24 * 60 * 60 * 1000, // 一天的毫秒數
+            range: {
+                'min': minDate.getTime(),
+                'max': maxDate.getTime()
+            },
+            format: {
+                to: function(value) {
+                    return new Date(value);
+                },
+                from: function(value) {
+                    return new Date(value).getTime();
+                }
+            }
+        });
+
+        // 更新顯示和隱藏輸入框
+        dateSliderElement.noUiSlider.on('update', function(values, handle) {
+            const date = values[handle];
+            const formattedDate = formatDate(date);
+
+            if (handle === 0) {
+                startDateValue.textContent = formattedDate;
+                if (dateFromInput) dateFromInput.value = formatDateForInput(date);
+            } else {
+                endDateValue.textContent = formattedDate;
+                if (dateToInput) dateToInput.value = formatDateForInput(date);
+            }
+        });
+
+        // 顯示使用提示
+        setTimeout(function() {
+            const infoModal = new bootstrap.Modal(document.getElementById('dateRangeInfoModal'));
+            infoModal.show();
+        }, 1000);
+    } else {
+        // noUiSlider 未加載，顯示普通的日期輸入框
+        const dateRangeContainer = dateSliderElement.parentElement;
+        if (dateRangeContainer) {
+            dateRangeContainer.innerHTML = `
+                <div class="row">
+                    <div class="col-md-6 mb-2">
+                        <label for="date_from" class="form-label">開始日期</label>
+                        <input type="date" id="date_from" name="date_from" class="form-control" 
+                               value="${dateFromInput ? dateFromInput.value : ''}">
+                    </div>
+                    <div class="col-md-6 mb-2">
+                        <label for="date_to" class="form-label">結束日期</label>
+                        <input type="date" id="date_to" name="date_to" class="form-control"
+                               value="${dateToInput ? dateToInput.value : ''}">
+                    </div>
+                </div>
+            `;
+        }
+    }
+}
+
+/**
+ * 設置計算符合數量功能
+ */
+function setupCalculateMatches() {
+    const calculateBtn = document.getElementById('calculateMatchesBtn');
+    if (!calculateBtn) return;
+
+    calculateBtn.addEventListener('click', function() {
+        // 顯示計算中模態框
+        const calculatingModal = new bootstrap.Modal(document.getElementById('calculatingModal'));
+        calculatingModal.show();
+
+        // 收集當前表單數據
+        const formData = new FormData(document.getElementById('searchForm'));
+
+        // 添加計算標記（後端可識別為僅計算數量而非真正搜尋）
+        formData.append('calculate_only', 'true');
+
+        // 發送AJAX請求
+        fetch(window.location.pathname, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': getCsrfToken(),
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            // 隱藏計算中模態框
+            calculatingModal.hide();
+
+            // 顯示結果
+            const matchingCount = document.getElementById('matchingCount');
+            const matchCount = document.getElementById('matchCount');
+
+            if (matchingCount && matchCount) {
+                matchCount.textContent = data.count;
+                matchingCount.style.display = 'block';
+            }
+
+            // 額外提示
+            if (data.count > 500) {
+                Swal.fire({
+                    title: '提示',
+                    text: `找到 ${data.count} 篇符合的文章，建議添加更多篩選條件以獲得更精確的分析結果。`,
+                    icon: 'info',
+                    confirmButtonText: '確定'
+                });
+            } else if (data.count === 0) {
+                Swal.fire({
+                    title: '未找到符合條件的文章',
+                    text: '請嘗試放寬搜尋條件',
+                    icon: 'warning',
+                    confirmButtonText: '確定'
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Error calculating matches:', error);
+            calculatingModal.hide();
+
+            Swal.fire({
+                title: '計算失敗',
+                text: '無法完成符合數量計算，請稍後再試',
+                icon: 'error',
+                confirmButtonText: '確定'
+            });
+        });
+    });
+}
+
+/**
+ * 獲取 CSRF Token
+ */
+function getCsrfToken() {
+    const tokenElement = document.querySelector('[name=csrfmiddlewaretoken]');
+    return tokenElement ? tokenElement.value : '';
+}
+
+/**
+ * 分析搜尋詞
+ * @param {string} searchTerms - 用戶輸入的搜尋詞
+ */
+function analyzeSearchTerms(searchTerms) {
+    if (!searchTerms.trim()) {
+        Swal.fire({
+            title: '提示',
+            text: '請先輸入要分析的搜尋詞',
+            icon: 'info',
+            confirmButtonText: '確定'
+        });
+        return;
+    }
+
+    // 顯示分析模態框
+    const termsModal = new bootstrap.Modal(document.getElementById('termsAnalysisModal'));
+    termsModal.show();
+
+    // 顯示加載狀態
+    document.querySelector('.terms-analysis-loading').style.display = 'block';
+    document.querySelector('.terms-analysis-results').style.display = 'none';
+
+    // 發送AJAX請求
+    fetch('/api/analyze_search_terms/', {
+        method: 'POST',
+        body: JSON.stringify({ terms: searchTerms }),
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCsrfToken(),
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        // 隱藏加載狀態
+        document.querySelector('.terms-analysis-loading').style.display = 'none';
+        document.querySelector('.terms-analysis-results').style.display = 'block';
+
+        // 顯示斷詞結果
+        const segmentedTermsEl = document.getElementById('segmentedTerms');
+        if (segmentedTermsEl) {
+            let segmentedHtml = '';
+            if (data.segmented_terms && data.segmented_terms.length > 0) {
+                data.segmented_terms.forEach(term => {
+                    segmentedHtml += `<span class="badge bg-dark text-light border border-secondary me-2 mb-2">${term}</span>`;
+                });
+            } else {
+                segmentedHtml = '<p class="text-muted">沒有找到可分析的詞彙</p>';
+            }
+            segmentedTermsEl.innerHTML = segmentedHtml;
+        }
+
+        // 顯示關鍵詞結果
+        const keywordsEl = document.getElementById('identifiedKeywords');
+        if (keywordsEl) {
+            let keywordsHtml = '';
+            if (data.keywords && data.keywords.length > 0) {
+                data.keywords.forEach(keyword => {
+                    let posClass = 'bg-secondary';
+                    if (keyword.pos === 'Na') posClass = 'pos-na-badge';
+                    else if (keyword.pos === 'Nb') posClass = 'pos-nb-badge';
+                    else if (keyword.pos === 'Nc') posClass = 'pos-nc-badge';
+
+                    keywordsHtml += `<span class="badge ${posClass} me-2 mb-2">${keyword.word} (${keyword.pos})</span>`;
+                });
+            } else {
+                keywordsHtml = '<p class="text-muted">沒有識別出關鍵詞</p>';
+            }
+            keywordsEl.innerHTML = keywordsHtml;
+        }
+
+        // 顯示命名實體結果
+        const entitiesEl = document.getElementById('identifiedEntities');
+        if (entitiesEl) {
+            let entitiesHtml = '';
+            if (data.entities && data.entities.length > 0) {
+                data.entities.forEach(entity => {
+                    entitiesHtml += `<span class="badge entity-type-${entity.entity_type} me-2 mb-2">${entity.entity} (${entity.entity_type})</span>`;
+                });
+            } else {
+                entitiesHtml = '<p class="text-muted">沒有識別出命名實體</p>';
+            }
+            entitiesEl.innerHTML = entitiesHtml;
+        }
+
+        // 設置套用結果按鈕
+        const useResultsBtn = document.getElementById('useAnalysisResultsBtn');
+        if (useResultsBtn) {
+            useResultsBtn.onclick = function() {
+                // 將結果轉換為搜尋詞（可根據需求調整）
+                let newSearchTerms = '';
+
+                // 添加識別出的關鍵詞
+                if (data.keywords && data.keywords.length > 0) {
+                    newSearchTerms = data.keywords.map(k => k.word).join(',');
+                }
+
+                // 添加識別出的命名實體（如果有）
+                if (data.entities && data.entities.length > 0) {
+                    const entityTerms = data.entities.map(e => e.entity).join(',');
+                    newSearchTerms = newSearchTerms ? newSearchTerms + ',' + entityTerms : entityTerms;
+                }
+
+                // 將結果填入搜尋框
+                const searchTermsInput = document.getElementById('id_search_terms');
+                if (searchTermsInput) {
+                    searchTermsInput.value = newSearchTerms;
+                }
+
+                // 關閉模態框
+                termsModal.hide();
+            };
+        }
+    })
+    .catch(error => {
+        console.error('Error analyzing search terms:', error);
+
+        // 顯示錯誤信息
+        document.querySelector('.terms-analysis-loading').style.display = 'none';
+        document.querySelector('.terms-analysis-results').style.display = 'block';
+        document.getElementById('segmentedTerms').innerHTML = '<p class="text-danger">分析搜尋詞時發生錯誤</p>';
+        document.getElementById('identifiedKeywords').innerHTML = '<p class="text-danger">請稍後再試</p>';
+        document.getElementById('identifiedEntities').innerHTML = '<p class="text-danger">或聯繫系統管理員</p>';
+    });
+}
+
+/**
+ * 重設搜尋表單
+ */
+function resetSearchForm() {
+    const form = document.getElementById('searchForm');
+    if (!form) return;
+
+    // 重設輸入框
+    form.reset();
+
+    // 重設標籤選擇狀態
+    document.querySelectorAll('.filter-tag, .category-tag').forEach(tag => {
+        tag.classList.remove('active');
+    });
+
+    // 重設搜尋選項狀態
+    document.querySelectorAll('.search-option').forEach(option => {
+        const radio = option.querySelector('input[type="radio"]');
+        option.classList.toggle('active', radio && radio.checked);
+    });
+
+    // 重設日期範圍
+    setupDateRangeSlider();
+
+    // 重設搜尋類型區域顯示
+    setupSearchTypeToggle();
+
+    // 重設匹配計數顯示
+    const matchingCount = document.getElementById('matchingCount');
+    if (matchingCount) matchingCount.style.display = 'none';
+}
+
+/**
+ * 初始化標籤選擇功能
+ * @param {string} tagSelector - 標籤選擇器
+ * @param {string} checkboxSelector - 複選框選擇器
+ */
+function initTagSelection(tagSelector, checkboxSelector) {
+    // 標籤點擊事件
+    document.querySelectorAll(tagSelector).forEach(tag => {
+        const checkbox = tag.querySelector(checkboxSelector);
+        if (checkbox && checkbox.checked) {
+            tag.classList.add('active');
+        }
+
+        tag.addEventListener('click', function(e) {
+            e.preventDefault();
+            const checkbox = this.querySelector(checkboxSelector);
+            if (checkbox) {
+                checkbox.checked = !checkbox.checked;
+                this.classList.toggle('active', checkbox.checked);
+            }
+        });
+    });
+}
+
+/**
+ * 設置全選/取消全選按鈕
+ * @param {string} selectAllId - 全選按鈕ID
+ * @param {string} deselectAllId - 取消全選按鈕ID
+ * @param {string} checkboxSelector - 複選框選擇器
+ * @param {string} tagSelector - 標籤選擇器
+ */
+function setupSelectAllButtons(selectAllId, deselectAllId, checkboxSelector, tagSelector) {
+    const selectAllBtn = document.getElementById(selectAllId);
+    const deselectAllBtn = document.getElementById(deselectAllId);
 
     if (selectAllBtn) {
         selectAllBtn.addEventListener('click', function() {
-            categoryCheckboxes.forEach(checkbox => {
+            document.querySelectorAll(checkboxSelector).forEach(checkbox => {
                 checkbox.checked = true;
+            });
+
+            document.querySelectorAll(tagSelector).forEach(tag => {
+                tag.classList.add('active');
             });
         });
     }
 
     if (deselectAllBtn) {
         deselectAllBtn.addEventListener('click', function() {
-            categoryCheckboxes.forEach(checkbox => {
+            document.querySelectorAll(checkboxSelector).forEach(checkbox => {
                 checkbox.checked = false;
+            });
+
+            document.querySelectorAll(tagSelector).forEach(tag => {
+                tag.classList.remove('active');
             });
         });
     }
@@ -148,9 +604,6 @@ function initResultsDisplay() {
 
     // 初始化文章預覽功能
     initArticlePreview();
-
-    // 初始化分頁
-    initPagination();
 }
 
 /**
@@ -186,11 +639,37 @@ function initArticlePreview() {
 }
 
 /**
- * 初始化分頁功能
+ * 格式化日期為易讀格式
+ * @param {Date} date - 日期物件
+ * @returns {string} 格式化後的日期
  */
-function initPagination() {
-    // 這裡可以根據需要自訂分頁邏輯
-    // 或者使用後端分頁
+function formatDate(date) {
+    if (!(date instanceof Date)) {
+        date = new Date(date);
+    }
+
+    return date.toLocaleDateString('zh-TW', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+    });
+}
+
+/**
+ * 格式化日期為輸入欄位格式 (YYYY-MM-DD)
+ * @param {Date} date - 日期物件
+ * @returns {string} YYYY-MM-DD 格式的日期
+ */
+function formatDateForInput(date) {
+    if (!(date instanceof Date)) {
+        date = new Date(date);
+    }
+
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+
+    return `${year}-${month}-${day}`;
 }
 
 /**
@@ -199,6 +678,7 @@ function initPagination() {
  */
 function initTimeSeriesChart(data) {
     const ctx = document.getElementById('timeSeriesChart').getContext('2d');
+    if (!ctx) return;
 
     // 確保資料是按日期排序的
     data.sort((a, b) => new Date(a.date) - new Date(b.date));
@@ -277,33 +757,20 @@ function initTimeSeriesChart(data) {
 }
 
 /**
- * 格式化日期為更易讀的格式
- * @param {string} dateString - ISO格式日期字串
- * @returns {string} 格式化後的日期
- */
-function formatDate(dateString) {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('zh-TW', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric'
-    });
-}
-
-/**
  * 初始化共現網絡關係圖
  * @param {Object} data - 共現網絡數據
  */
 function initCooccurrenceNetwork(data) {
     // 使用D3.js建立關係圖
     const container = document.getElementById('cooccurrenceNetwork');
-
-    // 設置圖形尺寸
-    const width = container.clientWidth;
-    const height = 500;
+    if (!container || !data || typeof d3 === 'undefined') return;
 
     // 清除舊內容
     container.innerHTML = '';
+
+    // 設置圖形尺寸
+    const width = container.clientWidth;
+    const height = container.clientHeight || 500;
 
     // 創建SVG元素
     const svg = d3.select(container)
@@ -353,6 +820,7 @@ function initCooccurrenceNetwork(data) {
 
     // 添加節點標籤
     node.append('text')
+        .attr('class', 'node-label')
         .text(d => d.name)
         .attr('x', 0)
         .attr('y', d => -Math.sqrt(d.value) * 1.5 - 8)
@@ -436,7 +904,8 @@ function initCooccurrenceNetwork(data) {
  * @param {Array} data - 關鍵詞分布數據
  */
 function initKeywordsChart(data) {
-    const ctx = document.getElementById('keywordsChart').getContext('2d');
+    const ctx = document.getElementById('keywordsChart');
+    if (!ctx) return;
 
     // 準備圖表資料
     const labels = data.map(item => item.word);
@@ -499,7 +968,8 @@ function initKeywordsChart(data) {
  * @param {Array} data - 實體分布數據
  */
 function initEntitiesChart(data) {
-    const ctx = document.getElementById('entitiesChart').getContext('2d');
+    const ctx = document.getElementById('entitiesChart');
+    if (!ctx) return;
 
     // 準備實體類型的顏色映射
     const entityTypeColors = {
@@ -579,7 +1049,7 @@ function initEntitiesChart(data) {
  */
 function initializeDataTable(tableId) {
     const table = document.getElementById(tableId);
-    if (!table) return;
+    if (!table || typeof $.fn.DataTable === 'undefined') return;
 
     // 檢查表格是否已經初始化
     if ($.fn.DataTable.isDataTable('#' + tableId)) {
@@ -614,3 +1084,75 @@ function initializeDataTable(tableId) {
         ]
     });
 }
+
+/**
+ * 匯出搜尋結果為CSV
+ */
+function exportSearchResults() {
+    const exportBtn = document.getElementById('exportResultsBtn');
+    if (!exportBtn) return;
+
+    exportBtn.addEventListener('click', function() {
+        // 準備CSV內容
+        const headers = ['標題', '類別', '日期', '作者', '連結'];
+        let csvContent = headers.join(',') + '\n';
+
+        // 獲取表格內容
+        const table = document.getElementById('articlesTable');
+        if (!table) return;
+
+        const rows = table.querySelectorAll('tbody tr');
+
+        rows.forEach(row => {
+            const title = row.querySelector('td:nth-child(2)').textContent;
+            const category = row.querySelector('td:nth-child(3) .badge').textContent.trim();
+            const date = row.querySelector('td:nth-child(4)').textContent;
+            const author = row.querySelector('td:nth-child(5)').textContent;
+
+            // 嘗試獲取連結，若無則使用空值
+            let link = '';
+            const previewBtn = row.querySelector('.article-preview-btn');
+            if (previewBtn) {
+                link = previewBtn.dataset.link || '';
+            }
+
+            // 處理CSV中的引號和逗號
+            const formattedRow = [title, category, date, author, link].map(cell => {
+                // 如果數據包含逗號、引號或換行符，使用引號包裹並將內部引號轉換為雙引號
+                cell = String(cell).trim();
+                if (cell.includes(',') || cell.includes('"') || cell.includes('\n')) {
+                    return `"${cell.replace(/"/g, '""')}"`;
+                }
+                return cell;
+            });
+
+            csvContent += formattedRow.join(',') + '\n';
+        });
+
+        // 創建Blob並下載
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+
+        const link = document.createElement('a');
+        link.setAttribute('href', url);
+        link.setAttribute('download', `搜尋結果_${new Date().toISOString().slice(0, 10)}.csv`);
+        link.style.display = 'none';
+
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    });
+}
+
+// 當視窗調整大小時重繪圖表
+window.addEventListener('resize', function() {
+    // 重新初始化共現網絡圖
+    if (typeof cooccurrenceData !== 'undefined' && cooccurrenceData) {
+        initCooccurrenceNetwork(cooccurrenceData);
+    }
+});
+
+// 自動初始化匯出功能
+document.addEventListener('DOMContentLoaded', function() {
+    exportSearchResults();
+});

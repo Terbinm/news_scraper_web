@@ -3,7 +3,7 @@ import json
 import logging
 import datetime
 from collections import defaultdict, Counter
-from django.db.models import Q, Count
+from django.db.models import Q, Count, Case, When, Value, IntegerField
 from django.utils import timezone
 from django.core.cache import cache
 import hashlib
@@ -26,7 +26,6 @@ class SearchAnalysisService:
         self.job = job
         self.cache_timeout = 60 * 60  # 缓存超时时间（1小时）
 
-
     def search(self, search_criteria):
         """
         根據搜尋條件查找文章
@@ -38,7 +37,10 @@ class SearchAnalysisService:
             QuerySet: 符合條件的文章查詢集
         """
         try:
-            # 生成緩存鍵 - 使用更安全的方式處理不可哈希類型如列表
+            # 使用新的方法構建查詢
+            query = self.build_search_query(search_criteria)
+
+            # 使用緩存鍵 - 使用更安全的方式處理不可哈希類型如列表
             # 使用 MD5 哈希縮短緩存鍵長度
             criteria_str = str(self.job.id)
             for key, value in sorted(search_criteria.items()):
@@ -59,72 +61,6 @@ class SearchAnalysisService:
                 logger.info(f"使用緩存的搜索結果 {cache_key}")
                 return cached_results
 
-            # 初始查詢 - 該任務的所有文章
-            query = Article.objects.filter(job=self.job)
-
-            # 應用類別篩選
-            if 'categories' in search_criteria and search_criteria['categories']:
-                query = query.filter(category__in=search_criteria['categories'])
-
-            # 應用日期篩選
-            if search_criteria.get('date_from'):
-                date_from = search_criteria['date_from']
-                query = query.filter(date__gte=datetime.datetime.combine(date_from, datetime.time.min))
-
-            if search_criteria.get('date_to'):
-                date_to = search_criteria['date_to']
-                query = query.filter(date__lte=datetime.datetime.combine(date_to, datetime.time.max))
-
-            # 準備搜尋詞相關條件
-            search_terms = search_criteria.get('search_terms', [])
-            search_mode = search_criteria.get('search_mode', 'and')
-            search_type = search_criteria.get('search_type', 'both')
-
-            # 如果有搜尋詞，則進行內容搜尋
-            if search_terms:
-                # 根據搜尋類型確定查詢條件
-                content_filter = None
-
-                for term in search_terms:
-                    current_filter = self._build_term_filter(
-                        term,
-                        search_type,
-                        search_criteria.get('include_title', True),
-                        search_criteria.get('include_content', True),
-                        search_criteria.get('entity_types', [])
-                    )
-
-                    if search_mode == 'and':
-                        query = query.filter(current_filter)
-                    else:  # 'or' mode
-                        if content_filter is None:
-                            content_filter = current_filter
-                        else:
-                            content_filter |= current_filter
-
-                # 對於OR模式，最後應用過濾器
-                if search_mode == 'or' and content_filter is not None:
-                    query = query.filter(content_filter)
-
-            # 根據關鍵詞數量篩選
-            min_keywords_count = search_criteria.get('min_keywords_count')
-            if min_keywords_count:
-                # 獲取符合條件的文章ID
-                keyword_articles = self._filter_by_keyword_count(query, min_keywords_count, search_terms)
-                query = query.filter(id__in=keyword_articles)
-
-            # 根據實體數量篩選
-            min_entities_count = search_criteria.get('min_entities_count')
-            if min_entities_count:
-                # 獲取符合條件的文章ID
-                entity_articles = self._filter_by_entity_count(
-                    query,
-                    min_entities_count,
-                    search_terms,
-                    search_criteria.get('entity_types', [])
-                )
-                query = query.filter(id__in=entity_articles)
-
             # 使結果唯一並按日期排序
             query = query.distinct().order_by('-date')
 
@@ -137,7 +73,103 @@ class SearchAnalysisService:
             logger.error(f"搜尋文章時發生錯誤: {e}", exc_info=True)
             return Article.objects.none()  # 返回空查詢集
 
-    def _build_term_filter(self, term, search_type, include_title, include_content, entity_types):
+    def build_search_query(self, search_criteria):
+        """
+        構建搜索查詢，但不執行
+
+        Args:
+            search_criteria: 包含所有搜尋條件的字典
+
+        Returns:
+            QuerySet: 構建的查詢但不執行
+        """
+        # 初始查詢 - 該任務的所有文章
+        query = Article.objects.filter(job=self.job)
+
+        # 應用類別篩選
+        if 'categories' in search_criteria and search_criteria['categories']:
+            query = query.filter(category__in=search_criteria['categories'])
+
+        # 應用日期篩選
+        if search_criteria.get('date_from'):
+            date_from = search_criteria['date_from']
+            if isinstance(date_from, str):
+                date_from = datetime.datetime.strptime(date_from, '%Y-%m-%d').date()
+            query = query.filter(date__gte=datetime.datetime.combine(date_from, datetime.time.min))
+
+        if search_criteria.get('date_to'):
+            date_to = search_criteria['date_to']
+            if isinstance(date_to, str):
+                date_to = datetime.datetime.strptime(date_to, '%Y-%m-%d').date()
+            query = query.filter(date__lte=datetime.datetime.combine(date_to, datetime.time.max))
+
+        # 準備搜尋詞相關條件
+        search_terms = search_criteria.get('search_terms', [])
+        search_mode = search_criteria.get('search_mode', 'and')
+        search_type = search_criteria.get('search_type', 'both')
+
+        # 對非列表類型的搜尋詞進行處理
+        if isinstance(search_terms, str):
+            search_terms = [term.strip() for term in search_terms.split(',') if term.strip()]
+
+        # 如果有搜尋詞，則進行內容搜尋
+        if search_terms:
+            # 根據搜尋類型確定查詢條件
+            content_filter = None
+
+            for term in search_terms:
+                current_filter = self._build_term_filter(
+                    term,
+                    search_type,
+                    search_criteria.get('include_title', True),
+                    search_criteria.get('include_content', True),
+                    search_criteria.get('entity_types', []),
+                    search_criteria.get('pos_types', [])
+                )
+
+                if search_mode == 'and':
+                    query = query.filter(current_filter)
+                else:  # 'or' mode
+                    if content_filter is None:
+                        content_filter = current_filter
+                    else:
+                        content_filter |= current_filter
+
+            # 對於OR模式，最後應用過濾器
+            if search_mode == 'or' and content_filter is not None:
+                query = query.filter(content_filter)
+
+        # 根據關鍵詞數量篩選
+        min_keywords_count = search_criteria.get('min_keywords_count')
+        if min_keywords_count and int(min_keywords_count) > 0:
+            # 獲取符合條件的文章ID
+            keyword_articles = self._filter_by_keyword_count(query, int(min_keywords_count), search_terms,
+                                                             search_criteria.get('pos_types', []))
+            if keyword_articles:
+                query = query.filter(id__in=keyword_articles)
+            else:
+                # 如果沒有符合的文章，返回空集
+                return Article.objects.none()
+
+        # 根據實體數量篩選
+        min_entities_count = search_criteria.get('min_entities_count')
+        if min_entities_count and int(min_entities_count) > 0:
+            # 獲取符合條件的文章ID
+            entity_articles = self._filter_by_entity_count(
+                query,
+                int(min_entities_count),
+                search_terms,
+                search_criteria.get('entity_types', [])
+            )
+            if entity_articles:
+                query = query.filter(id__in=entity_articles)
+            else:
+                # 如果沒有符合的文章，返回空集
+                return Article.objects.none()
+
+        return query
+
+    def _build_term_filter(self, term, search_type, include_title, include_content, entity_types, pos_types):
         """
         構建單個搜尋詞的過濾條件
 
@@ -147,6 +179,7 @@ class SearchAnalysisService:
             include_title: 是否包含標題
             include_content: 是否包含內容
             entity_types: 實體類型列表
+            pos_types: 詞性列表
 
         Returns:
             Q: Django 查詢條件
@@ -155,10 +188,25 @@ class SearchAnalysisService:
 
         # 搜索关键词或两者
         if search_type in ['keyword', 'both']:
-            if include_title:
-                filters |= Q(title__icontains=term)
-            if include_content:
-                filters |= Q(content__icontains=term)
+            # 如果有指定詞性，先檢查該詞是否符合要求的詞性
+            if pos_types:
+                keyword_query = KeywordAnalysis.objects.filter(
+                    job=self.job,
+                    word__icontains=term,
+                    pos__in=pos_types
+                )
+                # 如果存在符合條件的關鍵詞，則在文章中搜尋
+                if keyword_query.exists():
+                    if include_title:
+                        filters |= Q(title__icontains=term)
+                    if include_content:
+                        filters |= Q(content__icontains=term)
+            else:
+                # 如果未指定詞性，則直接搜尋
+                if include_title:
+                    filters |= Q(title__icontains=term)
+                if include_content:
+                    filters |= Q(content__icontains=term)
 
         # 搜索命名实体或两者
         if search_type in ['entity', 'both']:
@@ -206,7 +254,7 @@ class SearchAnalysisService:
             logger.error(f"獲取包含實體的文章時發生錯誤: {e}", exc_info=True)
             return []
 
-    def _filter_by_keyword_count(self, article_query, min_count, search_terms):
+    def _filter_by_keyword_count(self, article_query, min_count, search_terms, pos_types=None):
         """
         根據關鍵詞出現次數篩選文章
 
@@ -214,10 +262,43 @@ class SearchAnalysisService:
             article_query: 文章查詢集
             min_count: 最小關鍵詞出現次數
             search_terms: 搜尋詞列表
+            pos_types: 詞性列表（可選）
 
         Returns:
             list: 符合條件的文章ID列表
         """
+        # 如果沒有搜尋詞且有指定最小關鍵詞數量，則計算所有關鍵詞
+        if not search_terms and min_count > 0:
+            # 使用分組和計數來提高效率
+            from django.db.models import Count
+
+            # 獲取每篇文章對應的關鍵詞數量
+            keyword_counts = KeywordAnalysis.objects.filter(
+                job=self.job
+            )
+
+            if pos_types:
+                keyword_counts = keyword_counts.filter(pos__in=pos_types)
+
+            # 按類別和詞性分組，計算每個類別的關鍵詞數量
+            keyword_counts = keyword_counts.values('category').annotate(
+                count=Count('word', distinct=True)
+            )
+
+            # 獲取所有包含足夠關鍵詞的類別
+            qualifying_categories = [
+                item['category'] for item in keyword_counts
+                if item['count'] >= min_count
+            ]
+
+            # 篩選出屬於這些類別的文章
+            article_ids = list(article_query.filter(
+                category__in=qualifying_categories
+            ).values_list('id', flat=True))
+
+            return article_ids
+
+        # 如果有搜尋詞，檢查每篇文章中這些詞的出現次數
         article_ids = []
 
         for article in article_query:
@@ -231,7 +312,7 @@ class SearchAnalysisService:
 
         return article_ids
 
-    def _filter_by_entity_count(self, article_query, min_count, search_terms, entity_types):
+    def _filter_by_entity_count(self, article_query, min_count, search_terms, entity_types=None):
         """
         根據實體出現次數篩選文章
 
@@ -239,12 +320,43 @@ class SearchAnalysisService:
             article_query: 文章查詢集
             min_count: 最小實體出現次數
             search_terms: 搜尋詞列表
-            entity_types: 實體類型列表
+            entity_types: 實體類型列表（可選）
 
         Returns:
             list: 符合條件的文章ID列表
         """
         try:
+            # 如果沒有搜尋詞且有指定最小實體數量，則計算所有實體
+            if not search_terms and min_count > 0:
+                # 使用分組和計數來提高效率
+                from django.db.models import Count
+
+                # 獲取每篇文章對應的實體數量
+                entity_counts = NamedEntityAnalysis.objects.filter(
+                    job=self.job
+                )
+
+                if entity_types:
+                    entity_counts = entity_counts.filter(entity_type__in=entity_types)
+
+                # 按類別分組，計算每個類別的實體數量
+                entity_counts = entity_counts.values('category').annotate(
+                    count=Count('entity', distinct=True)
+                )
+
+                # 獲取所有包含足夠實體的類別
+                qualifying_categories = [
+                    item['category'] for item in entity_counts
+                    if item['count'] >= min_count
+                ]
+
+                # 篩選出屬於這些類別的文章
+                article_ids = list(article_query.filter(
+                    category__in=qualifying_categories
+                ).values_list('id', flat=True))
+
+                return article_ids
+
             # 獲取所有相關的命名實體
             query = NamedEntityAnalysis.objects.filter(job=self.job)
 
@@ -548,3 +660,26 @@ class SearchAnalysisService:
         except Exception as e:
             logger.error(f"獲取實體分布時發生錯誤: {e}", exc_info=True)
             return []
+
+    def get_date_range(self):
+        """
+        獲取該任務下文章的日期範圍
+
+        Returns:
+            tuple: (最早日期, 最晚日期)
+        """
+        from django.db.models import Min, Max
+
+        try:
+            date_range = Article.objects.filter(job=self.job).aggregate(
+                min_date=Min('date'),
+                max_date=Max('date')
+            )
+
+            return (
+                date_range['min_date'].date() if date_range['min_date'] else None,
+                date_range['max_date'].date() if date_range['max_date'] else None
+            )
+        except Exception as e:
+            logger.error(f"獲取日期範圍時發生錯誤: {e}", exc_info=True)
+            return (None, None)

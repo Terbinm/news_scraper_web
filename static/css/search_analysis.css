@@ -1,4 +1,7 @@
-/* 搜尋與分析頁面樣式 */
+/**
+ * 搜尋與分析頁面樣式
+ * 提供進階搜尋、數據視覺化和結果顯示樣式
+ */
 
 /* 主要容器樣式 */
 .search-analysis-container {
@@ -59,8 +62,44 @@
     box-shadow: 0 0 0 0.25rem rgba(23, 162, 184, 0.25);
 }
 
+/* 搜尋選項樣式 */
+.search-option {
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.search-option:hover {
+    background-color: rgba(23, 162, 184, 0.1);
+    border-color: rgba(23, 162, 184, 0.3);
+}
+
+.search-option.active {
+    background-color: rgba(23, 162, 184, 0.2);
+    border-color: rgba(23, 162, 184, 0.6);
+}
+
+.search-option-icon {
+    width: 24px;
+    text-align: center;
+    margin-right: 10px;
+    color: var(--primary-color);
+}
+
+/* 條件性顯示區域樣式 */
+.search-conditional-section {
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
 /* 標籤選擇樣式 */
 .category-tag,
+.filter-tag,
 .entity-tag {
     display: inline-block;
     padding: 0.4rem 0.8rem;
@@ -71,9 +110,11 @@
     transition: all 0.3s ease;
     opacity: 0.7;
     border: 2px solid transparent;
+    font-size: 0.9rem;
 }
 
 .category-tag:hover,
+.filter-tag:hover,
 .entity-tag:hover {
     transform: translateY(-2px);
     opacity: 1;
@@ -81,6 +122,7 @@
 }
 
 .category-tag.active,
+.filter-tag.active,
 .entity-tag.active {
     opacity: 1;
     border: 2px solid #fff;
@@ -88,8 +130,25 @@
 }
 
 .category-tag input,
+.filter-tag input,
 .entity-tag input {
     display: none;
+}
+
+/* 詞性標籤樣式 */
+.pos-na-badge {
+    background-color: rgba(23, 162, 184, 0.7);
+    border: 1px solid rgba(23, 162, 184, 1);
+}
+
+.pos-nb-badge {
+    background-color: rgba(40, 167, 69, 0.7);
+    border: 1px solid rgba(40, 167, 69, 1);
+}
+
+.pos-nc-badge {
+    background-color: rgba(255, 193, 7, 0.7);
+    border: 1px solid rgba(255, 193, 7, 1);
 }
 
 /* 實體類型標籤顏色 */
@@ -116,6 +175,54 @@
 .entity-type-MISC {
     background-color: rgba(153, 102, 255, 0.7);
     border-color: rgba(153, 102, 255, 1);
+}
+
+/* 日期範圍滑動器樣式 */
+.date-range-slider-container {
+    padding: 1rem 0.5rem;
+}
+
+.date-range-labels {
+    margin-top: 1rem;
+}
+
+.noUi-target {
+    background-color: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: none;
+    height: 10px;
+}
+
+.noUi-connect {
+    background: var(--primary-color);
+}
+
+.noUi-handle {
+    border: 1px solid var(--primary-color);
+    background: #333;
+    box-shadow: 0 0 5px rgba(23, 162, 184, 0.5);
+    border-radius: 50%;
+    cursor: pointer;
+    width: 20px !important;
+    height: 20px !important;
+    right: -10px !important;
+    top: -6px !important;
+}
+
+.noUi-handle:before,
+.noUi-handle:after {
+    display: none;
+}
+
+.noUi-touch-area {
+    border-radius: 50%;
+}
+
+.noUi-tooltip {
+    background-color: rgba(0, 0, 0, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #fff;
+    font-size: 0.85rem;
 }
 
 /* 圖表容器樣式 */
@@ -172,6 +279,13 @@
 
 .links line:hover {
     stroke-opacity: 1;
+}
+
+.node-label {
+    pointer-events: none;
+    font-size: 10px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+    fill: #fff;
 }
 
 /* 頂部文章圖片卡片 */
@@ -341,29 +455,33 @@
     border-radius: 2px;
 }
 
-/* 響應式調整 */
-@media (max-width: 991.98px) {
-    .search-form-card,
-    .analysis-card,
-    .results-table-card {
-        margin-bottom: 1.5rem;
-    }
+/* 關鍵詞分析模態框樣式 */
+.terms-analysis-results .badge {
+    margin-right: 0.5rem;
+    margin-bottom: 0.5rem;
+    font-size: 0.85rem;
+}
 
-    .chart-container {
-        height: 250px;
-    }
+/* 匹配數量顯示 */
+#matchingCount {
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+}
 
-    .time-series-container {
-        height: 300px;
-    }
+#matchingCount.animate {
+    animation: pulse 0.5s;
+}
 
-    .network-container {
-        height: 400px;
-    }
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
 
-    .top-article-card {
-        height: 250px;
-    }
+/* 分布圖表容器 */
+.distribution-chart-container {
+    height: 300px;
+    margin-bottom: 1rem;
 }
 
 /* 搜尋按鈕動畫 */
@@ -415,24 +533,6 @@
     margin: 0 auto 1.5rem;
 }
 
-/* 實體分布和關鍵詞分布圖表樣式 */
-.distribution-chart-container {
-    height: 300px;
-    margin-bottom: 1rem;
-}
-
-/* 日期範圍選擇器樣式 */
-.date-range-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
-}
-
-.date-range-container .form-group {
-    flex: 1;
-    min-width: 150px;
-}
-
 /* 工具提示樣式 */
 .custom-tooltip {
     background-color: rgba(0, 0, 0, 0.8);
@@ -445,80 +545,18 @@
     max-width: 300px;
 }
 
-/* 共現網絡節點標籤樣式 */
-.node-label {
-    pointer-events: none;
-    font-size: 10px;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
-    fill: #fff;
+/* 滑動條樣式 */
+.form-range {
+    background-color: transparent;
 }
 
-/* 搜尋選項選擇器樣式 */
-.search-option {
-    padding: 0.75rem 1rem;
-    border-radius: 8px;
-    margin-bottom: 0.5rem;
-    transition: all 0.3s ease;
-    cursor: pointer;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+.form-range::-webkit-slider-thumb {
+    background-color: var(--primary-color);
 }
 
-.search-option:hover {
-    background-color: rgba(23, 162, 184, 0.1);
-    border-color: rgba(23, 162, 184, 0.3);
-}
-
-.search-option.active {
-    background-color: rgba(23, 162, 184, 0.2);
-    border-color: rgba(23, 162, 184, 0.6);
-}
-
-.search-option-icon {
-    width: 24px;
-    text-align: center;
-    margin-right: 10px;
-    color: var(--primary-color);
-}
-
-/* 文章列表樣式 */
-.article-item {
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    cursor: pointer;
-}
-
-.article-item:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
-}
-
-.article-title {
-    font-weight: 600;
-    margin-bottom: 0.5rem;
-    line-height: 1.4;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    max-height: 2.8em;
-}
-
-.article-meta {
-    color: rgba(255, 255, 255, 0.7);
-    font-size: 0.85rem;
-    margin-bottom: 0.75rem;
-}
-
-.article-preview {
-    color: rgba(255, 255, 255, 0.9);
-    font-size: 0.9rem;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    max-height: 4.5em;
-    margin-bottom: 1rem;
+.form-range::-webkit-slider-runnable-track {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
 }
 
 /* 加載動畫樣式 */
@@ -539,4 +577,47 @@
 .spinner-text {
     margin-top: 1rem;
     color: #fff;
+}
+
+/* 響應式調整 */
+@media (max-width: 991.98px) {
+    .search-form-card,
+    .analysis-card,
+    .results-table-card {
+        margin-bottom: 1.5rem;
+    }
+
+    .chart-container {
+        height: 250px;
+    }
+
+    .time-series-container {
+        height: 300px;
+    }
+
+    .network-container {
+        height: 400px;
+    }
+
+    .top-article-card {
+        height: 250px;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .form-section {
+        padding: 1rem;
+    }
+
+    .stat-card {
+        padding: 1rem;
+    }
+
+    .stat-value {
+        font-size: 1.5rem;
+    }
+
+    .stat-icon {
+        font-size: 2rem;
+    }
 }

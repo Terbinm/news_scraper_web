@@ -29,91 +29,157 @@
         <h5 class="mb-0">
             <i class="bi bi-funnel me-2"></i>搜尋條件
         </h5>
-        {% if results %}
-        <span class="badge bg-info">找到 {{ results|length }} 篇符合的文章</span>
-        {% endif %}
+        <div class="d-flex align-items-center">
+            <div id="matchingCount" class="badge bg-info me-3 px-3 py-2" style="font-size: 0.9rem; display: none;">
+                <i class="bi bi-file-text me-1"></i>符合條件: <span id="matchCount">0</span> 篇文章
+            </div>
+            <button type="button" id="calculateMatchesBtn" class="btn btn-sm btn-outline-info">
+                <i class="bi bi-calculator me-1"></i>計算符合數量
+            </button>
+        </div>
     </div>
     <div class="card-body">
         <form method="get" id="searchForm">
             <!-- 搜尋詞與模式 -->
             <div class="form-section">
-                <h5><i class="bi bi-key"></i>搜尋詞與模式</h5>
-                <div class="row">
-                    <div class="col-md-8 mb-3">
+                <h5><i class="bi bi-key me-2"></i>搜尋詞與模式</h5>
+                <div class="row mb-3">
+                    <div class="col-md-8">
                         <label for="id_search_terms" class="form-label">搜尋關鍵字或命名實體</label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-dark border-secondary">
-                                <i class="bi bi-search text-light"></i>
-                            </span>
-                            {{ form.search_terms }}
-                        </div>
-                        <div class="form-text">多個關鍵字請用逗號分隔，如：台積電,中國,半導體</div>
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label">搜尋模式</label>
-                        <div class="d-flex flex-column">
-                            {% for radio in form.search_mode %}
-                            <div class="form-check mb-2">
-                                {{ radio.tag }}
-                                <label class="form-check-label" for="{{ radio.id_for_label }}">
-                                    {{ radio.choice_label }}
-                                </label>
+                        <div class="search-input-group">
+                            <div class="input-group">
+                                <span class="input-group-text bg-dark border-secondary">
+                                    <i class="bi bi-search text-light"></i>
+                                </span>
+                                {{ form.search_terms }}
+                                <button type="button" class="btn btn-outline-info" id="analyzeTermsBtn" title="分析輸入詞">
+                                    <i class="bi bi-magic"></i>
+                                </button>
                             </div>
-                            {% endfor %}
+                            <div class="form-text">多個關鍵字請用逗號分隔，如：台積電,中國,半導體</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">搜尋模式</label>
+                        <div class="search-options-container">
+                            <div class="search-option" data-value="and">
+                                <input type="radio" name="search_mode" id="search_mode_and" value="and" class="d-none"
+                                    {% if not form.is_bound or form.search_mode.value == 'and' %}checked{% endif %}>
+                                <div class="d-flex align-items-center">
+                                    <span class="search-option-icon"><i class="bi bi-intersect"></i></span>
+                                    <div>
+                                        <label for="search_mode_and" class="mb-0 fw-bold">AND 模式</label>
+                                        <div class="small text-light">符合所有搜尋詞</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="search-option mt-2" data-value="or">
+                                <input type="radio" name="search_mode" id="search_mode_or" value="or" class="d-none"
+                                    {% if form.is_bound and form.search_mode.value == 'or' %}checked{% endif %}>
+                                <div class="d-flex align-items-center">
+                                    <span class="search-option-icon"><i class="bi bi-union"></i></span>
+                                    <div>
+                                        <label for="search_mode_or" class="mb-0 fw-bold">OR 模式</label>
+                                        <div class="small text-light">符合任一搜尋詞</div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="row">
-                    <div class="col-md-4 mb-3">
+                    <div class="col-12 mb-3">
                         <label class="form-label">搜尋類型</label>
-                        <div class="d-flex flex-column">
-                            {% for radio in form.search_type %}
-                            <div class="form-check mb-2">
-                                {{ radio.tag }}
-                                <label class="form-check-label" for="{{ radio.id_for_label }}">
-                                    {{ radio.choice_label }}
-                                </label>
+                        <div class="d-flex mt-2">
+                            <div class="search-type-options me-4">
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" name="search_keyword" id="search_keyword"
+                                           value="true" {% if not form.is_bound or form.search_type.value == 'keyword' or form.search_type.value == 'both' %}checked{% endif %}>
+                                    <label class="form-check-label" for="search_keyword">
+                                        <i class="bi bi-key-fill me-1 text-info"></i>關鍵字
+                                    </label>
+                                </div>
                             </div>
-                            {% endfor %}
+                            <div class="search-type-options me-4">
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" name="search_entity" id="search_entity"
+                                           value="true" {% if form.is_bound and form.search_type.value == 'entity' or form.search_type.value == 'both' %}checked{% endif %}>
+                                    <label class="form-check-label" for="search_entity">
+                                        <i class="bi bi-person-badge-fill me-1 text-warning"></i>命名實體
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="search-type-options">
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" name="include_title" id="include_title"
+                                           value="true" {% if not form.is_bound or form.include_title.value %}checked{% endif %}>
+                                    <label class="form-check-label" for="include_title">
+                                        <i class="bi bi-type-h1 me-1 text-success"></i>包含標題
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- 隱藏的原始表單欄位，用於保持與後端的相容性 -->
+                            <input type="hidden" name="search_type" id="hidden_search_type" value="{{ form.search_type.value|default:'both' }}">
+                            <input type="hidden" name="include_content" id="hidden_include_content" value="true">
                         </div>
                     </div>
-                    
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label">搜尋範圍</label>
-                        <div class="d-flex flex-column">
-                            <div class="form-check mb-2">
-                                {{ form.include_title }}
-                                <label class="form-check-label" for="{{ form.include_title.id_for_label }}">
-                                    包含標題
-                                </label>
-                            </div>
-                            <div class="form-check mb-2">
-                                {{ form.include_content }}
-                                <label class="form-check-label" for="{{ form.include_content.id_for_label }}">
-                                    包含內容
-                                </label>
-                            </div>
+                </div>
+
+                <!-- 詞性選擇區域（條件性顯示） -->
+                <div id="posTypesSection" class="search-conditional-section mb-3 {% if form.is_bound and form.search_type.value == 'entity' %}d-none{% endif %}">
+                    <label class="form-label">選擇詞性</label>
+                    <div class="d-flex flex-wrap">
+                        <div class="filter-tag me-2 mb-2 pos-na-badge">
+                            <input type="checkbox" name="pos_types" value="Na" id="pos_Na" checked>
+                            普通名詞 (Na)
+                        </div>
+                        <div class="filter-tag me-2 mb-2 pos-nb-badge">
+                            <input type="checkbox" name="pos_types" value="Nb" id="pos_Nb" checked>
+                            專有名詞 (Nb)
+                        </div>
+                        <div class="filter-tag me-2 mb-2 pos-nc-badge">
+                            <input type="checkbox" name="pos_types" value="Nc" id="pos_Nc" checked>
+                            地方名詞 (Nc)
                         </div>
                     </div>
-                    
-                    <div class="col-md-4 mb-3" id="entityTypesSection">
-                        <label class="form-label">實體類型</label>
-                        <div class="d-flex flex-wrap">
-                            {% for checkbox in form.entity_types %}
-                            <label class="entity-tag entity-type-{{ checkbox.choice_value }}">
-                                {{ checkbox.tag }}
-                                {{ checkbox.choice_label }}
-                            </label>
-                            {% endfor %}
+                    <div class="mt-2">
+                        <button type="button" class="btn btn-sm btn-outline-info" id="selectAllPos">
+                            <i class="bi bi-check-all me-1"></i>全選
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" id="deselectAllPos">
+                            <i class="bi bi-x-lg me-1"></i>取消全選
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 實體類型選擇區域（條件性顯示） -->
+                <div id="entityTypesSection" class="search-conditional-section mb-3 {% if form.is_bound and form.search_type.value == 'keyword' %}d-none{% endif %}">
+                    <label class="form-label">選擇實體類型</label>
+                    <div class="d-flex flex-wrap">
+                        {% for checkbox in form.entity_types %}
+                        <div class="filter-tag me-2 mb-2 entity-type-{{ checkbox.choice_value }}">
+                            <input type="checkbox" name="entity_types" value="{{ checkbox.choice_value }}"
+                                   id="entity_{{ checkbox.choice_value }}" checked>
+                            {{ checkbox.choice_label }}
                         </div>
+                        {% endfor %}
+                    </div>
+                    <div class="mt-2">
+                        <button type="button" class="btn btn-sm btn-outline-info" id="selectAllEntityTypes">
+                            <i class="bi bi-check-all me-1"></i>全選
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" id="deselectAllEntityTypes">
+                            <i class="bi bi-x-lg me-1"></i>取消全選
+                        </button>
                     </div>
                 </div>
             </div>
-            
+
             <!-- 類別與日期篩選 -->
             <div class="form-section">
-                <h5><i class="bi bi-funnel"></i>類別與日期篩選</h5>
+                <h5><i class="bi bi-funnel me-2"></i>類別與日期篩選</h5>
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label class="form-label">新聞類別</label>
@@ -136,44 +202,56 @@
                         </div>
                     </div>
 
-                    
+
                     <div class="col-md-6 mb-3">
                         <label class="form-label">日期範圍</label>
-                        <div class="date-range-container">
-                            <div class="form-group">
-                                <label for="{{ form.date_from.id_for_label }}" class="form-label">開始日期</label>
-                                {{ form.date_from }}
+                        <!-- 日期區間滑動器 -->
+                        <div class="date-range-slider-container mt-3">
+                            <div id="dateRangeSlider"></div>
+                            <div class="date-range-labels d-flex justify-content-between mt-2">
+                                <span id="startDateLabel" class="badge bg-info">開始日期: <span id="startDateValue">-</span></span>
+                                <span id="endDateLabel" class="badge bg-info">結束日期: <span id="endDateValue">-</span></span>
                             </div>
-                            <div class="form-group">
-                                <label for="{{ form.date_to.id_for_label }}" class="form-label">結束日期</label>
-                                {{ form.date_to }}
-                            </div>
+                        </div>
+
+                        <!-- 隱藏的日期輸入框 (用於提交) -->
+                        <input type="hidden" id="date_from" name="date_from" value="{{ form.date_from.value|default:'' }}">
+                        <input type="hidden" id="date_to" name="date_to" value="{{ form.date_to.value|default:'' }}">
+                    </div>
+                </div>
+            </div>
+
+            <!-- 分析設定 -->
+            <div class="form-section">
+                <h5><i class="bi bi-sliders me-2"></i>分析設定</h5>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="id_time_grouping" class="form-label">時間軸分組</label>
+                        {{ form.time_grouping }}
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="id_min_keywords_count" class="form-label">最少關鍵詞數量</label>
+                        <div class="d-flex align-items-center">
+                            <input type="range" class="form-range flex-grow-1 me-2" id="keywords_count_slider"
+                                min="0" max="10" step="1" value="{{ form.min_keywords_count.value|default:'0' }}">
+                            <input type="number" class="form-control" style="width: 70px" id="id_min_keywords_count"
+                                name="min_keywords_count" value="{{ form.min_keywords_count.value|default:'0' }}" min="0" max="10">
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="id_min_entities_count" class="form-label">最少實體數量</label>
+                        <div class="d-flex align-items-center">
+                            <input type="range" class="form-range flex-grow-1 me-2" id="entities_count_slider"
+                                min="0" max="10" step="1" value="{{ form.min_entities_count.value|default:'0' }}">
+                            <input type="number" class="form-control" style="width: 70px" id="id_min_entities_count"
+                                name="min_entities_count" value="{{ form.min_entities_count.value|default:'0' }}" min="0" max="10">
                         </div>
                     </div>
                 </div>
             </div>
-            
-            <!-- 進階篩選與顯示選項 -->
-            <div class="form-section">
-                <h5><i class="bi bi-sliders"></i>進階篩選與顯示選項</h5>
-                <div class="row">
-                    <div class="col-md-4 mb-3">
-                        <label for="{{ form.min_keywords_count.id_for_label }}" class="form-label">最少關鍵詞數量</label>
-                        {{ form.min_keywords_count }}
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <label for="{{ form.min_entities_count.id_for_label }}" class="form-label">最少實體數量</label>
-                        {{ form.min_entities_count }}
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <label for="{{ form.time_grouping.id_for_label }}" class="form-label">時間軸分組</label>
-                        {{ form.time_grouping }}
-                    </div>
-                </div>
-            </div>
-            
+
             <div class="mt-4 d-flex justify-content-between">
-                <button type="reset" class="btn btn-outline-secondary">
+                <button type="reset" class="btn btn-outline-secondary" id="resetFormBtn">
                     <i class="bi bi-arrow-counterclockwise me-1"></i>重設
                 </button>
                 <button type="submit" class="btn btn-info search-btn">
@@ -197,7 +275,7 @@
             <div class="stat-label">符合條件的文章</div>
         </div>
     </div>
-    
+
     <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="200">
         <div class="stat-card">
             <div class="stat-icon">
@@ -207,7 +285,7 @@
             <div class="stat-label">日期分布</div>
         </div>
     </div>
-    
+
     <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="300">
         <div class="stat-card">
             <div class="stat-icon">
@@ -241,7 +319,7 @@
             </div>
         </div>
     </div>
-    
+
     <!-- 頂部文章圖片 -->
     <div class="col-lg-4 mb-4" data-aos="fade-up" data-aos-delay="500">
         <div class="top-article-card">
@@ -271,7 +349,7 @@
             </div>
         </div>
     </div>
-    
+
     <!-- 實體分布 -->
     <div class="col-md-6 mb-4" data-aos="fade-up" data-aos-delay="700">
         <div class="analysis-card">
@@ -403,156 +481,119 @@
 </div>
 
 {% else %}
-<!-- 無搜尋結果顯示 -->
-{% if request.GET %}
-<div class="no-results-container" data-aos="fade-up">
-    <div class="no-results-icon">
-        <i class="bi bi-search"></i>
+    <!-- 無搜尋結果顯示 -->
+    {% if request.GET %}
+    <div class="no-results-container" data-aos="fade-up">
+        <div class="no-results-icon">
+            <i class="bi bi-search"></i>
+        </div>
+        <h3 class="no-results-text">沒有符合條件的搜尋結果</h3>
+        <p class="no-results-subtext">請嘗試調整搜尋條件，例如使用不同的關鍵詞、選擇更多類別或擴大日期範圍</p>
+        <a href="{% url 'job_search_analysis' job.id %}" class="btn btn-outline-info">
+            <i class="bi bi-arrow-counterclockwise me-2"></i>重設搜尋條件
+        </a>
     </div>
-    <h3 class="no-results-text">沒有符合條件的搜尋結果</h3>
-    <p class="no-results-subtext">請嘗試調整搜尋條件，例如使用不同的關鍵詞、選擇更多類別或擴大日期範圍</p>
-    <a href="{% url 'job_search_analysis' job.id %}" class="btn btn-outline-info">
-        <i class="bi bi-arrow-counterclockwise me-2"></i>重設搜尋條件
-    </a>
-</div>
-{% else %}
-<div class="no-results-container" data-aos="fade-up">
-    <div class="no-results-icon">
-        <i class="bi bi-search"></i>
+    {% else %}
+    <div class="no-results-container" data-aos="fade-up">
+        <div class="no-results-icon">
+            <i class="bi bi-search"></i>
+        </div>
+        <h3 class="no-results-text">開始您的進階搜尋</h3>
+        <p class="no-results-subtext">請使用上方表單設置搜尋條件，可以搜尋關鍵詞、命名實體，並透過類別與日期進行篩選</p>
     </div>
-    <h3 class="no-results-text">開始您的進階搜尋</h3>
-    <p class="no-results-subtext">請使用上方表單設置搜尋條件，可以搜尋關鍵詞、命名實體，並透過類別與日期進行篩選</p>
+    {% endif %}
+{% endif %}
+
+<!-- 關鍵詞分析模態框 -->
+<div class="modal fade" id="termsAnalysisModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-magic me-2"></i>搜尋詞分析結果
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="terms-analysis-loading text-center">
+                    <div class="spinner-border text-info mb-3" role="status">
+                        <span class="visually-hidden">處理中...</span>
+                    </div>
+                    <p>正在分析您的搜尋詞，請稍候...</p>
+                </div>
+                <div class="terms-analysis-results" style="display: none;">
+                    <div class="mb-4">
+                        <h6 class="text-info">斷詞結果</h6>
+                        <div id="segmentedTerms" class="p-3 bg-dark rounded"></div>
+                    </div>
+                    <div class="mb-4">
+                        <h6 class="text-info">識別出的關鍵詞</h6>
+                        <div id="identifiedKeywords" class="p-3 bg-dark rounded"></div>
+                    </div>
+                    <div>
+                        <h6 class="text-info">識別出的命名實體</h6>
+                        <div id="identifiedEntities" class="p-3 bg-dark rounded"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-info" id="useAnalysisResultsBtn">
+                    <i class="bi bi-check-lg me-1"></i>套用分析結果
+                </button>
+            </div>
+        </div>
+    </div>
 </div>
-{% endif %}
-{% endif %}
+
+<!-- 搜尋結果計算模態框 -->
+<div class="modal fade" id="calculatingModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-calculator me-2"></i>計算中
+                </h5>
+            </div>
+            <div class="modal-body text-center p-4">
+                <div class="spinner-border text-info mb-3" role="status">
+                    <span class="visually-hidden">計算中...</span>
+                </div>
+                <p class="mb-0">正在計算符合條件的文章數量，請稍候...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 日期範圍提示模態框 -->
+<div class="modal fade" id="dateRangeInfoModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">日期範圍使用提示</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <ul class="list-group list-group-flush bg-transparent">
+                    <li class="list-group-item bg-transparent text-light">
+                        <i class="bi bi-arrow-left-right text-info me-2"></i>拖動左右兩端的滑塊可調整開始和結束日期
+                    </li>
+                    <li class="list-group-item bg-transparent text-light">
+                        <i class="bi bi-arrows-move text-info me-2"></i>拖動中間區域可整體移動日期範圍
+                    </li>
+                    <li class="list-group-item bg-transparent text-light">
+                        <i class="bi bi-info-circle text-info me-2"></i>選定的日期範圍會自動套用到搜尋條件中
+                    </li>
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-info" data-bs-dismiss="modal">了解了</button>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block extra_js %}
-<!-- 引入 D3.js -->
-<script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
-<!-- 引入自定義JS -->
 <script src="/static/js/search_analysis.js"></script>
-
-<script>
-    // 將後端數據傳遞給前端JS
-    const timeSeriesData = {% if time_series_data %}{{ time_series_data|safe }}{% else %}null{% endif %};
-    const cooccurrenceData = {% if cooccurrence_data %}{{ cooccurrence_data|safe }}{% else %}null{% endif %};
-    const keywordsDistribution = {% if keywords_distribution %}{{ keywords_distribution|safe }}{% else %}null{% endif %};
-    const entitiesDistribution = {% if entities_distribution %}{{ entities_distribution|safe }}{% else %}null{% endif %};
-    
-    // 匯出CSV功能
-    document.getElementById('exportResultsBtn')?.addEventListener('click', function() {
-        // 準備CSV內容
-        const headers = ['標題', '類別', '日期', '作者', '連結'];
-        const rows = [];
-        
-        {% for article in results %}
-        rows.push([
-            '{{ article.title|escapejs }}',
-            '{{ article.category|escapejs }}',
-            '{{ article.date|date:"Y-m-d H:i"|escapejs }}',
-            '{{ article.author|escapejs }}',
-            '{{ article.link|escapejs }}'
-        ]);
-        {% endfor %}
-        
-        // 建立CSV內容
-        let csvContent = headers.join(',') + '\n';
-        
-        rows.forEach(row => {
-            // 處理CSV中的引號和逗號
-            const formattedRow = row.map(cell => {
-                // 如果數據包含逗號、引號或換行符，使用引號包裹並將內部引號轉換為雙引號
-                if (cell.includes(',') || cell.includes('"') || cell.includes('\n')) {
-                    return `"${cell.replace(/"/g, '""')}"`;
-                }
-                return cell;
-            });
-            
-            csvContent += formattedRow.join(',') + '\n';
-        });
-        
-        // 創建Blob並下載
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        const url = URL.createObjectURL(blob);
-        
-        const link = document.createElement('a');
-        link.setAttribute('href', url);
-        link.setAttribute('download', '搜尋結果_{{ job.id }}.csv');
-        link.style.display = 'none';
-        
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    });
-    
-    // 標籤選擇功能
-    document.querySelectorAll('.category-tag').forEach(tag => {
-        const checkbox = tag.querySelector('input[type="checkbox"]');
-        if (checkbox && checkbox.checked) {
-            tag.classList.add('active');
-        }
-
-        tag.addEventListener('click', function(e) {
-            e.preventDefault();
-            checkbox.checked = !checkbox.checked;
-            this.classList.toggle('active');
-        });
-    });
-
-    // 全選類別
-    document.getElementById('selectAllCategories')?.addEventListener('click', function() {
-        document.querySelectorAll('.category-checkbox').forEach(checkbox => {
-            checkbox.checked = true;
-            const parentTag = checkbox.closest('.category-tag');
-            if (parentTag) {
-                parentTag.classList.add('active');
-            }
-        });
-    });
-
-    // 取消全選類別
-    document.getElementById('deselectAllCategories')?.addEventListener('click', function() {
-        document.querySelectorAll('.category-checkbox').forEach(checkbox => {
-            checkbox.checked = false;
-            const parentTag = checkbox.closest('.category-tag');
-            if (parentTag) {
-                parentTag.classList.remove('active');
-            }
-        });
-    });
-    
-    document.querySelectorAll('.entity-tag').forEach(tag => {
-        const checkbox = tag.querySelector('input[type="checkbox"]');
-        if (checkbox && checkbox.checked) {
-            tag.classList.add('active');
-        }
-        
-        tag.addEventListener('click', function(e) {
-            e.preventDefault();
-            checkbox.checked = !checkbox.checked;
-            this.classList.toggle('active');
-        });
-    });
-    
-    // 更新實體類型選擇區域顯示
-    function updateEntityTypeSection() {
-        const searchType = document.querySelector('input[name="search_type"]:checked').value;
-        const entityTypeSection = document.getElementById('entityTypesSection');
-        
-        if (searchType === 'entity' || searchType === 'both') {
-            entityTypeSection.classList.remove('d-none');
-        } else {
-            entityTypeSection.classList.add('d-none');
-        }
-    }
-    
-    // 監聽搜尋類型變更
-    document.querySelectorAll('input[name="search_type"]').forEach(radio => {
-        radio.addEventListener('change', updateEntityTypeSection);
-    });
-    
-    // 初始化時執行一次
-    updateEntityTypeSection();
-</script>
 {% endblock %}
