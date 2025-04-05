@@ -1,10 +1,354 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends 'base.html' %}
+{% load custom_filters %}
 
-</body>
-</html>
+{% block title %}關鍵人物分析 | 新聞爬蟲系統{% endblock %}
+
+{% block extra_css %}
+<!-- 引入共用樣式 -->
+<link rel="stylesheet" href="/static/css/analysis.css">
+<!-- 頁面特有樣式 -->
+<style>
+    .person-card {
+        border: none;
+        border-radius: 10px;
+        background: linear-gradient(145deg, #2a2d3a, #212330);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .person-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+    }
+
+    .person-image {
+        max-height: 300px;
+        object-fit: contain;
+        padding: 1rem;
+        border-radius: 10px;
+    }
+
+    .chart-container {
+        height: 300px;
+        margin-bottom: 1.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h1 class="display-6 fw-bold text-info">
+            <i class="bi bi-person-badge me-2"></i>關鍵人物分析：{{ person_name }}
+        </h1>
+        <p class="text-light">任務 #{{ job.id }} - {{ job.categories }}</p>
+    </div>
+    <div class="col-md-4 text-md-end">
+        <a href="{% url 'job_detail' job.id %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>返回概覽
+        </a>
+    </div>
+</div>
+
+<!-- 關鍵人物資訊卡片 -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="person-card mb-4" data-aos="fade-up">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-person-fill me-2"></i>人物基本資訊
+                </h5>
+            </div>
+            <div class="card-body text-center">
+                <img src="/static/images/{{ person_image }}" alt="{{ person_name }}" class="person-image img-fluid mb-3">
+                <h4 class="text-info mb-2">{{ person_name }}</h4>
+                <p class="text-light">出現總次數：{{ total_occurrences }} 次</p>
+                <p>主要出現類別：<span class="badge bg-info">{{ main_category }}</span></p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-8">
+        <div class="person-card mb-4" data-aos="fade-up" data-aos-delay="100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="bi bi-bar-chart-fill me-2"></i>各類別聲量分布
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="categoryChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 時間趨勢圖 -->
+<div class="row">
+    <div class="col-12">
+        <div class="person-card" data-aos="fade-up" data-aos-delay="200">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-graph-up me-2"></i>聲量時間趨勢
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="timeSeriesChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 相關文章列表 -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="person-card" data-aos="fade-up" data-aos-delay="300">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-newspaper me-2"></i>相關新聞列表
+                </h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover data-table" id="articlesTable">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>標題</th>
+                                <th>類別</th>
+                                <th>日期</th>
+                                <th>作者</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for article in related_articles %}
+                            <tr class="data-item">
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ article.title }}</td>
+                                <td>
+                                    <span class="badge" style="background-color: {{ category_colors|get_item:article.category|get_item:'bg' }}; border: 1px solid {{ category_colors|get_item:article.category|get_item:'border' }}">
+                                        {{ article.category }}
+                                    </span>
+                                </td>
+                                <td>{{ article.date|date:"Y-m-d H:i" }}</td>
+                                <td>{{ article.author }}</td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <button type="button" class="btn btn-sm btn-outline-info article-preview-btn"
+                                                data-id="{{ article.id }}"
+                                                data-title="{{ article.title }}"
+                                                data-content="{{ article.content }}"
+                                                data-category="{{ article.category }}"
+                                                data-date="{{ article.date|date:'Y-m-d H:i' }}"
+                                                data-author="{{ article.author }}"
+                                                data-link="{{ article.link }}">
+                                            <i class="bi bi-eye"></i>
+                                        </button>
+                                        <a href="{% url 'article_detail' article.id %}" class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-info-circle"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center py-4">
+                                    <i class="bi bi-emoji-frown me-2"></i>沒有找到相關文章
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 文章預覽模態框 -->
+<div class="modal fade" id="articleModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content bg-dark text-white">
+            <div class="modal-header">
+                <h5 class="modal-title" id="articleTitle"></h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <div class="badge bg-info me-2" id="articleCategory"></div>
+                    <small class="text-white" id="articleDate"></small>
+                    <small class="text-white ms-2" id="articleAuthor"></small>
+                </div>
+                <div class="article-content" id="articleContent"></div>
+            </div>
+            <div class="modal-footer">
+                <a href="#" class="btn btn-outline-info" id="articleLink" target="_blank">
+                    <i class="bi bi-box-arrow-up-right me-1"></i>原始文章
+                </a>
+                <a href="#" class="btn btn-info" id="articleDetailLink">
+                    <i class="bi bi-info-circle me-1"></i>查看詳情
+                </a>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">關閉</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- 引入共用腳本 -->
+<script src="/static/js/analysis.js"></script>
+<!-- 頁面特有腳本 -->
+<script>
+    $(document).ready(function() {
+        // 初始化數據表格
+        initializeDataTable('articlesTable');
+
+        // 文章預覽功能
+        $('.article-preview-btn').click(function() {
+            const id = $(this).data('id');
+            const title = $(this).data('title');
+            const category = $(this).data('category');
+            const date = $(this).data('date');
+            const author = $(this).data('author');
+            const content = $(this).data('content');
+            const link = $(this).data('link');
+
+            $('#articleTitle').text(title);
+            $('#articleCategory').text(category);
+            $('#articleDate').text(date);
+            $('#articleAuthor').text('作者: ' + author);
+            
+            // 將名字高亮顯示
+            const highlightedContent = content.replace(new RegExp('{{ person_name }}', 'gi'),
+                match => `<mark class="highlight">${match}</mark>`);
+            $('#articleContent').html(highlightedContent.replace(/\n/g, '<br>'));
+            
+            $('#articleLink').attr('href', link);
+            $('#articleDetailLink').attr('href', `/articles/${id}/`);
+            
+            const articleModal = new bootstrap.Modal(document.getElementById('articleModal'));
+            articleModal.show();
+        });
+
+        // 類別聲量分布圖表
+        const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+        const categoryChart = new Chart(categoryCtx, {
+            type: 'bar',
+            data: {
+                labels: {{ category_labels|safe }},
+                datasets: [{
+                    label: '{{ person_name }} 出現次數',
+                    data: {{ category_data|safe }},
+                    backgroundColor: [
+                        'rgba(54, 162, 235, 0.7)',
+                        'rgba(255, 99, 132, 0.7)',
+                        'rgba(255, 206, 86, 0.7)',
+                        'rgba(75, 192, 192, 0.7)',
+                        'rgba(153, 102, 255, 0.7)',
+                        'rgba(255, 159, 64, 0.7)',
+                        'rgba(201, 203, 207, 0.7)',
+                        'rgba(0, 204, 150, 0.7)',
+                        'rgba(255, 0, 110, 0.7)'
+                    ],
+                    borderColor: [
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(255, 206, 86, 1)',
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(153, 102, 255, 1)',
+                        'rgba(255, 159, 64, 1)',
+                        'rgba(201, 203, 207, 1)',
+                        'rgba(0, 204, 150, 1)',
+                        'rgba(255, 0, 110, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    x: {
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: 'rgba(255, 255, 255, 0.7)'
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: 'rgba(255, 255, 255, 0.7)'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: 'rgba(255, 255, 255, 0.7)'
+                        }
+                    }
+                }
+            }
+        });
+
+        // 時間趨勢圖表
+        const timeSeriesCtx = document.getElementById('timeSeriesChart').getContext('2d');
+        const timeSeriesChart = new Chart(timeSeriesCtx, {
+            type: 'line',
+            data: {
+                labels: {{ time_labels|safe }},
+                datasets: [{
+                    label: '{{ person_name }} 聲量趨勢',
+                    data: {{ time_data|safe }},
+                    fill: true,
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    tension: 0.4,
+                    pointBackgroundColor: 'rgba(54, 162, 235, 1)',
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: 'rgba(54, 162, 235, 1)'
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    x: {
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: 'rgba(255, 255, 255, 0.7)'
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: 'rgba(255, 255, 255, 0.7)'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: 'rgba(255, 255, 255, 0.7)'
+                        }
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

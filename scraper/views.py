@@ -6,7 +6,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.db import models
 
 from news_scraper_web import settings
@@ -21,6 +21,10 @@ from .services.analysis_service import (
 )
 from scraper.utils.scraper_utils import CTTextProcessor
 logger = logging.getLogger(__name__)
+
+from collections import defaultdict
+from django.db.models import Q, Count
+
 
 
 def login_view(request):
@@ -514,5 +518,88 @@ def analyze_search_terms(request):
 
 
 @login_required
-def analyze_key_person(request):
-    return None
+def analyze_key_person(request, job_id):
+    """
+    關鍵人物分析視圖
+    """
+    try:
+        person_name = request.GET.get('name', '川普')  # 默認為川普，可通過參數修改
+
+        # 如果沒有提供job_id，返回錯誤
+        if not job_id:
+            return JsonResponse({'status': 'error', 'message': '請提供任務ID'}, status=400)
+
+        # 獲取任務
+        job = get_object_or_404(ScrapeJob, id=job_id, user=request.user)
+
+        # 根據人名搜尋相關文章
+        related_articles = Article.objects.filter(
+            job=job
+        ).order_by('-date')  # 修正這裡的 order_by
+
+        # 計算總出現次數
+        total_occurrences = related_articles.count()
+
+        # 按類別統計出現次數
+        category_stats = (
+            related_articles.values('category')
+            .annotate(count=Count('id'))
+            .order_by('-count')
+        )
+
+        # 提取類別和計數資料用於圖表
+        category_labels = []
+        category_data = []
+
+        for stat in category_stats:
+            category_labels.append(stat['category'])
+            category_data.append(stat['count'])
+
+        # 確定主要出現類別
+        main_category = category_labels[0] if category_labels else "無"
+
+        # 按時間統計趨勢
+        time_stats = defaultdict(int)
+
+        for article in related_articles:
+            date_str = article.date.strftime('%Y-%m-%d')
+            time_stats[date_str] += 1
+
+        # 排序時間數據
+        time_labels = []
+        time_data = []
+
+        for date_str, count in sorted(time_stats.items()):
+            time_labels.append(date_str)
+            time_data.append(count)
+
+        # 確定圖片檔名
+        person_image = "trump.png"  # 預設圖片
+        if person_name == "川普":
+            person_image = "trump.png"
+        elif person_name == "蔡英文":
+            person_image = "tsai.png"
+        elif person_name == "習近平":
+            person_image = "xi.png"
+        # 其他人物可以在這裡擴充...
+
+        # 準備上下文資料
+        context = {
+            'job': job,
+            'person_name': person_name,
+            'person_image': person_image,
+            'total_occurrences': total_occurrences,
+            'main_category': main_category,
+            'related_articles': related_articles,
+            'category_colors': get_category_colors(),
+            'category_labels': json.dumps(category_labels),
+            'category_data': json.dumps(category_data),
+            'time_labels': json.dumps(time_labels),
+            'time_data': json.dumps(time_data)
+        }
+
+        return render(request, 'scraper/job_key_person.html', context)
+
+    except Exception as e:
+        logger.error(f"關鍵人物分析視圖出錯: {e}", exc_info=True)
+        return HttpResponse(f"處理請求時發生錯誤: {str(e)}", status=500)
