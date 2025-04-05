@@ -9,6 +9,7 @@ from django.contrib import messages
 from django.http import JsonResponse
 from django.db import models
 
+from news_scraper_web import settings
 from .models import ScrapeJob, Article, KeywordAnalysis, NamedEntityAnalysis
 from .forms import LoginForm, ScrapeJobForm, KeywordFilterForm, AdvancedSearchForm
 from .services.search_service import SearchAnalysisService
@@ -18,6 +19,7 @@ from .services.analysis_service import (
     get_entities_analysis,
     get_category_colors
 )
+from scraper.utils.scraper_utils import CTTextProcessor
 
 logger = logging.getLogger(__name__)
 
@@ -432,6 +434,7 @@ def job_search_analysis(request, job_id):
         'available_categories': available_categories,
         'category_colors': category_colors,
         'time_series_data': json.dumps(time_series_data) if time_series_data else None,
+        'time_series_count': len(time_series_data) if time_series_data else 0,
         'keywords_distribution': json.dumps(keywords_distribution) if keywords_distribution else None,
         'entities_distribution': json.dumps(entities_distribution) if entities_distribution else None,
         'cooccurrence_data': json.dumps(cooccurrence_data) if cooccurrence_data else None,
@@ -450,32 +453,51 @@ def analyze_search_terms(request):
         # 解析JSON請求
         data = json.loads(request.body)
         search_terms = data.get('terms', '')
+        # 獲取是否去重的參數，預設為 True
+        remove_duplicates = data.get('remove_duplicates', True)
 
         if not search_terms:
             return JsonResponse({'status': 'error', 'message': '未提供搜索詞'})
 
-        # 使用CTTextProcessor進行分析
-        from scraper.utils.scraper_utils import CTTextProcessor
         processor = CTTextProcessor(output_dir=settings.MEDIA_ROOT)
 
         # 進行斷詞
         segmented_terms = processor.segment_text(search_terms)
 
-        # 提取所有斷詞結果（僅詞，不含詞性）
-        segmented_words = [word for word, _ in segmented_terms]
+        # 提取斷詞結果
+        if remove_duplicates:
+            # 去重後的斷詞結果
+            segmented_words = list(dict.fromkeys([word for word, _ in segmented_terms]))
 
-        # 提取關鍵詞（帶詞性）
-        keywords = [{'word': word, 'pos': pos} for word, pos in segmented_terms]
+            # 去重後的關鍵詞
+            keywords_dict = {}
+            for word, pos in segmented_terms:
+                key = f"{word}_{pos}"
+                if key not in keywords_dict:
+                    keywords_dict[key] = {'word': word, 'pos': pos}
+            keywords = list(keywords_dict.values())
 
-        # 提取命名實體
-        entities = processor.identify_named_entities(search_terms)
-        entities_data = [{'entity': entity.word, 'entity_type': entity.ner} for entity in entities]
+            # 提取命名實體並去重
+            entities = processor.identify_named_entities(search_terms)
+            entities_dict = {}
+            for entity in entities:
+                key = f"{entity.word}_{entity.ner}"
+                if key not in entities_dict:
+                    entities_dict[key] = {'entity': entity.word, 'entity_type': entity.ner}
+            entities_data = list(entities_dict.values())
+        else:
+            # 不去重的情況
+            segmented_words = [word for word, _ in segmented_terms]
+            keywords = [{'word': word, 'pos': pos} for word, pos in segmented_terms]
+            entities = processor.identify_named_entities(search_terms)
+            entities_data = [{'entity': entity.word, 'entity_type': entity.ner} for entity in entities]
 
         return JsonResponse({
             'status': 'success',
             'segmented_terms': segmented_words,
             'keywords': keywords,
-            'entities': entities_data
+            'entities': entities_data,
+            'remove_duplicates': remove_duplicates  # 返回是否去重的設定
         })
 
     except Exception as e:
