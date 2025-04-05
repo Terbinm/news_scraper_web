@@ -1,6 +1,5 @@
 /**
- * 進階搜尋與分析頁面功能
- * 提供進階搜尋、數據視覺化和結果顯示功能
+ * 修復進階搜尋與分析頁面實體類型選擇功能
  */
 
 // 日期範圍資料
@@ -98,8 +97,8 @@ function initSearchForm() {
 
     // 全選/取消全選類別
     setupSelectAllButtons('selectAllCategories', 'deselectAllCategories', '.category-checkbox', '.category-tag');
-    setupSelectAllButtons('selectAllEntityTypes', 'deselectAllEntityTypes', 'input[name="entity_types"]', '.entity-type-PERSON, .entity-type-LOC, .entity-type-ORG, .entity-type-TIME, .entity-type-MISC');
-    setupSelectAllButtons('selectAllPos', 'deselectAllPos', 'input[name="pos_types"]', '.pos-na-badge, .pos-nb-badge, .pos-nc-badge');
+    setupSelectAllButtons('selectAllEntityTypes', 'deselectAllEntityTypes', 'input[name="entity_types"]', '.filter-tag:has(input[name="entity_types"])');
+    setupSelectAllButtons('selectAllPos', 'deselectAllPos', 'input[name="pos_types"]', '.filter-tag:has(input[name="pos_types"])');
 
     // 分析關鍵詞按鈕
     if (analyzeTermsBtn) {
@@ -140,13 +139,36 @@ function initSearchForm() {
 
             // 檢查實體搜尋類型
             if (document.getElementById('search_entity').checked) {
-                // 如果沒有選擇任何實體類型，則選中所有
+                // 檢查是否有選擇至少一個實體類型
                 const entityCheckboxes = document.querySelectorAll('input[name="entity_types"]');
                 const anyChecked = Array.from(entityCheckboxes).some(cb => cb.checked);
 
                 if (!anyChecked) {
+                    // 如果沒有選擇任何實體類型，選中所有
                     entityCheckboxes.forEach(cb => {
                         cb.checked = true;
+                    });
+                    // 更新視覺效果
+                    document.querySelectorAll('.filter-tag:has(input[name="entity_types"])').forEach(tag => {
+                        tag.classList.add('active');
+                    });
+                }
+            }
+
+            // 檢查詞性選擇
+            if (document.getElementById('search_keyword').checked) {
+                // 檢查是否有選擇至少一個詞性
+                const posCheckboxes = document.querySelectorAll('input[name="pos_types"]');
+                const anyPosChecked = Array.from(posCheckboxes).some(cb => cb.checked);
+
+                if (!anyPosChecked) {
+                    // 如果沒有選擇任何詞性，選中所有
+                    posCheckboxes.forEach(cb => {
+                        cb.checked = true;
+                    });
+                    // 更新視覺效果
+                    document.querySelectorAll('.filter-tag:has(input[name="pos_types"])').forEach(tag => {
+                        tag.classList.add('active');
                     });
                 }
             }
@@ -546,6 +568,7 @@ function analyzeSearchTerms(searchTerms) {
         document.getElementById('identifiedEntities').innerHTML = '<p class="text-danger">或聯繫系統管理員</p>';
     });
 }
+
 /**
  * 重設搜尋表單
  */
@@ -633,6 +656,63 @@ function setupSelectAllButtons(selectAllId, deselectAllId, checkboxSelector, tag
 
             document.querySelectorAll(tagSelector).forEach(tag => {
                 tag.classList.remove('active');
+            });
+        });
+    }
+}
+
+/**
+ * 設置實體類型篩選器
+ */
+function setupEntityTypeFilters() {
+    // 實體標籤點擊事件
+    const entityTags = document.querySelectorAll('.filter-tag:has(input[name="entity_types"])');
+    if (entityTags.length === 0) {
+        // 如果查詢器不支持:has選擇器（較舊的瀏覽器），使用替代方法
+        document.querySelectorAll('.filter-tag').forEach(tag => {
+            const checkbox = tag.querySelector('input[name="entity_types"]');
+            if (checkbox) {
+                // 設置初始狀態
+                if (checkbox.checked) {
+                    tag.classList.add('active');
+                }
+
+                // 添加點擊事件
+                tag.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    checkbox.checked = !checkbox.checked;
+                    tag.classList.toggle('active', checkbox.checked);
+                });
+            }
+        });
+    }
+
+    // 全選按鈕
+    const selectAllEntityTypesBtn = document.getElementById('selectAllEntityTypes');
+    if (selectAllEntityTypesBtn) {
+        selectAllEntityTypesBtn.addEventListener('click', function() {
+            const entityCheckboxes = document.querySelectorAll('input[name="entity_types"]');
+            entityCheckboxes.forEach(checkbox => {
+                checkbox.checked = true;
+                const parentTag = checkbox.closest('.filter-tag');
+                if (parentTag) {
+                    parentTag.classList.add('active');
+                }
+            });
+        });
+    }
+
+    // 取消全選按鈕
+    const deselectAllEntityTypesBtn = document.getElementById('deselectAllEntityTypes');
+    if (deselectAllEntityTypesBtn) {
+        deselectAllEntityTypesBtn.addEventListener('click', function() {
+            const entityCheckboxes = document.querySelectorAll('input[name="entity_types"]');
+            entityCheckboxes.forEach(checkbox => {
+                checkbox.checked = false;
+                const parentTag = checkbox.closest('.filter-tag');
+                if (parentTag) {
+                    parentTag.classList.remove('active');
+                }
             });
         });
     }
@@ -1249,35 +1329,6 @@ function exportSearchResults() {
         document.body.removeChild(link);
     });
 }
-
-// 實體類型篩選按鈕處理
-function setupEntityTypeFilters() {
-    // 全選按鈕
-    $('#selectAllEntityTypes').click(function() {
-        $('input[name="entity_types"]').prop('checked', true);
-        $('.filter-tag:has(input[name="entity_types"])').addClass('active');
-    });
-
-    // 取消全選按鈕
-    $('#deselectAllEntityTypes').click(function() {
-        $('input[name="entity_types"]').prop('checked', false);
-        $('.filter-tag:has(input[name="entity_types"])').removeClass('active');
-    });
-
-    // 實體類型標籤點擊事件
-    $('.filter-tag:has(input[name="entity_types"])').click(function(e) {
-        e.preventDefault();
-        const checkbox = $(this).find('input[name="entity_types"]');
-        checkbox.prop('checked', !checkbox.prop('checked'));
-        $(this).toggleClass('active', checkbox.prop('checked'));
-    });
-
-    // 初始化已選擇的實體類型標籤
-    $('input[name="entity_types"]:checked').each(function() {
-        $(this).closest('.filter-tag').addClass('active');
-    });
-}
-
 
 // 當視窗調整大小時重繪圖表
 window.addEventListener('resize', function() {

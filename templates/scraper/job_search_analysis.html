@@ -133,15 +133,18 @@
                     <label class="form-label">選擇詞性</label>
                     <div class="d-flex flex-wrap">
                         <div class="filter-tag me-2 mb-2 pos-na-badge">
-                            <input type="checkbox" name="pos_types" value="Na" id="pos_Na" checked>
+                            <input type="checkbox" name="pos_types" value="Na" id="pos_Na"
+                                   {% if not form.is_bound or 'Na' in form.pos_types.value %}checked{% endif %}>
                             普通名詞 (Na)
                         </div>
                         <div class="filter-tag me-2 mb-2 pos-nb-badge">
-                            <input type="checkbox" name="pos_types" value="Nb" id="pos_Nb" checked>
+                            <input type="checkbox" name="pos_types" value="Nb" id="pos_Nb"
+                                   {% if not form.is_bound or 'Nb' in form.pos_types.value %}checked{% endif %}>
                             專有名詞 (Nb)
                         </div>
                         <div class="filter-tag me-2 mb-2 pos-nc-badge">
-                            <input type="checkbox" name="pos_types" value="Nc" id="pos_Nc" checked>
+                            <input type="checkbox" name="pos_types" value="Nc" id="pos_Nc"
+                                   {% if not form.is_bound or 'Nc' in form.pos_types.value %}checked{% endif %}>
                             地方名詞 (Nc)
                         </div>
                     </div>
@@ -155,29 +158,34 @@
                     </div>
                 </div>
 
-                <!-- 實體類型選擇區域（條件性顯示） --><!-- 實體類型選擇區域（條件性顯示） -->
+                <!-- 實體類型選擇區域（條件性顯示） -->
                 <div id="entityTypesSection" class="search-conditional-section mb-3 {% if form.is_bound and form.search_type.value == 'keyword' %}d-none{% endif %}">
                     <label class="form-label">選擇實體類型</label>
                     <div class="d-flex flex-wrap">
-                        <!-- 這部分需要修改，確保每個實體類型正確生成 -->
+                        <!-- 實體類型標籤 -->
                         <div class="filter-tag me-2 mb-2 entity-type-PERSON">
-                            <input type="checkbox" name="entity_types" value="PERSON" id="entity_PERSON" checked>
+                            <input type="checkbox" name="entity_types" value="PERSON" id="entity_PERSON"
+                                   {% if not form.is_bound or 'PERSON' in form.entity_types.value %}checked{% endif %}>
                             人物 (PERSON)
                         </div>
                         <div class="filter-tag me-2 mb-2 entity-type-LOC">
-                            <input type="checkbox" name="entity_types" value="LOC" id="entity_LOC" checked>
+                            <input type="checkbox" name="entity_types" value="LOC" id="entity_LOC"
+                                   {% if not form.is_bound or 'LOC' in form.entity_types.value %}checked{% endif %}>
                             地點 (LOC)
                         </div>
                         <div class="filter-tag me-2 mb-2 entity-type-ORG">
-                            <input type="checkbox" name="entity_types" value="ORG" id="entity_ORG" checked>
+                            <input type="checkbox" name="entity_types" value="ORG" id="entity_ORG"
+                                   {% if not form.is_bound or 'ORG' in form.entity_types.value %}checked{% endif %}>
                             組織 (ORG)
                         </div>
                         <div class="filter-tag me-2 mb-2 entity-type-TIME">
-                            <input type="checkbox" name="entity_types" value="TIME" id="entity_TIME" checked>
+                            <input type="checkbox" name="entity_types" value="TIME" id="entity_TIME"
+                                   {% if not form.is_bound or 'TIME' in form.entity_types.value %}checked{% endif %}>
                             時間 (TIME)
                         </div>
                         <div class="filter-tag me-2 mb-2 entity-type-MISC">
-                            <input type="checkbox" name="entity_types" value="MISC" id="entity_MISC" checked>
+                            <input type="checkbox" name="entity_types" value="MISC" id="entity_MISC"
+                                   {% if not form.is_bound or 'MISC' in form.entity_types.value %}checked{% endif %}>
                             其他 (MISC)
                         </div>
                     </div>

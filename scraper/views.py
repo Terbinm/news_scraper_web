@@ -511,3 +511,8 @@ def analyze_search_terms(request):
     except Exception as e:
         logger.error(f"分析搜索詞時出錯: {e}", exc_info=True)
         return JsonResponse({'status': 'error', 'message': str(e)})
+
+
+@login_required
+def analyze_key_person(request):
+    return None
