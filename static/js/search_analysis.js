@@ -37,6 +37,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
+
 /**
  * 初始化搜尋表單
  */
@@ -716,374 +717,437 @@ function formatDateForInput(date) {
 
 /**
  * 初始化時間軸圖表
- * @param {Array} data - 時間軸數據
+ * @param {String} timeSeriesDataJson - 時間軸JSON數據字符串
  */
-function initTimeSeriesChart(data) {
-    const ctx = document.getElementById('timeSeriesChart').getContext('2d');
+function initTimeSeriesChart(timeSeriesDataJson) {
+    if (!timeSeriesDataJson) {
+        console.warn("沒有提供時間軸數據");
+        return;
+    }
+
+    const ctx = document.getElementById('timeSeriesChart');
     if (!ctx) return;
 
-    // 確保資料是按日期排序的
-    data.sort((a, b) => new Date(a.date) - new Date(b.date));
+    try {
+        // 解析JSON字符串為JavaScript對象
+        const data = JSON.parse(timeSeriesDataJson);
 
-    // 準備圖表資料
-    const labels = data.map(item => formatDate(item.date));
-    const counts = data.map(item => item.count);
+        // 確保資料是按日期排序的
+        data.sort((a, b) => new Date(a.date) - new Date(b.date));
 
-    // 創建圖表
-    const timeSeriesChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: '文章數量',
-                data: counts,
-                fill: true,
-                backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                borderColor: 'rgba(54, 162, 235, 1)',
-                tension: 0.4,
-                pointBackgroundColor: 'rgba(54, 162, 235, 1)',
-                pointBorderColor: '#fff',
-                pointHoverBackgroundColor: '#fff',
-                pointHoverBorderColor: 'rgba(54, 162, 235, 1)'
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                title: {
-                    display: true,
-                    text: '文章數量時間分布',
-                    color: '#fff'
-                },
-                legend: {
-                    labels: {
-                        color: '#fff'
-                    }
-                },
-                tooltip: {
-                    mode: 'index',
-                    intersect: false
-                }
+        // 準備圖表資料
+        const labels = data.map(item => formatDate(item.date));
+        const counts = data.map(item => item.count);
+
+        // 創建圖表
+        const timeSeriesChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: '文章數量',
+                    data: counts,
+                    fill: true,
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    tension: 0.4,
+                    pointBackgroundColor: 'rgba(54, 162, 235, 1)',
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: 'rgba(54, 162, 235, 1)'
+                }]
             },
-            scales: {
-                x: {
-                    ticks: {
-                        color: 'rgba(255, 255, 255, 0.7)'
-                    },
-                    grid: {
-                        color: 'rgba(255, 255, 255, 0.1)'
-                    }
-                },
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        precision: 0,  // 只顯示整數
-                        color: 'rgba(255, 255, 255, 0.7)'
-                    },
-                    grid: {
-                        color: 'rgba(255, 255, 255, 0.1)'
-                    }
-                }
-            }
-        }
-    });
-
-    // 添加時間尺度切換
-    const timeGroupingSelect = document.getElementById('id_time_grouping');
-    if (timeGroupingSelect) {
-        timeGroupingSelect.addEventListener('change', function() {
-            // 提交表單重新載入數據
-            document.getElementById('searchForm').submit();
-        });
-    }
-}
-
-/**
- * 初始化共現網絡關係圖
- * @param {Object} data - 共現網絡數據
- */
-function initCooccurrenceNetwork(data) {
-    // 使用D3.js建立關係圖
-    const container = document.getElementById('cooccurrenceNetwork');
-    if (!container || !data || typeof d3 === 'undefined') return;
-
-    // 清除舊內容
-    container.innerHTML = '';
-
-    // 設置圖形尺寸
-    const width = container.clientWidth;
-    const height = container.clientHeight || 500;
-
-    // 創建SVG元素
-    const svg = d3.select(container)
-        .append('svg')
-        .attr('width', width)
-        .attr('height', height);
-
-    // 定義節點顏色
-    const color = d3.scaleOrdinal()
-        .domain([1, 2])  // 1=關鍵詞組, 2=實體組
-        .range(['#6bd89e', '#f98e71']);
-
-    // 創建力導向模擬
-    const simulation = d3.forceSimulation()
-        .force('link', d3.forceLink().id(d => d.id).distance(100))
-        .force('charge', d3.forceManyBody().strength(-300))
-        .force('center', d3.forceCenter(width / 2, height / 2))
-        .force('collision', d3.forceCollide().radius(d => Math.sqrt(d.value) * 2 + 10));
-
-    // 添加連接線
-    const link = svg.append('g')
-        .attr('class', 'links')
-        .selectAll('line')
-        .data(data.links)
-        .enter().append('line')
-        .attr('stroke', '#999')
-        .attr('stroke-opacity', 0.6)
-        .attr('stroke-width', d => Math.sqrt(d.value));
-
-    // 添加節點
-    const node = svg.append('g')
-        .attr('class', 'nodes')
-        .selectAll('g')
-        .data(data.nodes)
-        .enter().append('g');
-
-    // 添加節點圓形
-    node.append('circle')
-        .attr('r', d => Math.sqrt(d.value) * 1.5 + 5)
-        .attr('fill', d => color(d.group))
-        .attr('stroke', '#fff')
-        .attr('stroke-width', 1.5)
-        .call(d3.drag()
-            .on('start', dragstarted)
-            .on('drag', dragged)
-            .on('end', dragended));
-
-    // 添加節點標籤
-    node.append('text')
-        .attr('class', 'node-label')
-        .text(d => d.name)
-        .attr('x', 0)
-        .attr('y', d => -Math.sqrt(d.value) * 1.5 - 8)
-        .attr('text-anchor', 'middle')
-        .attr('fill', '#fff')
-        .style('font-size', '10px')
-        .style('pointer-events', 'none');
-
-    // 添加標題
-    node.append('title')
-        .text(d => d.name);
-
-    // 更新力導向模擬
-    simulation
-        .nodes(data.nodes)
-        .on('tick', ticked);
-
-    simulation.force('link')
-        .links(data.links);
-
-    // 模擬更新函數
-    function ticked() {
-        link
-            .attr('x1', d => Math.max(10, Math.min(width - 10, d.source.x)))
-            .attr('y1', d => Math.max(10, Math.min(height - 10, d.source.y)))
-            .attr('x2', d => Math.max(10, Math.min(width - 10, d.target.x)))
-            .attr('y2', d => Math.max(10, Math.min(height - 10, d.target.y)));
-
-        node
-            .attr('transform', d => `translate(${Math.max(10, Math.min(width - 10, d.x))}, ${Math.max(10, Math.min(height - 10, d.y))})`);
-    }
-
-    // 拖拽開始
-    function dragstarted(event, d) {
-        if (!event.active) simulation.alphaTarget(0.3).restart();
-        d.fx = d.x;
-        d.fy = d.y;
-    }
-
-    // 拖拽中
-    function dragged(event, d) {
-        d.fx = event.x;
-        d.fy = event.y;
-    }
-
-    // 拖拽結束
-    function dragended(event, d) {
-        if (!event.active) simulation.alphaTarget(0);
-        d.fx = null;
-        d.fy = null;
-    }
-
-    // 添加圖例
-    const legend = svg.append('g')
-        .attr('class', 'legend')
-        .attr('transform', 'translate(20, 20)');
-
-    const legendItems = [
-        { name: '關鍵詞', group: 1 },
-        { name: '命名實體', group: 2 }
-    ];
-
-    legendItems.forEach((item, i) => {
-        const legendItem = legend.append('g')
-            .attr('transform', `translate(0, ${i * 25})`);
-
-        legendItem.append('circle')
-            .attr('r', 6)
-            .attr('fill', color(item.group));
-
-        legendItem.append('text')
-            .attr('x', 15)
-            .attr('y', 4)
-            .text(item.name)
-            .attr('fill', '#fff');
-    });
-}
-
-/**
- * 初始化關鍵詞分布圖表
- * @param {Array} data - 關鍵詞分布數據
- */
-function initKeywordsChart(data) {
-    const ctx = document.getElementById('keywordsChart');
-    if (!ctx) return;
-
-    // 準備圖表資料
-    const labels = data.map(item => item.word);
-    const values = data.map(item => item.total);
-
-    // 創建圖表
-    const keywordsChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: '出現次數',
-                data: values,
-                backgroundColor: 'rgba(75, 192, 192, 0.7)',
-                borderColor: 'rgba(75, 192, 192, 1)',
-                borderWidth: 1
-            }]
-        },
-        options: {
-            indexAxis: 'y',  // 水平條形圖
-            responsive: true,
-            plugins: {
-                title: {
-                    display: true,
-                    text: '關鍵詞分布',
-                    color: '#fff'
-                },
-                legend: {
-                    labels: {
+            options: {
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: '文章數量時間分布',
                         color: '#fff'
-                    }
-                }
-            },
-            scales: {
-                x: {
-                    beginAtZero: true,
-                    ticks: {
-                        precision: 0,
-                        color: 'rgba(255, 255, 255, 0.7)'
                     },
-                    grid: {
-                        color: 'rgba(255, 255, 255, 0.1)'
-                    }
-                },
-                y: {
-                    ticks: {
-                        color: 'rgba(255, 255, 255, 0.7)'
+                    legend: {
+                        labels: {
+                            color: '#fff'
+                        }
                     },
-                    grid: {
-                        color: 'rgba(255, 255, 255, 0.1)'
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false
                     }
-                }
-            }
-        }
-    });
-}
-
-/**
- * 初始化實體分布圖表
- * @param {Array} data - 實體分布數據
- */
-function initEntitiesChart(data) {
-    const ctx = document.getElementById('entitiesChart');
-    if (!ctx) return;
-
-    // 準備實體類型的顏色映射
-    const entityTypeColors = {
-        'PERSON': 'rgba(255, 99, 132, 0.7)',
-        'LOC': 'rgba(54, 162, 235, 0.7)',
-        'ORG': 'rgba(255, 206, 86, 0.7)',
-        'TIME': 'rgba(75, 192, 192, 0.7)',
-        'MISC': 'rgba(153, 102, 255, 0.7)'
-    };
-
-    // 準備圖表資料
-    const labels = data.map(item => item.entity);
-    const values = data.map(item => item.total);
-    const backgroundColors = data.map(item => entityTypeColors[item.entity_type] || 'rgba(153, 102, 255, 0.7)');
-
-    // 創建圖表
-    const entitiesChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: '出現次數',
-                data: values,
-                backgroundColor: backgroundColors,
-                borderColor: backgroundColors.map(color => color.replace('0.7', '1')),
-                borderWidth: 1
-            }]
-        },
-        options: {
-            indexAxis: 'y',  // 水平條形圖
-            responsive: true,
-            plugins: {
-                title: {
-                    display: true,
-                    text: '命名實體分布',
-                    color: '#fff'
                 },
-                legend: {
-                    display: false
-                },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            const entityType = data[context.dataIndex].entity_type;
-                            return [`${context.dataset.label}: ${context.raw}`, `類型: ${entityType}`];
+                scales: {
+                    x: {
+                        ticks: {
+                            color: 'rgba(255, 255, 255, 0.7)'
+                        },
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0,  // 只顯示整數
+                            color: 'rgba(255, 255, 255, 0.7)'
+                        },
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
                         }
                     }
                 }
+            }
+        });
+    } catch (error) {
+        console.error("初始化時間軸圖表失敗:", error);
+    }
+}
+
+
+/**
+ * 初始化共現網絡關係圖
+ * @param {String} cooccurrenceJsonData - 共現網絡JSON數據字符串
+ */
+function initCooccurrenceNetwork(cooccurrenceJsonData) {
+    if (!cooccurrenceJsonData) {
+        console.warn("沒有提供共現網絡數據");
+        return;
+    }
+
+    // 使用D3.js建立關係圖
+    const container = document.getElementById('cooccurrenceNetwork');
+    if (!container || typeof d3 === 'undefined') return;
+
+    try {
+        // 解析JSON字符串為JavaScript對象
+        const data = JSON.parse(cooccurrenceJsonData);
+
+        if (!data || !data.nodes || !data.links || data.nodes.length === 0) {
+            container.innerHTML = `
+                <div class="d-flex align-items-center justify-content-center h-100 text-white">
+                    <div class="text-center">
+                        <i class="bi bi-exclamation-triangle display-4 mb-3 text-warning"></i>
+                        <p>沒有足夠的數據生成關聯圖</p>
+                    </div>
+                </div>
+            `;
+            return;
+        }
+
+        // 清除舊內容
+        container.innerHTML = '';
+
+        // 設置圖形尺寸
+        const width = container.clientWidth;
+        const height = container.clientHeight || 500;
+
+        // 創建SVG元素
+        const svg = d3.select(container)
+            .append('svg')
+            .attr('width', width)
+            .attr('height', height);
+
+        // 定義節點顏色
+        const color = d3.scaleOrdinal()
+            .domain([1, 2])  // 1=關鍵詞組, 2=實體組
+            .range(['#6bd89e', '#f98e71']);
+
+        // 創建力導向模擬
+        const simulation = d3.forceSimulation()
+            .force('link', d3.forceLink().id(d => d.id).distance(100))
+            .force('charge', d3.forceManyBody().strength(-300))
+            .force('center', d3.forceCenter(width / 2, height / 2))
+            .force('collision', d3.forceCollide().radius(d => Math.sqrt(d.value) * 2 + 10));
+
+        // 添加連接線
+        const link = svg.append('g')
+            .attr('class', 'links')
+            .selectAll('line')
+            .data(data.links)
+            .enter().append('line')
+            .attr('stroke', '#999')
+            .attr('stroke-opacity', 0.6)
+            .attr('stroke-width', d => Math.sqrt(d.value));
+
+        // 添加節點
+        const node = svg.append('g')
+            .attr('class', 'nodes')
+            .selectAll('g')
+            .data(data.nodes)
+            .enter().append('g');
+
+        // 添加節點圓形
+        node.append('circle')
+            .attr('r', d => Math.sqrt(d.value) * 1.5 + 5)
+            .attr('fill', d => color(d.group))
+            .attr('stroke', '#fff')
+            .attr('stroke-width', 1.5)
+            .call(d3.drag()
+                .on('start', dragstarted)
+                .on('drag', dragged)
+                .on('end', dragended));
+
+        // 添加節點標籤
+        node.append('text')
+            .attr('class', 'node-label')
+            .text(d => d.name)
+            .attr('x', 0)
+            .attr('y', d => -Math.sqrt(d.value) * 1.5 - 8)
+            .attr('text-anchor', 'middle')
+            .attr('fill', '#fff')
+            .style('font-size', '10px')
+            .style('pointer-events', 'none');
+
+        // 添加標題
+        node.append('title')
+            .text(d => d.name);
+
+        // 更新力導向模擬
+        simulation
+            .nodes(data.nodes)
+            .on('tick', ticked);
+
+        simulation.force('link')
+            .links(data.links);
+
+        // 模擬更新函數
+        function ticked() {
+            link
+                .attr('x1', d => Math.max(10, Math.min(width - 10, d.source.x)))
+                .attr('y1', d => Math.max(10, Math.min(height - 10, d.source.y)))
+                .attr('x2', d => Math.max(10, Math.min(width - 10, d.target.x)))
+                .attr('y2', d => Math.max(10, Math.min(height - 10, d.target.y)));
+
+            node
+                .attr('transform', d => `translate(${Math.max(10, Math.min(width - 10, d.x))}, ${Math.max(10, Math.min(height - 10, d.y))})`);
+        }
+
+        // 拖拽開始
+        function dragstarted(event, d) {
+            if (!event.active) simulation.alphaTarget(0.3).restart();
+            d.fx = d.x;
+            d.fy = d.y;
+        }
+
+        // 拖拽中
+        function dragged(event, d) {
+            d.fx = event.x;
+            d.fy = event.y;
+        }
+
+        // 拖拽結束
+        function dragended(event, d) {
+            if (!event.active) simulation.alphaTarget(0);
+            d.fx = null;
+            d.fy = null;
+        }
+
+        // 添加圖例
+        const legend = svg.append('g')
+            .attr('class', 'legend')
+            .attr('transform', 'translate(20, 20)');
+
+        const legendItems = [
+            { name: '關鍵詞', group: 1 },
+            { name: '命名實體', group: 2 }
+        ];
+
+        legendItems.forEach((item, i) => {
+            const legendItem = legend.append('g')
+                .attr('transform', `translate(0, ${i * 25})`);
+
+            legendItem.append('circle')
+                .attr('r', 6)
+                .attr('fill', color(item.group));
+
+            legendItem.append('text')
+                .attr('x', 15)
+                .attr('y', 4)
+                .text(item.name)
+                .attr('fill', '#fff');
+        });
+    } catch (error) {
+        console.error("初始化共現網絡圖失敗:", error);
+        container.innerHTML = `
+            <div class="d-flex align-items-center justify-content-center h-100 text-white">
+                <div class="text-center">
+                    <i class="bi bi-exclamation-triangle display-4 mb-3 text-danger"></i>
+                    <p>加載關聯圖時發生錯誤</p>
+                </div>
+            </div>
+        `;
+    }
+}
+
+
+/**
+ * 初始化關鍵詞分布圖表
+ * @param {String} keywordsJsonData - 關鍵詞分布JSON數據字符串
+ */
+function initKeywordsChart(keywordsJsonData) {
+    if (!keywordsJsonData) {
+        console.warn("沒有提供關鍵詞分布數據");
+        return;
+    }
+
+    const ctx = document.getElementById('keywordsChart');
+    if (!ctx) return;
+
+    try {
+        // 解析JSON字符串為JavaScript對象
+        const data = JSON.parse(keywordsJsonData);
+
+        // 準備圖表資料
+        const labels = data.map(item => item.word);
+        const values = data.map(item => item.total);
+
+        // 創建圖表
+        const keywordsChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: '出現次數',
+                    data: values,
+                    backgroundColor: 'rgba(75, 192, 192, 0.7)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1
+                }]
             },
-            scales: {
-                x: {
-                    beginAtZero: true,
-                    ticks: {
-                        precision: 0,
-                        color: 'rgba(255, 255, 255, 0.7)'
+            options: {
+                indexAxis: 'y',  // 水平條形圖
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: '關鍵詞分布',
+                        color: '#fff'
                     },
-                    grid: {
-                        color: 'rgba(255, 255, 255, 0.1)'
+                    legend: {
+                        labels: {
+                            color: '#fff'
+                        }
                     }
                 },
-                y: {
-                    ticks: {
-                        color: 'rgba(255, 255, 255, 0.7)'
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0,
+                            color: 'rgba(255, 255, 255, 0.7)'
+                        },
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        }
                     },
-                    grid: {
-                        color: 'rgba(255, 255, 255, 0.1)'
+                    y: {
+                        ticks: {
+                            color: 'rgba(255, 255, 255, 0.7)'
+                        },
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        }
                     }
                 }
             }
-        }
-    });
+        });
+    } catch (error) {
+        console.error("初始化關鍵詞分布圖表失敗:", error);
+    }
 }
+
+
+/**
+ * 初始化實體分布圖表
+ * @param {String} entitiesJsonData - 實體分布JSON數據字符串
+ */
+function initEntitiesChart(entitiesJsonData) {
+    if (!entitiesJsonData) {
+        console.warn("沒有提供實體分布數據");
+        return;
+    }
+
+    const ctx = document.getElementById('entitiesChart');
+    if (!ctx) return;
+
+    try {
+        // 解析JSON字符串為JavaScript對象
+        const data = JSON.parse(entitiesJsonData);
+
+        // 準備實體類型的顏色映射
+        const entityTypeColors = {
+            'PERSON': 'rgba(255, 99, 132, 0.7)',
+            'LOC': 'rgba(54, 162, 235, 0.7)',
+            'ORG': 'rgba(255, 206, 86, 0.7)',
+            'TIME': 'rgba(75, 192, 192, 0.7)',
+            'MISC': 'rgba(153, 102, 255, 0.7)'
+        };
+
+        // 準備圖表資料
+        const labels = data.map(item => item.entity);
+        const values = data.map(item => item.total);
+        const backgroundColors = data.map(item => entityTypeColors[item.entity_type] || 'rgba(153, 102, 255, 0.7)');
+
+        // 創建圖表
+        const entitiesChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: '出現次數',
+                    data: values,
+                    backgroundColor: backgroundColors,
+                    borderColor: backgroundColors.map(color => color.replace('0.7', '1')),
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                indexAxis: 'y',  // 水平條形圖
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: '命名實體分布',
+                        color: '#fff'
+                    },
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const entityType = data[context.dataIndex].entity_type;
+                                return [`${context.dataset.label}: ${context.raw}`, `類型: ${entityType}`];
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0,
+                            color: 'rgba(255, 255, 255, 0.7)'
+                        },
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        }
+                    },
+                    y: {
+                        ticks: {
+                            color: 'rgba(255, 255, 255, 0.7)'
+                        },
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        }
+                    }
+                }
+            }
+        });
+    } catch (error) {
+        console.error("初始化實體分布圖表失敗:", error);
+    }
+}
+
 
 /**
  * 初始化數據表格

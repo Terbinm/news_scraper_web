@@ -20,7 +20,6 @@ from .services.analysis_service import (
     get_category_colors
 )
 from scraper.utils.scraper_utils import CTTextProcessor
-
 logger = logging.getLogger(__name__)
 
 
@@ -357,7 +356,6 @@ def job_search_analysis(request, job_id):
     available_categories = sorted(list(available_categories))
 
     # 從 services.analysis_service 引入類別顏色映射
-    from .services.analysis_service import get_category_colors
     category_colors = get_category_colors()
 
     # 初始化表單
@@ -398,33 +396,44 @@ def job_search_analysis(request, job_id):
 
     # 如果是搜尋請求且表單有效
     if request.GET and form.is_valid():
-        # 實例化搜尋服務
-        search_service = SearchAnalysisService(job)
+        try:
+            # 實例化搜尋服務
+            search_service = SearchAnalysisService(job)
 
-        # 執行搜尋
-        search_results = search_service.search(form.cleaned_data)
+            # 執行搜尋
+            search_results = search_service.search(form.cleaned_data)
 
-        if search_results and search_results.exists():
-            # 生成時間軸數據
-            time_series_data = search_service.generate_time_series(
-                search_results,
-                form.cleaned_data.get('time_grouping', 'day')
-            )
+            if search_results and search_results.exists():
+                # 生成時間軸數據
+                time_series_data = search_service.generate_time_series(
+                    search_results,
+                    form.cleaned_data.get('time_grouping', 'day')
+                )
 
-            # 生成關鍵詞分布
-            keywords_distribution = search_service.get_keywords_distribution(search_results)
+                # 生成關鍵詞分布
+                keywords_distribution = search_service.get_keywords_distribution(search_results)
 
-            # 生成實體分布
-            entities_distribution = search_service.get_entity_distribution(search_results)
+                # 生成實體分布
+                entities_distribution = search_service.get_entity_distribution(search_results)
 
-            # 生成關鍵詞/實體共現數據
-            cooccurrence_data = search_service.generate_cooccurrence_data(search_results)
+                # 生成關鍵詞/實體共現數據
+                cooccurrence_data = search_service.generate_cooccurrence_data(search_results)
 
-            # 獲取頂部圖片
-            top_image_url = search_service.get_top_article_image(search_results)
-        else:
-            # 沒有搜尋結果
+                # 獲取頂部圖片
+                top_image_url = search_service.get_top_article_image(search_results)
+            else:
+                # 沒有搜尋結果
+                search_results = Article.objects.none()
+        except Exception as e:
+            logger.error(f"搜尋與分析過程中發生錯誤: {e}", exc_info=True)
+            messages.error(request, f"搜尋分析過程出現錯誤: {str(e)}")
             search_results = Article.objects.none()
+
+    # 將 Python 對象轉換為 JSON 字符串，用於在模板中傳遞給 JavaScript
+    time_series_json = json.dumps(time_series_data) if time_series_data else None
+    keywords_distribution_json = json.dumps(keywords_distribution) if keywords_distribution else None
+    entities_distribution_json = json.dumps(entities_distribution) if entities_distribution else None
+    cooccurrence_json = json.dumps(cooccurrence_data) if cooccurrence_data else None
 
     # 渲染模板
     return render(request, 'scraper/job_search_analysis.html', {
@@ -433,14 +442,13 @@ def job_search_analysis(request, job_id):
         'results': search_results,
         'available_categories': available_categories,
         'category_colors': category_colors,
-        'time_series_data': json.dumps(time_series_data) if time_series_data else None,
+        'time_series_data': time_series_json,  # 將 JSON 字符串傳遞給模板
         'time_series_count': len(time_series_data) if time_series_data else 0,
-        'keywords_distribution': json.dumps(keywords_distribution) if keywords_distribution else None,
-        'entities_distribution': json.dumps(entities_distribution) if entities_distribution else None,
-        'cooccurrence_data': json.dumps(cooccurrence_data) if cooccurrence_data else None,
+        'keywords_distribution': keywords_distribution_json,
+        'entities_distribution': entities_distribution_json,
+        'cooccurrence_data': cooccurrence_json,
         'top_image_url': top_image_url
     })
-
 
 # 添加這個新的視圖函數用於分析搜索詞
 @login_required

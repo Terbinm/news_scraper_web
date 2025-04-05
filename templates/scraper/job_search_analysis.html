@@ -613,4 +613,25 @@
 <script src="https://d3js.org/d3.v7.min.js"></script>
 <script src="https://d3js.org/d3-force.v2.min.js"></script>
 <script src="/static/js/search_analysis.js"></script>
+<script>
+    // 傳遞時間軸數據
+    var timeSeriesData = {% if time_series_data %}{{ time_series_data|safe }}{% else %}null{% endif %};
+
+    // 傳遞關鍵詞分布數據
+    var keywordsDistribution = {% if keywords_distribution %}{{ keywords_distribution|safe }}{% else %}null{% endif %};
+
+    // 傳遞實體分布數據
+    var entitiesDistribution = {% if entities_distribution %}{{ entities_distribution|safe }}{% else %}null{% endif %};
+
+    // 傳遞共現網絡數據
+    var cooccurrenceData = {% if cooccurrence_data %}{{ cooccurrence_data|safe }}{% else %}null{% endif %};
+
+    // 在控制台顯示數據狀態，方便調試
+    console.log("數據載入狀態:", {
+        "時間軸數據": timeSeriesData ? "已載入" : "未載入",
+        "關鍵詞分布": keywordsDistribution ? "已載入" : "未載入",
+        "實體分布": entitiesDistribution ? "已載入" : "未載入",
+        "共現網絡": cooccurrenceData ? "已載入" : "未載入"
+    });
+</script>
 {% endblock %}

@@ -396,43 +396,46 @@ class SearchAnalysisService:
             logger.error(f"根據實體數量篩選文章時發生錯誤: {e}", exc_info=True)
             return []
 
-    def generate_time_series(self, articles, grouping='day'):
+    def get_entity_distribution(self, articles, limit=10):
         """
-        生成時間序列數據，顯示隨時間變化的文章數量
+        獲取實體分布數據
 
         Args:
             articles: 文章查詢集
-            grouping: 時間分組方式 ('day', 'week', 'month')
+            limit: 最大實體數量
 
         Returns:
-            dict: 時間序列數據
+            list: 實體分布數據列表
         """
         try:
-            time_series = defaultdict(int)
 
-            # 對於每篇文章，根據選擇的分組方式分組
-            for article in articles:
-                date = article.date.date()
+            # 獲取所有文章的類別
+            article_categories = list(articles.values_list('category', flat=True))
 
-                if grouping == 'week':
-                    # 獲取該日期所在的週的星期一
-                    date = date - datetime.timedelta(days=date.weekday())
-                elif grouping == 'month':
-                    # 獲取該月的第一天
-                    date = date.replace(day=1)
+            if not article_categories:
+                return []
 
-                # 增加該日期/週/月的文章計數
-                time_series[date.isoformat()] += 1
+            # 獲取這些類別中的命名實體
+            entities = NamedEntityAnalysis.objects.filter(
+                job=self.job,
+                category__in=article_categories
+            ).values('entity', 'entity_type').annotate(
+                total=Count('id')
+            ).order_by('-total')[:limit]
 
-            # 將defaultdict轉換為排序的列表
-            time_series_data = [
-                {'date': k, 'count': v} for k, v in sorted(time_series.items())
-            ]
+            # 確保返回的是列表
+            result = []
+            for entity in entities:
+                result.append({
+                    'entity': entity['entity'],
+                    'entity_type': entity['entity_type'],
+                    'total': entity['total']
+                })
 
-            return time_series_data
+            return result
 
         except Exception as e:
-            logger.error(f"生成時間序列數據時發生錯誤: {e}", exc_info=True)
+            logger.error(f"獲取實體分布時出錯: {e}", exc_info=True)
             return []
 
     def generate_cooccurrence_data(self, articles, limit=30):
@@ -447,6 +450,12 @@ class SearchAnalysisService:
             dict: 共現關係數據
         """
         try:
+            # 確保有文章可分析
+            if not articles.exists():
+                return {"nodes": [], "links": []}
+
+            from collections import defaultdict, Counter
+
             # 獲取所有文章的類別
             article_categories = list(articles.values_list('category', flat=True))
 
@@ -477,6 +486,10 @@ class SearchAnalysisService:
             for ent in entities:
                 category_entities[ent['category']].append(ent['entity'])
                 all_entities.append(ent['entity'])
+
+            # 如果沒有足夠數據，返回空結果
+            if not all_keywords and not all_entities:
+                return {"nodes": [], "links": []}
 
             # 計算最常見的關鍵詞和實體
             common_keywords = [item for item, count in Counter(all_keywords).most_common(limit // 2)]
@@ -543,13 +556,13 @@ class SearchAnalysisService:
                     target_id = None
 
                     # 查找source對應的節點ID
-                    for i, node in enumerate(nodes):
+                    for node in nodes:
                         if node['name'] == source:
                             source_id = node['id']
                             break
 
                     # 查找target對應的節點ID
-                    for i, node in enumerate(nodes):
+                    for node in nodes:
                         if node['name'] == target:
                             target_id = node['id']
                             break
@@ -567,7 +580,7 @@ class SearchAnalysisService:
             }
 
         except Exception as e:
-            logger.error(f"生成共現關係數據時發生錯誤: {e}", exc_info=True)
+            logger.error(f"生成共現關係數據時出錯: {e}", exc_info=True)
             return {'nodes': [], 'links': []}
 
     def get_top_article_image(self, articles):
@@ -578,9 +591,13 @@ class SearchAnalysisService:
             articles: 文章查詢集
 
         Returns:
-            str: 圖片URL或None
+            str: 圖片URL或預設圖片
         """
         try:
+            # 確保有文章可分析
+            if not articles.exists():
+                return "/static/images/404.svg"
+
             # 按日期倒序獲取前5篇文章
             top_articles = articles.order_by('-date')[:5]
 
@@ -590,18 +607,24 @@ class SearchAnalysisService:
                     try:
                         photo_links = json.loads(article.photo_links)
                         if photo_links and isinstance(photo_links, list) and len(photo_links) > 0:
+                            # 過濾無效URL
+                            valid_links = [link for link in photo_links if
+                                           isinstance(link, str) and
+                                           (link.startswith('http') or link.startswith('/'))]
+
                             # 返回第一個有效圖片鏈接
-                            return photo_links[0]
-                    except json.JSONDecodeError:
+                            if valid_links:
+                                return valid_links[0]
+                    except (json.JSONDecodeError, TypeError):
                         # 如果不是有效的JSON，嘗試其他文章
                         continue
 
             # 如果沒有找到有效圖片，返回預設圖片
-            return "/static/images/default_article.svg"
+            return "/static/images/404.svg"
 
         except Exception as e:
-            logger.error(f"獲取頂部文章圖片時發生錯誤: {e}", exc_info=True)
-            return "/static/images/default_article.svg"  # 返回預設圖片
+            logger.error(f"獲取頂部文章圖片時出錯: {e}", exc_info=True)
+            return "/static/images/404.svg"  # 返回預設圖片
 
     def get_keywords_distribution(self, articles, limit=10):
         """
@@ -612,11 +635,16 @@ class SearchAnalysisService:
             limit: 最大關鍵詞數量
 
         Returns:
-            dict: 關鍵詞分布數據
+            list: 關鍵詞分布數據列表
         """
         try:
+            from django.db.models import Count
+
             # 獲取所有文章的類別
             article_categories = list(articles.values_list('category', flat=True))
+
+            if not article_categories:
+                return []
 
             # 獲取這些類別中的關鍵詞
             keywords = KeywordAnalysis.objects.filter(
@@ -626,10 +654,64 @@ class SearchAnalysisService:
                 total=Count('id')
             ).order_by('-total')[:limit]
 
-            return list(keywords)
+            # 確保返回的是列表，並添加來源分類
+            result = []
+            for keyword in keywords:
+                result.append({
+                    'word': keyword['word'],
+                    'pos': keyword['pos'],
+                    'total': keyword['total']
+                })
+
+            return result
 
         except Exception as e:
-            logger.error(f"獲取關鍵詞分布時發生錯誤: {e}", exc_info=True)
+            logger.error(f"獲取關鍵詞分布時出錯: {e}", exc_info=True)
+            return []
+
+    def generate_time_series(self, articles, grouping='day'):
+        """
+        生成時間序列數據，顯示隨時間變化的文章數量
+
+        Args:
+            articles: 文章查詢集
+            grouping: 時間分組方式 ('day', 'week', 'month')
+
+        Returns:
+            list: 時間序列數據列表
+        """
+        try:
+            from collections import defaultdict
+            import datetime
+
+            time_series = defaultdict(int)
+
+            # 對於每篇文章，根據選擇的分組方式分組
+            for article in articles:
+                date = article.date.date()
+
+                if grouping == 'week':
+                    # 獲取該日期所在的週的星期一
+                    date = date - datetime.timedelta(days=date.weekday())
+                elif grouping == 'month':
+                    # 獲取該月的第一天
+                    date = date.replace(day=1)
+
+                # 轉換為ISO格式字符串，確保Javascript可以正確解析
+                date_str = date.isoformat()
+
+                # 增加該日期/週/月的文章計數
+                time_series[date_str] += 1
+
+            # 將defaultdict轉換為列表
+            time_series_data = [
+                {'date': k, 'count': v} for k, v in sorted(time_series.items())
+            ]
+
+            return time_series_data
+
+        except Exception as e:
+            self.logger.error(f"生成時間序列數據時出錯: {e}", exc_info=True)
             return []
 
     def get_entity_distribution(self, articles, limit=10):
