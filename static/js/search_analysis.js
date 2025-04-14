@@ -797,10 +797,10 @@ function formatDateForInput(date) {
 
 /**
  * 初始化時間軸圖表
- * @param {String} timeSeriesDataJson - 時間軸JSON數據字符串
+ * @param {Object|String} timeSeriesData - 時間軸數據或JSON字符串
  */
-function initTimeSeriesChart(timeSeriesDataJson) {
-    if (!timeSeriesDataJson) {
+function initTimeSeriesChart(timeSeriesData) {
+    if (!timeSeriesData) {
         console.warn("沒有提供時間軸數據");
         return;
     }
@@ -809,8 +809,8 @@ function initTimeSeriesChart(timeSeriesDataJson) {
     if (!ctx) return;
 
     try {
-        // 解析JSON字符串為JavaScript對象
-        const data = JSON.parse(timeSeriesDataJson);
+        // 直接使用數據，不再嘗試解析
+        const data = timeSeriesData;
 
         // 確保資料是按日期排序的
         data.sort((a, b) => new Date(a.date) - new Date(b.date));
@@ -883,12 +883,13 @@ function initTimeSeriesChart(timeSeriesDataJson) {
 }
 
 
+
 /**
  * 初始化共現網絡關係圖
- * @param {String} cooccurrenceJsonData - 共現網絡JSON數據字符串
+ * @param {Object|String} cooccurrenceData - 共現網絡數據或JSON字符串
  */
-function initCooccurrenceNetwork(cooccurrenceJsonData) {
-    if (!cooccurrenceJsonData) {
+function initCooccurrenceNetwork(cooccurrenceData) {
+    if (!cooccurrenceData) {
         console.warn("沒有提供共現網絡數據");
         return;
     }
@@ -898,8 +899,11 @@ function initCooccurrenceNetwork(cooccurrenceJsonData) {
     if (!container || typeof d3 === 'undefined') return;
 
     try {
-        // 解析JSON字符串為JavaScript對象
-        const data = JSON.parse(cooccurrenceJsonData);
+        // 清除舊內容
+        container.innerHTML = '';
+
+        // 確保數據是JavaScript對象
+        const data = typeof cooccurrenceData === 'string' ? JSON.parse(cooccurrenceData) : cooccurrenceData;
 
         if (!data || !data.nodes || !data.links || data.nodes.length === 0) {
             container.innerHTML = `
@@ -913,145 +917,268 @@ function initCooccurrenceNetwork(cooccurrenceJsonData) {
             return;
         }
 
-        // 清除舊內容
-        container.innerHTML = '';
-
-        // 設置圖形尺寸
+        // 設定圖表尺寸
         const width = container.clientWidth;
-        const height = container.clientHeight || 500;
+        const height = 500;
 
-        // 創建SVG元素
+        // 建立力導向圖
         const svg = d3.select(container)
-            .append('svg')
-            .attr('width', width)
-            .attr('height', height);
+            .append("svg")
+            .attr("width", width)
+            .attr("height", height)
+            .attr("viewBox", [0, 0, width, height])
+            .attr("style", "max-width: 100%; height: auto;");
 
-        // 定義節點顏色
-        const color = d3.scaleOrdinal()
-            .domain([1, 2])  // 1=關鍵詞組, 2=實體組
-            .range(['#6bd89e', '#f98e71']);
+        // 增加縮放功能
+        const g = svg.append("g");
+        svg.call(d3.zoom()
+            .extent([[0, 0], [width, height]])
+            .scaleExtent([0.25, 8])
+            .on("zoom", (event) => {
+                g.attr("transform", event.transform);
+            }));
 
-        // 創建力導向模擬
-        const simulation = d3.forceSimulation()
-            .force('link', d3.forceLink().id(d => d.id).distance(100))
-            .force('charge', d3.forceManyBody().strength(-300))
-            .force('center', d3.forceCenter(width / 2, height / 2))
-            .force('collision', d3.forceCollide().radius(d => Math.sqrt(d.value) * 2 + 10));
+        // 建立圖例
+        const legend = svg.append("g")
+            .attr("class", "legend")
+            .attr("transform", `translate(20, 20)`);
 
-        // 添加連接線
-        const link = svg.append('g')
-            .attr('class', 'links')
-            .selectAll('line')
-            .data(data.links)
-            .enter().append('line')
-            .attr('stroke', '#999')
-            .attr('stroke-opacity', 0.6)
-            .attr('stroke-width', d => Math.sqrt(d.value));
-
-        // 添加節點
-        const node = svg.append('g')
-            .attr('class', 'nodes')
-            .selectAll('g')
-            .data(data.nodes)
-            .enter().append('g');
-
-        // 添加節點圓形
-        node.append('circle')
-            .attr('r', d => Math.sqrt(d.value) * 1.5 + 5)
-            .attr('fill', d => color(d.group))
-            .attr('stroke', '#fff')
-            .attr('stroke-width', 1.5)
-            .call(d3.drag()
-                .on('start', dragstarted)
-                .on('drag', dragged)
-                .on('end', dragended));
-
-        // 添加節點標籤
-        node.append('text')
-            .attr('class', 'node-label')
-            .text(d => d.name)
-            .attr('x', 0)
-            .attr('y', d => -Math.sqrt(d.value) * 1.5 - 8)
-            .attr('text-anchor', 'middle')
-            .attr('fill', '#fff')
-            .style('font-size', '10px')
-            .style('pointer-events', 'none');
-
-        // 添加標題
-        node.append('title')
-            .text(d => d.name);
-
-        // 更新力導向模擬
-        simulation
-            .nodes(data.nodes)
-            .on('tick', ticked);
-
-        simulation.force('link')
-            .links(data.links);
-
-        // 模擬更新函數
-        function ticked() {
-            link
-                .attr('x1', d => Math.max(10, Math.min(width - 10, d.source.x)))
-                .attr('y1', d => Math.max(10, Math.min(height - 10, d.source.y)))
-                .attr('x2', d => Math.max(10, Math.min(width - 10, d.target.x)))
-                .attr('y2', d => Math.max(10, Math.min(height - 10, d.target.y)));
-
-            node
-                .attr('transform', d => `translate(${Math.max(10, Math.min(width - 10, d.x))}, ${Math.max(10, Math.min(height - 10, d.y))})`);
-        }
-
-        // 拖拽開始
-        function dragstarted(event, d) {
-            if (!event.active) simulation.alphaTarget(0.3).restart();
-            d.fx = d.x;
-            d.fy = d.y;
-        }
-
-        // 拖拽中
-        function dragged(event, d) {
-            d.fx = event.x;
-            d.fy = event.y;
-        }
-
-        // 拖拽結束
-        function dragended(event, d) {
-            if (!event.active) simulation.alphaTarget(0);
-            d.fx = null;
-            d.fy = null;
-        }
-
-        // 添加圖例
-        const legend = svg.append('g')
-            .attr('class', 'legend')
-            .attr('transform', 'translate(20, 20)');
-
+        // 圖例項目
         const legendItems = [
-            { name: '關鍵詞', group: 1 },
-            { name: '命名實體', group: 2 }
+            { label: "關鍵詞", color: "#69b3a2", group: 1 },
+            { label: "命名實體", color: "#ff7f50", group: 2 }
         ];
 
-        legendItems.forEach((item, i) => {
-            const legendItem = legend.append('g')
-                .attr('transform', `translate(0, ${i * 25})`);
+        legendItems.forEach((item, index) => {
+            const legendRow = legend.append("g")
+                .attr("transform", `translate(0, ${index * 20})`);
 
-            legendItem.append('circle')
-                .attr('r', 6)
-                .attr('fill', color(item.group));
+            legendRow.append("rect")
+                .attr("width", 15)
+                .attr("height", 15)
+                .attr("fill", item.color);
 
-            legendItem.append('text')
-                .attr('x', 15)
-                .attr('y', 4)
-                .text(item.name)
-                .attr('fill', '#fff');
+            legendRow.append("text")
+                .attr("x", 20)
+                .attr("y", 12)
+                .text(item.label)
+                .style("font-size", "12px")
+                .style("fill", "white");
         });
+
+        // 創建節點顏色映射
+        const color = d3.scaleOrdinal()
+            .domain([1, 2])
+            .range(["#4a86e8", "#ff9900"]);
+
+        // 為實體類型創建更細緻的顏色
+        const entityColors = {
+            "PERSON": "#ff7f50",
+            "LOC": "#6a0dad",
+            "ORG": "#2e8b57",
+            "TIME": "#6495ed",
+            "MISC": "#ff6699"
+        };
+
+        // 設定力模擬
+        const simulation = d3.forceSimulation(data.nodes)
+            .force("link", d3.forceLink(data.links).id(d => d.id).distance(d => 150 / (Math.sqrt(d.value)/10 + 1)).strength(0.3))
+            .force("charge", d3.forceManyBody().strength(-300))
+            .force("center", d3.forceCenter(width / 2, height / 2))
+            .force("x", d3.forceX().strength(0.05))
+            .force("y", d3.forceY().strength(0.05))
+            .force("collision", d3.forceCollide().radius(d => Math.sqrt(d.value) * 4 + 8).strength(0.7));
+
+        // 創建連結
+        const link = g.append("g")
+            .attr("stroke", "#999")
+            .attr("stroke-opacity", 0.6)
+            .selectAll("line")
+            .data(data.links)
+            .join("line")
+            .attr("stroke-width", d => Math.sqrt(d.value) / 10)
+            .attr("opacity", d => Math.min(0.7, d.value / 300));
+
+        // 添加連結的懸停效果
+        link.append("title")
+            .text(d => `連結強度: ${d.value}`);
+
+        // 創建節點
+        const node = g.append("g")
+            .selectAll(".node")
+            .data(data.nodes)
+            .join("g")
+            .attr("class", "node")
+            .call(drag(simulation));
+
+        // 節點圓形
+        node.append("circle")
+            .attr("r", d => Math.sqrt(d.value) * 3 + 5)
+            .attr("fill", d => color(d.group))
+            .attr("stroke", "#fff")
+            .attr("stroke-width", 1.5);
+
+        // 節點文字標籤
+        node.append("text")
+            .attr("dy", ".35em")
+            .attr("x", d => Math.sqrt(d.value) * 3 + 8)
+            .text(d => d.name)
+            .style("font-size", d => Math.min(12 + d.value / 2, 16) + "px")
+            .style("fill", "white")
+            .style("text-shadow", "0 1px 3px rgba(0,0,0,0.8)");
+
+        // 添加標題提示
+        node.append("title")
+            .text(d => {
+                let typeText = d.group === 1 ? "關鍵詞" : "命名實體";
+                return `${d.name} (${typeText})\n出現次數: ${d.value}`;
+            });
+
+        // 節點拖拽功能
+        function drag(simulation) {
+            function dragstarted(event) {
+                if (!event.active) simulation.alphaTarget(0.3).restart();
+                event.subject.fx = event.subject.x;
+                event.subject.fy = event.subject.y;
+            }
+
+            function dragged(event) {
+                event.subject.fx = event.x;
+                event.subject.fy = event.y;
+            }
+
+            function dragended(event) {
+                if (!event.active) simulation.alphaTarget(0);
+                event.subject.fx = null;
+                event.subject.fy = null;
+            }
+
+            return d3.drag()
+                .on("start", dragstarted)
+                .on("drag", dragged)
+                .on("end", dragended);
+        }
+
+        // 模擬更新
+        simulation.on("tick", () => {
+            link
+                .attr("x1", d => d.source.x)
+                .attr("y1", d => d.source.y)
+                .attr("x2", d => d.target.x)
+                .attr("y2", d => d.target.y);
+
+            node.attr("transform", d => `translate(${d.x},${d.y})`);
+        });
+
+        // 添加控制面板
+        const controlPanel = document.createElement("div");
+        controlPanel.className = "control-panel mb-3";
+        controlPanel.innerHTML = `
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <div class="input-group">
+                        <span class="input-group-text bg-dark border-secondary">
+                            <i class="bi bi-search text-light"></i>
+                        </span>
+                        <input type="text" class="form-control bg-dark text-light border-secondary" 
+                               id="networkSearchInput" placeholder="搜尋節點...">
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="input-group">
+                        <span class="input-group-text bg-dark border-secondary">
+                            <i class="bi bi-sliders text-light"></i>
+                        </span>
+                        <select class="form-select bg-dark text-light border-secondary" id="networkFilterSelect">
+                            <option value="all">顯示全部</option>
+                            <option value="1">僅顯示關鍵詞</option>
+                            <option value="2">僅顯示實體</option>
+                            <option value="top10">僅顯示前10大節點</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        `;
+        container.parentNode.insertBefore(controlPanel, container);
+
+        // 搜尋功能
+        const searchInput = document.getElementById("networkSearchInput");
+        const filterSelect = document.getElementById("networkFilterSelect");
+
+        function updateNetworkDisplay() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const filterValue = filterSelect.value;
+
+            // 重設所有節點和連結
+            node.style("opacity", 1);
+            node.selectAll("circle")
+                .attr("fill", d => color(d.group))
+                .attr("r", d => Math.sqrt(d.value) * 3 + 5);
+
+            node.selectAll("text")
+                .style("font-weight", "normal")
+                .style("font-size", d => Math.min(12 + d.value / 2, 16) + "px")
+                .style("fill", "white");
+
+            link.style("opacity", d => Math.min(0.7, d.value / 300));
+
+            // 應用過濾器
+            let visibleNodes = data.nodes;
+
+            if (filterValue === "1") {
+                // 僅關鍵詞
+                node.filter(d => d.group !== 1).style("opacity", 0.1);
+                link.style("opacity", 0.1);
+            } else if (filterValue === "2") {
+                // 僅實體
+                node.filter(d => d.group !== 2).style("opacity", 0.1);
+                link.style("opacity", 0.1);
+            } else if (filterValue === "top10") {
+                // 前10大節點
+                const sortedNodes = [...data.nodes].sort((a, b) => b.value - a.value);
+                const top10Ids = sortedNodes.slice(0, 10).map(n => n.id);
+                node.filter(d => !top10Ids.includes(d.id)).style("opacity", 0.1);
+                link.filter(d => !top10Ids.includes(d.source.id) || !top10Ids.includes(d.target.id))
+                    .style("opacity", 0.1);
+            }
+
+            // 應用搜尋
+            if (searchTerm) {
+                // 找到匹配的節點
+                const matchingNodes = node.filter(d => d.name.toLowerCase().includes(searchTerm));
+
+                // 淡化所有不匹配的節點和連結
+                node.filter(d => !d.name.toLowerCase().includes(searchTerm))
+                    .style("opacity", 0.1);
+
+                // 強調匹配的節點
+                matchingNodes.selectAll("circle")
+                    .attr("fill", "#f8f9fa")
+                    .attr("r", d => (Math.sqrt(d.value) * 3 + 5) * 1.3);
+
+                matchingNodes.selectAll("text")
+                    .style("font-weight", "bold")
+                    .style("font-size", d => (Math.min(12 + d.value / 2, 16) * 1.2) + "px")
+                    .style("fill", "#f8f9fa");
+
+                // 強調與匹配節點相關的連結
+                const matchingIds = matchingNodes.data().map(d => d.id);
+                link.filter(d => matchingIds.includes(d.source.id) || matchingIds.includes(d.target.id))
+                    .style("opacity", 0.8)
+                    .attr("stroke", "#f8f9fa");
+            }
+        }
+
+        searchInput.addEventListener("input", updateNetworkDisplay);
+        filterSelect.addEventListener("change", updateNetworkDisplay);
+
     } catch (error) {
         console.error("初始化共現網絡圖失敗:", error);
         container.innerHTML = `
             <div class="d-flex align-items-center justify-content-center h-100 text-white">
                 <div class="text-center">
                     <i class="bi bi-exclamation-triangle display-4 mb-3 text-danger"></i>
-                    <p>加載關聯圖時發生錯誤</p>
+                    <p>加載關聯圖時發生錯誤: ${error.message}</p>
                 </div>
             </div>
         `;
@@ -1061,10 +1188,10 @@ function initCooccurrenceNetwork(cooccurrenceJsonData) {
 
 /**
  * 初始化關鍵詞分布圖表
- * @param {String} keywordsJsonData - 關鍵詞分布JSON數據字符串
+ * @param {Object|String} keywordsDistribution - 關鍵詞分布數據或JSON字符串
  */
-function initKeywordsChart(keywordsJsonData) {
-    if (!keywordsJsonData) {
+function initKeywordsChart(keywordsDistribution) {
+    if (!keywordsDistribution) {
         console.warn("沒有提供關鍵詞分布數據");
         return;
     }
@@ -1073,8 +1200,8 @@ function initKeywordsChart(keywordsJsonData) {
     if (!ctx) return;
 
     try {
-        // 解析JSON字符串為JavaScript對象
-        const data = JSON.parse(keywordsJsonData);
+        // 確保數據是JavaScript對象
+        const data = typeof keywordsDistribution === 'string' ? JSON.parse(keywordsDistribution) : keywordsDistribution;
 
         // 準備圖表資料
         const labels = data.map(item => item.word);
@@ -1138,10 +1265,10 @@ function initKeywordsChart(keywordsJsonData) {
 
 /**
  * 初始化實體分布圖表
- * @param {String} entitiesJsonData - 實體分布JSON數據字符串
+ * @param {Object|String} entitiesDistribution - 實體分布數據或JSON字符串
  */
-function initEntitiesChart(entitiesJsonData) {
-    if (!entitiesJsonData) {
+function initEntitiesChart(entitiesDistribution) {
+    if (!entitiesDistribution) {
         console.warn("沒有提供實體分布數據");
         return;
     }
@@ -1150,8 +1277,8 @@ function initEntitiesChart(entitiesJsonData) {
     if (!ctx) return;
 
     try {
-        // 解析JSON字符串為JavaScript對象
-        const data = JSON.parse(entitiesJsonData);
+        // 確保數據是JavaScript對象
+        const data = typeof entitiesDistribution === 'string' ? JSON.parse(entitiesDistribution) : entitiesDistribution;
 
         // 準備實體類型的顏色映射
         const entityTypeColors = {
@@ -1227,7 +1354,6 @@ function initEntitiesChart(entitiesJsonData) {
         console.error("初始化實體分布圖表失敗:", error);
     }
 }
-
 
 /**
  * 初始化數據表格

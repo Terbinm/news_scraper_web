@@ -434,6 +434,7 @@ def job_search_analysis(request, job_id):
             search_results = Article.objects.none()
 
     # 將 Python 對象轉換為 JSON 字符串，用於在模板中傳遞給 JavaScript
+    # 關鍵修改：確保使用 json.dumps() 轉換為 JSON 字符串
     time_series_json = json.dumps(time_series_data) if time_series_data else None
     keywords_distribution_json = json.dumps(keywords_distribution) if keywords_distribution else None
     entities_distribution_json = json.dumps(entities_distribution) if entities_distribution else None

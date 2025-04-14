@@ -620,26 +620,32 @@
 {% block extra_js %}
 <script src="https://d3js.org/d3.v7.min.js"></script>
 <script src="https://d3js.org/d3-force.v2.min.js"></script>
-<script src="/static/js/search_analysis.js"></script>
 <script>
-    // 傳遞時間軸數據
-    var timeSeriesData = {% if time_series_data %}{{ time_series_data|safe }}{% else %}null{% endif %};
+    // 定義全局變數以供圖表初始化使用
+    // 注意：這些變數已經是 JSON 字符串，不需要再次轉換
+    {% if time_series_data %}
+    const timeSeriesData = {{ time_series_data|safe }};
+    {% else %}
+    const timeSeriesData = null;
+    {% endif %}
 
-    // 傳遞關鍵詞分布數據
-    var keywordsDistribution = {% if keywords_distribution %}{{ keywords_distribution|safe }}{% else %}null{% endif %};
+    {% if keywords_distribution %}
+    const keywordsDistribution = {{ keywords_distribution|safe }};
+    {% else %}
+    const keywordsDistribution = null;
+    {% endif %}
 
-    // 傳遞實體分布數據
-    var entitiesDistribution = {% if entities_distribution %}{{ entities_distribution|safe }}{% else %}null{% endif %};
+    {% if entities_distribution %}
+    const entitiesDistribution = {{ entities_distribution|safe }};
+    {% else %}
+    const entitiesDistribution = null;
+    {% endif %}
 
-    // 傳遞共現網絡數據
-    var cooccurrenceData = {% if cooccurrence_data %}{{ cooccurrence_data|safe }}{% else %}null{% endif %};
-
-    // 在控制台顯示數據狀態，方便調試
-    console.log("數據載入狀態:", {
-        "時間軸數據": timeSeriesData ? "已載入" : "未載入",
-        "關鍵詞分布": keywordsDistribution ? "已載入" : "未載入",
-        "實體分布": entitiesDistribution ? "已載入" : "未載入",
-        "共現網絡": cooccurrenceData ? "已載入" : "未載入"
-    });
+    {% if cooccurrence_data %}
+    const cooccurrenceData = {{ cooccurrence_data|safe }};
+    {% else %}
+    const cooccurrenceData = null;
+    {% endif %}
 </script>
+<script src="/static/js/search_analysis.js"></script>
 {% endblock %}
