@@ -621,3 +621,59 @@
         font-size: 2rem;
     }
 }
+
+
+/* 文字雲容器樣式 */
+.word-cloud-container {
+    height: 500px;
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+}
+
+/* 文字懸停效果 */
+.word-cloud-container text {
+    transition: all 0.3s ease;
+}
+
+.word-cloud-container text:hover {
+    filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.8));
+}
+
+/* 工具提示樣式 */
+.custom-tooltip {
+    background-color: rgba(0, 0, 0, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 5px;
+    padding: 8px 12px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    color: #fff;
+    font-size: 0.85rem;
+    max-width: 300px;
+    z-index: 1000;
+}
+
+/* 搜索詞高亮動畫 */
+@keyframes highlight-pulse {
+    0% { box-shadow: 0 0 0 0 rgba(23, 162, 184, 0.7); }
+    50% { box-shadow: 0 0 0 10px rgba(23, 162, 184, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(23, 162, 184, 0); }
+}
+
+.highlight-animation {
+    animation: highlight-pulse 1s ease-out;
+}
+
+/* 響應式調整 */
+@media (max-width: 768px) {
+    .word-cloud-container {
+        height: 400px;
+    }
+}
+
+@media (max-width: 576px) {
+    .word-cloud-container {
+        height: 350px;
+    }
+}
