@@ -46,13 +46,13 @@ class ScrapeJobForm(forms.ModelForm):
             'limit_per_category': forms.NumberInput(attrs={
                 'class': 'form-control',
                 'min': '1',
-                'max': '20'
+                'max': '20000'
             }),
             'use_threading': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'max_workers': forms.NumberInput(attrs={
                 'class': 'form-control',
                 'min': '1',
-                'max': '8'
+                'max': '50'
             })
         }
         help_texts = {

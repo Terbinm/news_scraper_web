@@ -90,6 +90,7 @@ class CTSimpleScraper:
         self.processed_urls = set()  # 用於儲存已處理過的 URL，防止重複爬取
         self.processed_titles = set()  # 用於儲存已處理過的標題，防止不同URL但相同內容的重複爬取
         self.lock = threading.RLock()  # 線程鎖，用於多線程安全
+        self.articles_per_page = 10  # 每頁文章預估有效數量
 
     def setup_driver(self):
         """設置 undetected-chromedriver"""
@@ -605,7 +606,7 @@ class CTSimpleScraper:
             wait_time = 5  # 初始等待 5 秒
 
             while not success and retry_count < max_retries:
-                success = self.scrape_categories(categories)
+                success = self.scrape_categories(categories,limit_per_category)
                 if not success:
                     retry_count += 1
                     self.logger.warning(f"主頁爬取失敗，嘗試重試 ({retry_count}/{max_retries})")
