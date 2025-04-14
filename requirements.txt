@@ -8,12 +8,12 @@ undetected-chromedriver==3.5.3
 selenium==4.16.0
 fake-useragent==1.2.1
 beautifulsoup4==4.12.2
-requests==2.31.0
+requests>=2.31.0
 
 # 自然語言處理
 ckip-transformers==0.3.4
-torch==2.1.2
-transformers==4.36.2
+torch>=2.1.2
+transformers>=4.36.2
 
 # 數據處理與可視化
 pandas==2.1.4

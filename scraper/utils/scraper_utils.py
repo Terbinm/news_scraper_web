@@ -57,6 +57,18 @@ class CTSimpleScraper:
             "言論": "https://www.chinatimes.com/opinion/?chdtv",
             "軍事": "https://www.chinatimes.com/armament/?chdtv"
         }
+        # 分頁URL模板 - 新增
+        self.page_url_templates = {
+            "財經": "https://www.chinatimes.com/money/total?page={page}&chdtv",
+            "政治": "https://www.chinatimes.com/politic/total?page={page}&chdtv",
+            "社會": "https://www.chinatimes.com/society/total?page={page}&chdtv",
+            "科技": "https://www.chinatimes.com/technologynews/total?page={page}&chdtv",
+            "國際": "https://www.chinatimes.com/world/total?page={page}&chdtv",
+            "娛樂": "https://www.chinatimes.com/star/total?page={page}&chdtv",
+            "生活": "https://www.chinatimes.com/life/total?page={page}&chdtv",
+            "言論": "https://www.chinatimes.com/opinion/total?page={page}&chdtv",
+            "軍事": "https://www.chinatimes.com/armament/total?page={page}&chdtv"
+        }
         self.category_codes = {
             "財經": "money",
             "政治": "politic",
@@ -264,8 +276,8 @@ class CTSimpleScraper:
             self.logger.error(f"生成 item_id 時出錯: {e}")
             return f"unknown_{date_str}_{serial_no}"
 
-    def scrape_categories(self, categories=None):
-        """爬取指定類別的主頁並獲取文章連結"""
+    def scrape_categories(self, categories=None, limit_per_category=5):
+        """爬取指定類別的主頁並獲取文章連結，支持翻頁功能"""
         if not categories:
             categories = list(self.base_urls.keys())  # 默認爬取所有類別
 
@@ -277,45 +289,74 @@ class CTSimpleScraper:
                 self.logger.warning(f"未知類別: {category}")
                 continue
 
-            url = self.base_urls[category]
-            self.logger.info(f"開始訪問 {category} 類別主頁: {url}")
+            # 清空此類別的連結列表，準備重新收集
+            self.article_links[category] = []
 
-            try:
-                self.driver.get(url)
+            # 計算需要爬取的頁數
+            needed_pages = (limit_per_category + self.articles_per_page - 1) // self.articles_per_page
+            self.logger.info(f"類別 {category} 需要爬取 {needed_pages} 頁")
 
-                # 等待頁面載入
-                WebDriverWait(self.driver, 15).until(
-                    EC.presence_of_element_located((By.TAG_NAME, "body"))
-                )
+            # 爬取需要的頁數
+            for page in range(1, needed_pages + 1):
+                # 第一頁使用原始URL，後續頁使用分頁URL模板
+                if page == 1:
+                    url = self.base_urls[category]
+                else:
+                    url = self.page_url_templates[category].format(page=page)
 
-                # 最小化人類行為模擬
-                self.simulate_human_behavior()
+                self.logger.info(f"開始爬取 {category} 類別第 {page} 頁: {url}")
 
-                # 檢查是否成功載入頁面
-                if "Cloudflare" in self.driver.title:
-                    self.logger.warning(f"{category} 類別檢測到 Cloudflare 挑戰頁面")
-                    time.sleep(10)
+                try:
+                    self.driver.get(url)
+
+                    # 等待頁面載入
+                    WebDriverWait(self.driver, 15).until(
+                        EC.presence_of_element_located((By.TAG_NAME, "body"))
+                    )
+
+                    # 最小化人類行為模擬
+                    self.simulate_human_behavior()
+
+                    # 檢查是否成功載入頁面
                     if "Cloudflare" in self.driver.title:
-                        continue
+                        self.logger.warning(f"{category} 類別檢測到 Cloudflare 挑戰頁面")
+                        time.sleep(10)
+                        if "Cloudflare" in self.driver.title:
+                            continue
 
-                # 使用 CSS 選擇器加速查詢
-                article_elements = self.driver.find_elements(By.CSS_SELECTOR, 'h3.title > a')
-                temp_links = [elem.get_attribute('href') for elem in article_elements]
+                    # 使用 CSS 選擇器加速查詢
+                    article_elements = self.driver.find_elements(By.CSS_SELECTOR, 'h3.title > a')
+                    temp_links = [elem.get_attribute('href') for elem in article_elements]
 
-                # 清理連結並在內部去重（不影響processed_urls）
-                valid_links = []
-                for link in temp_links:
-                    cleaned_link = self.clean_url(link)
-                    # 只在當前收集階段去重，不添加到self.processed_urls
-                    if cleaned_link and cleaned_link not in all_urls:
-                        valid_links.append(cleaned_link)
-                        all_urls.add(cleaned_link)  # 僅添加到臨時集合
+                    # 清理連結並在內部去重（不影響processed_urls）
+                    valid_links = []
+                    for link in temp_links:
+                        cleaned_link = self.clean_url(link)
+                        # 只在當前收集階段去重，不添加到self.processed_urls
+                        if cleaned_link and cleaned_link not in all_urls:
+                            valid_links.append(cleaned_link)
+                            all_urls.add(cleaned_link)  # 僅添加到臨時集合
 
-                self.article_links[category] = valid_links
-                self.logger.info(f"{category} 類別找到 {len(valid_links)} 個有效且未重複的文章連結")
+                    # 添加到該類別的連結列表
+                    self.article_links[category].extend(valid_links)
 
-            except Exception as e:
-                self.logger.error(f"訪問 {category} 類別主頁時發生錯誤: {e}", exc_info=True)
+                    self.logger.info(f"{category} 類別第 {page} 頁找到 {len(valid_links)} 個有效且未重複的文章連結")
+
+                    # 加入適當延遲，避免被封鎖
+                    time.sleep(random.uniform(1, 3))
+
+                    # 如果已經收集到足夠的連結，提前結束
+                    if len(self.article_links[category]) >= limit_per_category:
+                        break
+
+                except Exception as e:
+                    self.logger.error(f"爬取 {category} 類別第 {page} 頁時發生錯誤: {e}", exc_info=True)
+
+            # 確保每個類別只保留所需數量的連結
+            if len(self.article_links[category]) > limit_per_category:
+                self.article_links[category] = self.article_links[category][:limit_per_category]
+
+            self.logger.info(f"{category} 類別最終獲取 {len(self.article_links[category])} 個有效且未重複的文章連結")
 
         # 儲存 cookies (只需儲存一次)
         self.save_cookies()
