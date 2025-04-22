@@ -3,7 +3,7 @@ import json
 import logging
 import datetime
 from collections import defaultdict, Counter
-from django.db.models import Q, Count, Case, When, Value, IntegerField
+from django.db.models import Q, Count, Case, When, Value, IntegerField, Sum
 from django.utils import timezone
 from django.core.cache import cache
 import hashlib
@@ -396,7 +396,7 @@ class SearchAnalysisService:
             logger.error(f"根據實體數量篩選文章時發生錯誤: {e}", exc_info=True)
             return []
 
-    def get_entity_distribution(self, articles, limit=10):
+    def get_entity_distribution(self, articles, limit=20):
         """
         獲取實體分布數據
 
@@ -420,7 +420,7 @@ class SearchAnalysisService:
                 job=self.job,
                 category__in=article_categories
             ).values('entity', 'entity_type').annotate(
-                total=Count('id')
+                total=Sum('frequency')
             ).order_by('-total')[:limit]
 
             # 確保返回的是列表
@@ -626,7 +626,7 @@ class SearchAnalysisService:
             logger.error(f"獲取頂部文章圖片時出錯: {e}", exc_info=True)
             return "/static/images/404.svg"  # 返回預設圖片
 
-    def get_keywords_distribution(self, articles, limit=10):
+    def get_keywords_distribution(self, articles, limit=20):
         """
         獲取關鍵詞分布數據
 
@@ -651,7 +651,7 @@ class SearchAnalysisService:
                 job=self.job,
                 category__in=article_categories
             ).values('word', 'pos').annotate(
-                total=Count('id')
+                total=Sum('frequency')
             ).order_by('-total')[:limit]
 
             # 確保返回的是列表，並添加來源分類
@@ -712,35 +712,6 @@ class SearchAnalysisService:
 
         except Exception as e:
             self.logger.error(f"生成時間序列數據時出錯: {e}", exc_info=True)
-            return []
-
-    def get_entity_distribution(self, articles, limit=10):
-        """
-        獲取實體分布數據
-
-        Args:
-            articles: 文章查詢集
-            limit: 最大實體數量
-
-        Returns:
-            dict: 實體分布數據
-        """
-        try:
-            # 獲取所有文章的類別
-            article_categories = list(articles.values_list('category', flat=True))
-
-            # 獲取這些類別中的命名實體
-            entities = NamedEntityAnalysis.objects.filter(
-                job=self.job,
-                category__in=article_categories
-            ).values('entity', 'entity_type').annotate(
-                total=Count('id')
-            ).order_by('-total')[:limit]
-
-            return list(entities)
-
-        except Exception as e:
-            logger.error(f"獲取實體分布時發生錯誤: {e}", exc_info=True)
             return []
 
     def get_date_range(self):

@@ -576,13 +576,13 @@ def analyze_key_person(request, job_id):
 
         # 確定圖片檔名
         person_image = "trump.png"  # 預設圖片
+
         if person_name == "川普":
             person_image = "trump.png"
         elif person_name == "蔡英文":
             person_image = "tsai.png"
         elif person_name == "習近平":
             person_image = "xi.png"
-        # 其他人物可以在這裡擴充...
 
         # 準備上下文資料
         context = {
