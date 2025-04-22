@@ -21,4 +21,7 @@ urlpatterns = [
     path('jobs/<int:job_id>/analyze_key_person/', views.analyze_key_person, name='analyze_key_person'),
     path('api/analyze_search_terms/', views.analyze_search_terms, name='analyze_search_terms'),
 
+    path('jobs/<int:job_id>/sentiment/', views.job_sentiment_analysis, name='job_sentiment_analysis'),
+    path('articles/<int:article_id>/analyze-sentiment/', views.analyze_article_sentiment, name='analyze_article_sentiment'),
+    path('jobs/<int:job_id>/start-sentiment-analysis/', views.start_sentiment_analysis, name='start_sentiment_analysis'),
 ]

@@ -21,6 +21,7 @@ class ScrapeJob(models.Model):
     use_threading = models.BooleanField(default=False, verbose_name='使用多線程')
     max_workers = models.IntegerField(default=4, verbose_name='最大線程數')
     result_file_path = models.CharField(max_length=255, blank=True, null=True, verbose_name='結果檔案路徑')
+    sentiment_analyzed = models.BooleanField(default=False, verbose_name='情感分析完成')
 
     def __str__(self):
         return f"爬蟲任務 {self.id} - {self.get_status_display()} - {self.created_at.strftime('%Y-%m-%d %H:%M')}"
@@ -99,3 +100,51 @@ class NamedEntityAnalysis(models.Model):
             models.Index(fields=['job', 'entity_type']),
             models.Index(fields=['job', 'frequency']),
         ]
+
+
+class SentimentAnalysis(models.Model):
+    """情感分析模型"""
+
+    article = models.OneToOneField(Article, on_delete=models.CASCADE, related_name='sentiment', verbose_name='文章')
+    job = models.ForeignKey(ScrapeJob, on_delete=models.CASCADE, related_name='sentiments', verbose_name='爬蟲任務')
+    positive_score = models.FloatField(verbose_name='正面情感分數')
+    negative_score = models.FloatField(verbose_name='負面情感分數')
+    sentiment = models.CharField(max_length=10, verbose_name='情感傾向')
+    title_sentiment = models.CharField(max_length=10, null=True, blank=True, verbose_name='標題情感傾向')
+    title_positive_score = models.FloatField(null=True, blank=True, verbose_name='標題正面分數')
+    title_negative_score = models.FloatField(null=True, blank=True, verbose_name='標題負面分數')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='創建時間')
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='更新時間')
+
+    def __str__(self):
+        return f"{self.article.title} - {self.sentiment} ({self.positive_score:.2f})"
+
+    class Meta:
+        verbose_name = '情感分析'
+        verbose_name_plural = '情感分析'
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['job', 'sentiment']),
+            models.Index(fields=['job', 'positive_score']),
+        ]
+
+
+class CategorySentimentSummary(models.Model):
+    """類別情感摘要模型"""
+
+    job = models.ForeignKey(ScrapeJob, on_delete=models.CASCADE, related_name='category_sentiments', verbose_name='爬蟲任務')
+    category = models.CharField(max_length=50, verbose_name='類別')
+    positive_count = models.IntegerField(default=0, verbose_name='正面文章數')
+    negative_count = models.IntegerField(default=0, verbose_name='負面文章數')
+    average_positive_score = models.FloatField(verbose_name='平均正面分數')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='創建時間')
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='更新時間')
+
+    def __str__(self):
+        return f"{self.category} - 正面:{self.positive_count}, 負面:{self.negative_count}"
+
+    class Meta:
+        verbose_name = '類別情感摘要'
+        verbose_name_plural = '類別情感摘要'
+        ordering = ['-positive_count']
+        unique_together = ('job', 'category')
