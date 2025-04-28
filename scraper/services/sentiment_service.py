@@ -209,7 +209,8 @@ class SentimentAnalysisService:
                 'categories': [],
                 'positive_counts': [],
                 'negative_counts': [],
-                'average_scores': []
+                'average_scores': [],
+                'total_counts': []
             }
 
             for summary in summaries:
@@ -217,6 +218,8 @@ class SentimentAnalysisService:
                 result['positive_counts'].append(summary.positive_count)
                 result['negative_counts'].append(summary.negative_count)
                 result['average_scores'].append(round(summary.average_positive_score, 2))
+                # 總數為正面和負面的總和
+                result['total_counts'].append(summary.positive_count + summary.negative_count)
 
             return result
 
