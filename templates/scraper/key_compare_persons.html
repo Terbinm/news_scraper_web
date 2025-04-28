@@ -27,16 +27,11 @@
         margin-bottom: 15px;
         transition: all 0.3s ease;
         position: relative;
-        overflow: hidden;
+        /* 移除這行: overflow: hidden; */
         min-height: 200px;
         display: flex;
         flex-direction: column;
         justify-content: flex-end;
-    }
-
-    .person-stat:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
     }
 
     .person-bg-image {
@@ -46,8 +41,14 @@
         width: 180px;
         height: 180px;
         object-fit: contain;
-        opacity: 0.7;
         z-index: 0;
+        /* 添加下面這行讓圖片可以超出父元素 */
+        pointer-events: none;
+    }
+
+    .person-stat:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
     }
 
     .person-content {
@@ -113,6 +114,27 @@
         height: 400px;
         margin-bottom: 1.5rem;
     }
+
+    .card-header .nav-tabs {
+        margin-bottom: -0.75rem;
+        border-bottom: none;
+    }
+
+    .card-header .nav-link {
+        color: rgba(255, 255, 255, 0.7);
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 0.25rem 0.25rem 0 0;
+    }
+
+    .card-header .nav-link.active {
+        background-color: rgba(0, 0, 0, 0.2);
+        color: #17a2b8;
+    }
+
+    .card-header .nav-link:hover:not(.active) {
+        color: white;
+    }
 </style>
 {% endblock %}
 
@@ -151,23 +173,23 @@
                             <img src="/static/images/{{ person.image }}" alt="{{ person.name }}" class="person-bg-image">
                             <div class="person-content">
                                 <div class="person-name">{{ person.name }}</div>
-                                <div class="stat-value">{{ person.total }}</div>
-                                <div class="stat-details">總聲量: 提及 {{ person.total }} 次</div>
+                                <div class="stat-value">{{ person.article_count }}</div>
+                                <div class="stat-details">總聲量: 有 {{ person.article_count }} 篇共提及 {{ person.total_mentions }} 次</div>
                                 <div class="stat-details">主要類別: {{ person.main_category }}</div>
 
                                 <!-- 情緒分析結果 -->
                                 <div class="stat-details mt-2">感染力:
-                                    <span class="text-success">{{ person.sentiment_data.positive_percent|default:"0" }}%</span> /
-                                    <span class="text-secondary">{{ person.sentiment_data.neutral_percent|default:"0" }}%</span> /
-                                    <span class="text-danger">{{ person.sentiment_data.negative_percent|default:"0" }}%</span>
+                                    <span class="text-success">{{ person.sentiment_data.positive_percent }}%</span> /
+                                    <span class="text-secondary">{{ person.sentiment_data.neutral_percent }}%</span> /
+                                    <span class="text-danger">{{ person.sentiment_data.negative_percent }}%</span>
                                     (正面/中立/負面)
                                 </div>
 
                                 <!-- 情緒分布條 -->
                                 <div class="sentiment-bar">
-                                    <div class="sentiment-positive" style="width: {{ person.sentiment_data.positive_percent|default:"0" }}%;"></div>
-                                    <div class="sentiment-neutral" style="width: {{ person.sentiment_data.neutral_percent|default:"0" }}%;"></div>
-                                    <div class="sentiment-negative" style="width: {{ person.sentiment_data.negative_percent|default:"0" }}%;"></div>
+                                    <div class="sentiment-positive" style="width: {{ person.sentiment_data.positive_percent }}%;"></div>
+                                    <div class="sentiment-neutral" style="width: {{ person.sentiment_data.neutral_percent }}%;"></div>
+                                    <div class="sentiment-negative" style="width: {{ person.sentiment_data.negative_percent }}%;"></div>
                                 </div>
                             </div>
                         </div>
@@ -181,7 +203,8 @@
                         <thead>
                             <tr>
                                 <th>人物</th>
-                                <th>提及總數</th>
+                                <th>文章提及數</th>
+                                <th>總提及次數</th>
                                 <th>正面文章</th>
                                 <th>中立文章</th>
                                 <th>負面文章</th>
@@ -197,10 +220,11 @@
                                         {{ person.name }}
                                     </div>
                                 </td>
-                                <td>{{ person.total }}</td>
-                                <td><span class="text-success">{{ person.sentiment_data.positive_count|default:"0" }} ({{ person.sentiment_data.positive_percent|default:"0" }}%)</span></td>
-                                <td><span class="text-secondary">{{ person.sentiment_data.neutral_count|default:"0" }} ({{ person.sentiment_data.neutral_percent|default:"0" }}%)</span></td>
-                                <td><span class="text-danger">{{ person.sentiment_data.negative_count|default:"0" }} ({{ person.sentiment_data.negative_percent|default:"0" }}%)</span></td>
+                                <td>{{ person.article_count }}</td>
+                                <td>{{ person.total_mentions }}</td>
+                                <td><span class="text-success">{{ person.sentiment_data.positive_count }} ({{ person.sentiment_data.positive_percent }}%)</span></td>
+                                <td><span class="text-secondary">{{ person.sentiment_data.neutral_count }} ({{ person.sentiment_data.neutral_percent }}%)</span></td>
+                                <td><span class="text-danger">{{ person.sentiment_data.negative_count }} ({{ person.sentiment_data.negative_percent }}%)</span></td>
                                 <td>{{ person.main_category }}</td>
                             </tr>
                             {% endfor %}
@@ -256,10 +280,61 @@
     </div>
 </div>
 
-<!-- 情緒分析對比 -->
+<!-- 情緒趨勢圖 -->
 <div class="row">
     <div class="col-12">
         <div class="comparison-card" data-aos="fade-up" data-aos-delay="300">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <ul class="nav nav-tabs" id="sentimentTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="positive-tab" data-bs-toggle="tab" data-bs-target="#positive-content" type="button" role="tab">
+                            <i class="bi bi-emoji-smile me-1"></i>正面情緒趨勢
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="neutral-tab" data-bs-toggle="tab" data-bs-target="#neutral-content" type="button" role="tab">
+                            <i class="bi bi-emoji-neutral me-1"></i>中立情緒趨勢
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="negative-tab" data-bs-toggle="tab" data-bs-target="#negative-content" type="button" role="tab">
+                            <i class="bi bi-emoji-frown me-1"></i>負面情緒趨勢
+                        </button>
+                    </li>
+                </ul>
+            </div>
+            <div class="card-body">
+                <div class="tab-content" id="sentimentTabsContent">
+                    <!-- 正面情緒趨勢 -->
+                    <div class="tab-pane fade show active" id="positive-content" role="tabpanel">
+                        <div class="chart-container">
+                            <canvas id="positiveTimeSeriesChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- 中立情緒趨勢 -->
+                    <div class="tab-pane fade" id="neutral-content" role="tabpanel">
+                        <div class="chart-container">
+                            <canvas id="neutralTimeSeriesChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- 負面情緒趨勢 -->
+                    <div class="tab-pane fade" id="negative-content" role="tabpanel">
+                        <div class="chart-container">
+                            <canvas id="negativeTimeSeriesChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 保留原有的情緒分析對比 -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="comparison-card" data-aos="fade-up" data-aos-delay="400">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h5 class="mb-0">
                     <i class="bi bi-emoji-smile me-2"></i>情緒分析對比
@@ -403,6 +478,164 @@
             }
         });
 
+        // 設定情緒趨勢圖表
+
+        // 1. 正面情緒趨勢
+        const positiveCtx = document.getElementById('positiveTimeSeriesChart').getContext('2d');
+        const positiveTimeDatasets = {{ positive_time_datasets|safe }};
+
+        const positiveTimeChart = new Chart(positiveCtx, {
+            type: 'line',
+            data: {
+                labels: timeLabels,
+                datasets: positiveTimeDatasets
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: 'rgba(255, 255, 255, 0.7)'
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: 'rgba(255, 255, 255, 0.7)'
+                        }
+                    }
+                },
+                plugins: {
+                    title: {
+                        display: true,
+                        text: '正面情緒文章時間趨勢',
+                        color: 'rgba(255, 255, 255, 0.9)'
+                    },
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            color: 'rgba(255, 255, 255, 0.7)'
+                        }
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false
+                    }
+                }
+            }
+        });
+
+        // 2. 中立情緒趨勢
+        const neutralCtx = document.getElementById('neutralTimeSeriesChart').getContext('2d');
+        const neutralTimeDatasets = {{ neutral_time_datasets|safe }};
+
+        const neutralTimeChart = new Chart(neutralCtx, {
+            type: 'line',
+            data: {
+                labels: timeLabels,
+                datasets: neutralTimeDatasets
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: 'rgba(255, 255, 255, 0.7)'
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: 'rgba(255, 255, 255, 0.7)'
+                        }
+                    }
+                },
+                plugins: {
+                    title: {
+                        display: true,
+                        text: '中立情緒文章時間趨勢',
+                        color: 'rgba(255, 255, 255, 0.9)'
+                    },
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            color: 'rgba(255, 255, 255, 0.7)'
+                        }
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false
+                    }
+                }
+            }
+        });
+
+        // 3. 負面情緒趨勢
+        const negativeCtx = document.getElementById('negativeTimeSeriesChart').getContext('2d');
+        const negativeTimeDatasets = {{ negative_time_datasets|safe }};
+
+        const negativeTimeChart = new Chart(negativeCtx, {
+            type: 'line',
+            data: {
+                labels: timeLabels,
+                datasets: negativeTimeDatasets
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: 'rgba(255, 255, 255, 0.7)'
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: 'rgba(255, 255, 255, 0.7)'
+                        }
+                    }
+                },
+                plugins: {
+                    title: {
+                        display: true,
+                        text: '負面情緒文章時間趨勢',
+                        color: 'rgba(255, 255, 255, 0.9)'
+                    },
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            color: 'rgba(255, 255, 255, 0.7)'
+                        }
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false
+                    }
+                }
+            }
+        });
+
         // 設定情緒分析對比圖表
         const sentimentCtx = document.getElementById('sentimentComparisonChart').getContext('2d');
 
@@ -414,9 +647,9 @@
 
         {% for person in persons %}
         personNames.push("{{ person.name }}");
-        positiveData.push({{ person.sentiment_data.positive_percent|default:"0" }});
-        neutralData.push({{ person.sentiment_data.neutral_percent|default:"0" }});
-        negativeData.push({{ person.sentiment_data.negative_percent|default:"0" }});
+        positiveData.push({{ person.sentiment_data.positive_percent }});
+        neutralData.push({{ person.sentiment_data.neutral_percent }});
+        negativeData.push({{ person.sentiment_data.negative_percent }});
         {% endfor %}
 
         const sentimentData = {

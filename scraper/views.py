@@ -595,28 +595,28 @@ def key_person_selection(request, job_id):
         {
             'id': 'biden',
             'name': '拜登',
-            'image': 'leader/biden.jpg',
+            'image': 'leader/biden.png',
             'title': '美國前任總統',
             'description': '第46任美國總統，民主黨人物。'
         },
         {
             'id': 'xi',
             'name': '習近平',
-            'image': 'leader/xi.jpg',
+            'image': 'leader/xi.png',
             'title': '中國國家主席',
             'description': '中國共產黨總書記，中華人民共和國主席。'
         },
         {
             'id': 'tsai',
             'name': '蔡英文',
-            'image': 'leader/tsai.jpg',
+            'image': 'leader/tsai.png',
             'title': '台灣前任總統',
             'description': '中華民國第14、15任總統，民主進步黨前主席。'
         },
         {
             'id': 'lai',
             'name': '賴清德',
-            'image': 'leader/lai.jpg',
+            'image': 'leader/lai.png',
             'title': '台灣現任總統',
             'description': '中華民國第16任總統，民主進步黨黨員。'
         }
@@ -711,13 +711,13 @@ def analyze_key_person(request, job_id, person_name=None):
         if person_name == "川普":
             person_image = "leader/trump.png"
         elif person_name == "蔡英文":
-            person_image = "leader/tsai.jpg"
+            person_image = "leader/tsai.png"
         elif person_name == "習近平":
-            person_image = "leader/xi.jpg"
+            person_image = "leader/xi.png"
         elif person_name == "拜登":
-            person_image = "leader/biden.jpg"
+            person_image = "leader/biden.png"
         elif person_name == "賴清德":
-            person_image = "leader/lai.jpg"
+            person_image = "leader/lai.png"
 
         # 準備上下文資料
         context = {
@@ -776,8 +776,16 @@ def compare_key_persons(request, job_id, person_names):
                 content__icontains=person_name
             )
 
-            # 計算總出現次數
-            total_occurrences = related_articles.count()
+            # 計算文章提及數量
+            article_count = related_articles.count()
+
+            # 計算總出現次數 (匹配次數)
+            # 這裡需要實際遍歷所有文章內容並計算人名出現次數
+            total_mentions = 0
+            for article in related_articles:
+                # 計算內容中人名出現的次數
+                content_mentions = article.content.lower().count(person_name.lower())
+                total_mentions += content_mentions
 
             # 按類別統計出現次數
             category_stats = (
@@ -806,49 +814,61 @@ def compare_key_persons(request, job_id, person_names):
                     combined_time_data[date_str] = {}
                 combined_time_data[date_str][person_name] = time_data[date_str]
 
-            # 獲取情緒分析數據
-            # 首先檢查哪些文章有情緒分析
-            articles_with_sentiment = related_articles.filter(sentiment__isnull=False)
+            # 情緒分析數據
+            # 獲取正面、中立、負面文章
+            positive_articles = related_articles.filter(sentiment__sentiment='正面')
+            neutral_articles = related_articles.filter(sentiment__sentiment='中立')
+            negative_articles = related_articles.filter(sentiment__sentiment='負面')
 
-            # 計算情緒分布
-            sentiment_stats = {
-                'positive_count': SentimentAnalysis.objects.filter(
-                    article__in=related_articles,
-                    sentiment='正面'
-                ).count(),
-                'neutral_count': SentimentAnalysis.objects.filter(
-                    article__in=related_articles,
-                    sentiment='中立'
-                ).count(),
-                'negative_count': SentimentAnalysis.objects.filter(
-                    article__in=related_articles,
-                    sentiment='負面'
-                ).count()
-            }
+            # 獲取各情緒文章數量
+            positive_count = positive_articles.count()
+            neutral_count = neutral_articles.count()
+            negative_count = negative_articles.count()
+            analyzed_count = positive_count + neutral_count + negative_count
 
             # 計算情緒百分比
-            sentiment_total = sum(sentiment_stats.values())
-            if sentiment_total > 0:
-                sentiment_stats['positive_percent'] = round(sentiment_stats['positive_count'] / sentiment_total * 100)
-                sentiment_stats['neutral_percent'] = round(sentiment_stats['neutral_count'] / sentiment_total * 100)
-                sentiment_stats['negative_percent'] = round(sentiment_stats['negative_count'] / sentiment_total * 100)
+            if analyzed_count > 0:
+                positive_percent = round((positive_count / analyzed_count) * 100)
+                neutral_percent = round((neutral_count / analyzed_count) * 100)
+                negative_percent = round((negative_count / analyzed_count) * 100)
             else:
-                sentiment_stats['positive_percent'] = 0
-                sentiment_stats['neutral_percent'] = 0
-                sentiment_stats['negative_percent'] = 0
+                positive_percent = neutral_percent = negative_percent = 0
+
+            # 按時間統計情緒趨勢
+            positive_time_data = defaultdict(int)
+            neutral_time_data = defaultdict(int)
+            negative_time_data = defaultdict(int)
+
+            # 正面情緒時間趨勢
+            for article in positive_articles:
+                date_str = article.date.strftime('%Y-%m-%d')
+                positive_time_data[date_str] += 1
+                all_time_labels.add(date_str)
+
+            # 中立情緒時間趨勢
+            for article in neutral_articles:
+                date_str = article.date.strftime('%Y-%m-%d')
+                neutral_time_data[date_str] += 1
+                all_time_labels.add(date_str)
+
+            # 負面情緒時間趨勢
+            for article in negative_articles:
+                date_str = article.date.strftime('%Y-%m-%d')
+                negative_time_data[date_str] += 1
+                all_time_labels.add(date_str)
 
             # 確定圖片檔名
             person_image = "leader/default_person.png"  # 預設圖片
             if person_name == "川普":
                 person_image = "leader/trump.png"
             elif person_name == "蔡英文":
-                person_image = "leader/tsai.jpg"
+                person_image = "leader/tsai.png"
             elif person_name == "習近平":
-                person_image = "leader/xi.jpg"
+                person_image = "leader/xi.png"
             elif person_name == "拜登":
-                person_image = "leader/biden.jpg"
+                person_image = "leader/biden.png"
             elif person_name == "賴清德":
-                person_image = "leader/lai.jpg"
+                person_image = "leader/lai.png"
 
             # 主要出現類別
             main_category = next(iter(category_stats))['category'] if category_stats else "無"
@@ -857,12 +877,23 @@ def compare_key_persons(request, job_id, person_names):
             persons_data.append({
                 'name': person_name,
                 'image': person_image,
-                'total': total_occurrences,
+                'article_count': article_count,  # 文章提及數量
+                'total_mentions': total_mentions,  # 總出現次數
                 'main_category': main_category,
                 'category_data': category_data,
                 'time_data': time_data,
                 'color': colors[i % len(colors)],
-                'sentiment_data': sentiment_stats
+                'sentiment_data': {
+                    'positive_count': positive_count,
+                    'neutral_count': neutral_count,
+                    'negative_count': negative_count,
+                    'positive_percent': positive_percent,
+                    'neutral_percent': neutral_percent,
+                    'negative_percent': negative_percent,
+                    'positive_time_data': positive_time_data,
+                    'neutral_time_data': neutral_time_data,
+                    'negative_time_data': negative_time_data
+                }
             })
 
         # 準備類別比較圖表數據
@@ -894,6 +925,42 @@ def compare_key_persons(request, job_id, person_names):
             }
             time_datasets.append(dataset)
 
+        # 準備情緒時間趨勢圖表數據
+        positive_time_datasets = []
+        neutral_time_datasets = []
+        negative_time_datasets = []
+
+        for person in persons_data:
+            # 正面情緒時間趨勢
+            positive_time_datasets.append({
+                'label': person['name'],
+                'data': [person['sentiment_data']['positive_time_data'].get(date, 0) for date in all_time_labels],
+                'fill': False,
+                'backgroundColor': person['color'],
+                'borderColor': person['color'].replace('0.7', '1'),
+                'tension': 0.4
+            })
+
+            # 中立情緒時間趨勢
+            neutral_time_datasets.append({
+                'label': person['name'],
+                'data': [person['sentiment_data']['neutral_time_data'].get(date, 0) for date in all_time_labels],
+                'fill': False,
+                'backgroundColor': person['color'],
+                'borderColor': person['color'].replace('0.7', '1'),
+                'tension': 0.4
+            })
+
+            # 負面情緒時間趨勢
+            negative_time_datasets.append({
+                'label': person['name'],
+                'data': [person['sentiment_data']['negative_time_data'].get(date, 0) for date in all_time_labels],
+                'fill': False,
+                'backgroundColor': person['color'],
+                'borderColor': person['color'].replace('0.7', '1'),
+                'tension': 0.4
+            })
+
         # 準備上下文資料
         context = {
             'job': job,
@@ -901,7 +968,10 @@ def compare_key_persons(request, job_id, person_names):
             'all_category_labels': json.dumps(all_category_labels),
             'category_datasets': json.dumps(category_datasets),
             'all_time_labels': json.dumps(all_time_labels),
-            'time_datasets': json.dumps(time_datasets)
+            'time_datasets': json.dumps(time_datasets),
+            'positive_time_datasets': json.dumps(positive_time_datasets),
+            'neutral_time_datasets': json.dumps(neutral_time_datasets),
+            'negative_time_datasets': json.dumps(negative_time_datasets)
         }
 
         return render(request, 'scraper/key_compare_persons.html', context)
