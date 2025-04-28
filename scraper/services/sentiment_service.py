@@ -206,6 +206,7 @@ class SentimentAnalysisService:
 
     def get_category_sentiment_summary(self, job_id):
         """
+        TODO: 需要修改傳遞的資料格式為dict
         獲取任務的類別情感摘要
 
         Args:

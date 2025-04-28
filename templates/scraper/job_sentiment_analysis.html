@@ -341,77 +341,96 @@
 </div>
 
 <!-- 類別情感詳細統計 -->
-<div class="row mb-4">
-    <div class="col-12" data-aos="fade-up" data-aos-delay="300">
-        <div class="sentiment-card">
-            <div class="card-header">
-                <h5 class="mb-0">
-                    <i class="bi bi-table me-2"></i>各類別情感分析摘要
-                </h5>
-            </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-dark table-hover" id="categorySummaryTable">
-                        <thead>
-                            <tr>
-                                <th>類別</th>
-                                <th>文章總數</th>
-                                <th>正面文章數</th>
-                                <th>負面文章數</th>
-                                <th>正負比例</th>
-                                <th>平均正面分數</th>
-                                <th>平均負面分數</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for category in category_summary.categories %}
-                            <tr>
-                                <td>
-                                    <span class="badge" style="background-color:
-                                        {% if category == '財經' %}rgba(54, 162, 235, 0.7)
-                                        {% elif category == '政治' %}rgba(255, 99, 132, 0.7)
-                                        {% elif category == '社會' %}rgba(255, 159, 64, 0.7)
-                                        {% elif category == '科技' %}rgba(75, 192, 192, 0.7)
-                                        {% elif category == '國際' %}rgba(153, 102, 255, 0.7)
-                                        {% elif category == '娛樂' %}rgba(255, 205, 86, 0.7)
-                                        {% elif category == '生活' %}rgba(201, 203, 207, 0.7)
-                                        {% elif category == '言論' %}rgba(0, 204, 150, 0.7)
-                                        {% elif category == '軍事' %}rgba(255, 0, 110, 0.7)
-                                        {% else %}rgba(100, 100, 100, 0.7){% endif %}">
-                                        {{ category }}
-                                    </span>
-                                </td>
-                                <td>{{ category_summary.total_counts|get_item:forloop.counter0|default:"0" }}</td>
-                                <td>{{ category_summary.positive_counts|get_item:forloop.counter0|default:"0" }}</td>
-                                <td>{{ category_summary.negative_counts|get_item:forloop.counter0|default:"0" }}</td>
-                                <td>
-                                    {% with pos_count=category_summary.positive_counts|get_item:forloop.counter0|default:"0" %}
-                                    {% with neg_count=category_summary.negative_counts|get_item:forloop.counter0|default:"0" %}
-                                    {% if neg_count > 0 %}
-                                        {{ pos_count|floatformat:1 }} : 1
-                                    {% elif pos_count > 0 %}
-                                        全正面
-                                    {% else %}
-                                        -
-                                    {% endif %}
-                                    {% endwith %}
-                                    {% endwith %}
-                                </td>
-                                <td>{{ category_summary.average_scores|get_item:forloop.counter0|default:"0.00"|floatformat:2 }}</td>
-                                <td>0.00</td>
-                            </tr>
-                            {% empty %}
-                            <tr>
-                                <td colspan="7" class="text-center">尚無類別情感分析資料</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+{#    TODO: 需要修改傳遞與讀取的方法    #}
+{#<div class="row mb-4">#}
+{#    <div class="col-12" data-aos="fade-up" data-aos-delay="300">#}
+{#        <div class="sentiment-card">#}
+{#            <div class="card-header">#}
+{#                <h5 class="mb-0">#}
+{#                    <i class="bi bi-table me-2"></i>各類別情感分析摘要#}
+{#                </h5>#}
+{#            </div>#}
+{#            <div class="card-body p-0">#}
+{#                <div class="table-responsive">#}
+{#                    <table class="table table-dark table-hover" id="categorySummaryTable">#}
+{#                        <thead>#}
+{#                            <tr>#}
+{#                                <th>類別</th>#}
+{#                                <th>文章總數</th>#}
+{#                                <th>正面文章數</th>#}
+{#                                <th>負面文章數</th>#}
+{#                                <th>正負比例</th>#}
+{#                                <th>平均正面分數</th>#}
+{#                                <th>平均負面分數</th>#}
+{#                            </tr>#}
+{#                        </thead>#}
+{#                        <tbody>#}
+{#                            {% for category in category_summary.categories %}#}
+{#                            <tr>#}
+{#                                <td>#}
+{#                                    <span class="badge" style="background-color:#}
+{#                                        {% if category == '財經' %}rgba(54, 162, 235, 0.7)#}
+{#                                        {% elif category == '政治' %}rgba(255, 99, 132, 0.7)#}
+{#                                        {% elif category == '社會' %}rgba(255, 159, 64, 0.7)#}
+{#                                        {% elif category == '科技' %}rgba(75, 192, 192, 0.7)#}
+{#                                        {% elif category == '國際' %}rgba(153, 102, 255, 0.7)#}
+{#                                        {% elif category == '娛樂' %}rgba(255, 205, 86, 0.7)#}
+{#                                        {% elif category == '生活' %}rgba(201, 203, 207, 0.7)#}
+{#                                        {% elif category == '言論' %}rgba(0, 204, 150, 0.7)#}
+{#                                        {% elif category == '軍事' %}rgba(255, 0, 110, 0.7)#}
+{#                                        {% else %}rgba(100, 100, 100, 0.7){% endif %}">#}
+{#                                        {{ category }}#}
+{#                                    </span>#}
+{#                                </td>#}
+{#                                <td>{{ category_summary.total_counts|get_item:forloop.counter0|default:"0" }}</td>#}
+{#                                <td>{{ category_summary.positive_counts|get_item:forloop.counter0|default:"0" }}</td>#}
+{#                                <td>{{ category_summary.negative_counts|get_item:forloop.counter0|default:"0" }}</td>#}
+{#                                <td>#}
+{#                                    {% with pos_count=category_summary.positive_counts|get_item:forloop.counter0|default:0 %}#}
+{#                                    {% with neg_count=category_summary.negative_counts|get_item:forloop.counter0|default:0 %}#}
+{#                                    {% if neg_count > 0 and pos_count > 0 %}#}
+{#                                        {{ pos_count|floatformat:1 }} : {{ neg_count|floatformat:1 }}#}
+{#                                    {% elif neg_count > 0 and pos_count == 0 %}#}
+{#                                        全負面#}
+{#                                    {% elif pos_count > 0 and neg_count == 0 %}#}
+{#                                        全正面#}
+{#                                    {% else %}#}
+{#                                        -#}
+{#                                    {% endif %}#}
+{#                                    {% endwith %}#}
+{#                                    {% endwith %}#}
+{#                                </td>#}
+{#                                <td>#}
+{#                                    {% with pos_count=category_summary.positive_counts|get_item:forloop.counter0|default:0 %}#}
+{#                                    {% if pos_count > 0 %}#}
+{#                                        {{ category_summary.average_positive_scores|get_item:forloop.counter0|default:"0.00"|floatformat:2 }}#}
+{#                                    {% else %}#}
+{#                                        -#}
+{#                                    {% endif %}#}
+{#                                    {% endwith %}#}
+{#                                </td>#}
+{#                                <td>#}
+{#                                    {% with neg_count=category_summary.negative_counts|get_item:forloop.counter0|default:0 %}#}
+{#                                    {% if neg_count > 0 %}#}
+{#                                        {{ category_summary.average_negative_scores|get_item:forloop.counter0|default:"0.00"|floatformat:2 }}#}
+{#                                    {% else %}#}
+{#                                        -#}
+{#                                    {% endif %}#}
+{#                                    {% endwith %}#}
+{#                                </td>#}
+{#                            </tr>#}
+{#                            {% empty %}#}
+{#                            <tr>#}
+{#                                <td colspan="7" class="text-center">尚無類別情感分析資料</td>#}
+{#                            </tr>#}
+{#                            {% endfor %}#}
+{#                        </tbody>#}
+{#                    </table>#}
+{#                </div>#}
+{#            </div>#}
+{#        </div>#}
+{#    </div>#}
+{#</div>#}
 
 {% elif analyzed_articles > 0 %}
 <!-- 在類別情感詳細統計區塊的卡片標題後添加按鈕 -->
