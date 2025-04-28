@@ -588,36 +588,36 @@ def key_person_selection(request, job_id):
         {
             'id': 'trump',
             'name': '川普',
-            'image': 'trump.png',
-            'title': '美國前總統',
-            'description': '第45任美國總統，共和黨人物。'
+            'image': 'leader/trump.png',
+            'title': '美國現任總統',
+            'description': '第47任美國總統，共和黨人物。'
+        },
+        {
+            'id': 'biden',
+            'name': '拜登',
+            'image': 'leader/biden.jpg',
+            'title': '美國前任總統',
+            'description': '第46任美國總統，民主黨人物。'
         },
         {
             'id': 'xi',
             'name': '習近平',
-            'image': 'xi.png',
+            'image': 'leader/xi.jpg',
             'title': '中國國家主席',
             'description': '中國共產黨總書記，中華人民共和國主席。'
         },
         {
             'id': 'tsai',
             'name': '蔡英文',
-            'image': 'tsai.png',
-            'title': '台灣前總統',
+            'image': 'leader/tsai.jpg',
+            'title': '台灣前任總統',
             'description': '中華民國第14、15任總統，民主進步黨前主席。'
-        },
-        {
-            'id': 'biden',
-            'name': '拜登',
-            'image': 'biden.png',
-            'title': '美國總統',
-            'description': '第46任美國總統，民主黨人物。'
         },
         {
             'id': 'lai',
             'name': '賴清德',
-            'image': 'lai.png',
-            'title': '台灣總統',
+            'image': 'leader/lai.jpg',
+            'title': '台灣現任總統',
             'description': '中華民國第16任總統，民主進步黨黨員。'
         }
     ]
