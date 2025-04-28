@@ -542,7 +542,7 @@
                 {% if sentiment_distribution.content %}
                 positiveCount = {{ sentiment_distribution.content.positive|default:0 }};
                 negativeCount = {{ sentiment_distribution.content.negative|default:0 }};
-                neutralCount = 0; // 目前沒有中性情感分類
+                neutralCount = {{ sentiment_distribution.content.neutral|default:0 }};
                 {% endif %}
             } catch (e) {
                 console.log('無法獲取情感分布數據，使用預設值');

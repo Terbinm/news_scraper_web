@@ -80,8 +80,11 @@ class SentimentAnalyzer:
             negative_prob = float(probabilities[0])
             positive_prob = float(probabilities[1])
 
-            # 確定情感傾向
-            sentiment = "正面" if positive_prob > negative_prob else "負面"
+            # 確定情感傾向與中立判斷邏輯
+            if 0.3 <= positive_prob <= 0.7 and 0.3 <= negative_prob <= 0.7:
+                sentiment = "中立"
+            else:
+                sentiment = "正面" if positive_prob > negative_prob else "負面"
 
             return {
                 "positive": positive_prob,

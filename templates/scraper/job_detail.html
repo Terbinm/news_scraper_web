@@ -182,7 +182,12 @@
     <div class="col-md-3 mb-4" data-aos="fade-up" data-aos-delay="400">
         <div class="card overview-card">
             <div class="card-body p-4 text-center">
-                <i class="bi bi-emoji-smile stat-icon {% if sentiment_progress >= 100 %}text-success{% elif sentiment_progress > 0 %}text-warning{% else %}text-secondary{% endif %}"></i>
+                <i class="bi bi-emoji-smile stat-icon
+                    {% if sentiment_progress >= 100 %}text-success
+                    {% elif sentiment_progress > 0 %}text-warning
+                    {% else %}text-secondary{% endif %}">
+                </i>
+
                 <h3 class="stat-value">{{ sentiment_count }}</h3>
                 <p class="stat-label">情感分析處理文章數</p>
                 {% if sentiment_progress < 100 and sentiment_progress > 0 %}
@@ -193,6 +198,9 @@
                             {{ sentiment_progress }}%
                         </div>
                     </div>
+                    <a href="{% url 'job_sentiment_analysis' job.id %}?analyze=True" class="action-link">
+                        查看並啟動情感分析 <i class="bi bi-arrow-right action-icon"></i>
+                    </a>
                 {% elif sentiment_progress >= 100 %}
                     <a href="{% url 'job_sentiment_analysis' job.id %}" class="action-link">
                         查看情感分析 <i class="bi bi-arrow-right action-icon"></i>

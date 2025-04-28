@@ -58,7 +58,7 @@ class SentimentAnalysisService:
             self.logger.error(f"分析文章 {article.id} 時出錯: {e}", exc_info=True)
             return None
 
-    def analyze_job_articles(self, job_id, batch_size=20, max_workers=4):
+    def analyze_job_articles(self, job_id, batch_size=20, max_workers=4,max_check_attempts = 5):
         """
         分析指定任務的所有文章
 
@@ -66,6 +66,7 @@ class SentimentAnalysisService:
             job_id: ScrapeJob的ID
             batch_size: 批次大小
             max_workers: 最大工作執行緒數
+            max_check_attempts: 最大重新檢查次數
 
         Returns:
             bool: 是否成功完成分析
@@ -79,59 +80,70 @@ class SentimentAnalysisService:
                 self.logger.info(f"任務 {job_id} 已完成情感分析，跳過處理")
                 return True
 
-            # 獲取尚未分析情感的文章
-            articles = Article.objects.filter(
-                job=job
-            ).exclude(
-                sentiment__isnull=False
-            ).order_by('id')
+            # 重複檢查未分析文章的次數
+            check_attempts = 0
 
-            total_articles = articles.count()
-            if total_articles == 0:
-                self.logger.info(f"任務 {job_id} 沒有新文章需要分析")
+            while check_attempts < max_check_attempts:
+                # 獲取尚未分析情感的文章
+                articles = Article.objects.filter(
+                    job=job
+                ).exclude(
+                    sentiment__isnull=False
+                ).order_by('id')
 
-                # 更新任務狀態
-                job.sentiment_analyzed = True
-                job.save()
+                total_articles = articles.count()
+                if total_articles == 0:
+                    self.logger.info(f"任務 {job_id} 沒有新文章需要分析")
+                    break
 
-                return True
+                self.logger.info(f"開始分析任務 {job_id} 的 {total_articles} 篇文章（第 {check_attempts + 1} 次檢查）")
 
-            self.logger.info(f"開始分析任務 {job_id} 的 {total_articles} 篇文章")
+                # 使用多執行緒處理
+                processed_count = 0
 
-            # 使用多執行緒處理
-            processed_count = 0
+                with ThreadPoolExecutor(max_workers=max_workers) as executor:
+                    # 批次處理
+                    for i in range(0, total_articles, batch_size):
+                        batch_articles = articles[i:i + batch_size]
+                        batch_results = list(executor.map(self.analyze_article, batch_articles))
 
-            with ThreadPoolExecutor(max_workers=max_workers) as executor:
-                # 批次處理
-                for i in range(0, total_articles, batch_size):
-                    batch_articles = articles[i:i + batch_size]
-                    batch_results = list(executor.map(self.analyze_article, batch_articles))
+                        # 過濾掉失敗的結果
+                        batch_results = [r for r in batch_results if r is not None]
 
-                    # 過濾掉失敗的結果
-                    batch_results = [r for r in batch_results if r is not None]
+                        # 保存結果到資料庫
+                        with transaction.atomic():
+                            for result in batch_results:
+                                article_id = result['article_id']
+                                article = Article.objects.get(id=article_id)
 
-                    # 保存結果到資料庫
-                    with transaction.atomic():
-                        for result in batch_results:
-                            article_id = result['article_id']
-                            article = Article.objects.get(id=article_id)
+                                # 創建或更新情感分析記錄
+                                sentiment, created = SentimentAnalysis.objects.update_or_create(
+                                    article=article,
+                                    job=job,
+                                    defaults={
+                                        'positive_score': result['content']['positive'],
+                                        'negative_score': result['content']['negative'],
+                                        'sentiment': result['content']['sentiment'],
+                                        'title_sentiment': result['title']['sentiment'],
+                                        'title_positive_score': result['title']['positive'],
+                                        'title_negative_score': result['title']['negative']
+                                    }
+                                )
 
-                            # 創建或更新情感分析記錄
-                            sentiment, created = SentimentAnalysis.objects.update_or_create(
-                                article=article,
-                                job=job,
-                                defaults={
-                                    'positive_score': result['content']['positive'],
-                                    'negative_score': result['content']['negative'],
-                                    'sentiment': result['content']['sentiment'],
-                                    'title_sentiment': result['title']['sentiment'],
-                                    'title_positive_score': result['title']['positive'],
-                                    'title_negative_score': result['title']['negative']
-                                }
-                            )
+                        processed_count += len(batch_results)
+                        self.logger.info(f"已處理 {processed_count}/{total_articles} 篇文章")
 
-                    processed_count += len(batch_results)
-                    self.logger.info(f"已處理 {processed_count}/{total_articles} 篇文章")
+                # 增加檢查次數
+                check_attempts += 1
+
+                # 如果本次已處理全部文章，則退出循環
+                if processed_count == total_articles:
+                    break
+
+                # 如果達到最大檢查次數，強制結束
+                if check_attempts >= max_check_attempts:
+                    self.logger.warning(f"任務 {job_id} 在 {max_check_attempts} 次檢查後仍有未處理文章")
+                    break
 
             # 生成類別情感摘要
             self.generate_category_sentiment_summary(job)
@@ -155,38 +167,29 @@ class SentimentAnalysisService:
             job: ScrapeJob實例
         """
         try:
-            # 按類別統計情感分析結果
-            categories = Article.objects.filter(
-                job=job
-            ).values_list('category', flat=True).distinct()
+            # 獲取該任務的所有情感分析結果
+            sentiments = SentimentAnalysis.objects.filter(job=job)
+
+            # 獲取所有文章類別
+            categories = Article.objects.filter(job=job).values_list('category', flat=True).distinct()
 
             for category in categories:
-                # 獲取該類別的所有文章
-                articles = Article.objects.filter(
-                    job=job,
-                    category=category
-                )
+                # 篩選特定類別的情感分析結果
+                category_sentiments = sentiments.filter(article__category=category)
 
-                # 獲取已有情感分析結果的文章
-                sentiments = SentimentAnalysis.objects.filter(
-                    job=job,
-                    article__category=category
-                )
-
-                # 如果該類別有文章但沒有情感分析，跳過
-                if articles.count() > 0 and sentiments.count() == 0:
-                    self.logger.info(f"類別 {category} 的文章尚未分析情感，跳過生成摘要")
+                if category_sentiments.count() == 0:
                     continue
 
-                # 統計正面和負面文章數量
-                positive_count = sentiments.filter(sentiment='正面').count()
-                negative_count = sentiments.filter(sentiment='負面').count()
+                # 統計正面、負面和中立文章數
+                positive_count = category_sentiments.filter(sentiment='正面').count()
+                negative_count = category_sentiments.filter(sentiment='負面').count()
+                neutral_count = category_sentiments.filter(sentiment='中立').count()
 
-                # 計算平均正面情感分數，避免除以零的錯誤
-                if positive_count > 0:
-                    avg_positive = sentiments.filter(sentiment='正面').aggregate(avg=Avg('positive_score'))['avg'] or 0
-                else:
-                    avg_positive = 0
+                # 計算平均正面情感分數
+                avg_positive_score = (
+                        category_sentiments
+                        .aggregate(avg_positive=Avg('positive_score'))['avg_positive'] or 0
+                )
 
                 # 創建或更新類別情感摘要
                 CategorySentimentSummary.objects.update_or_create(
@@ -195,11 +198,10 @@ class SentimentAnalysisService:
                     defaults={
                         'positive_count': positive_count,
                         'negative_count': negative_count,
-                        'average_positive_score': avg_positive
+                        'neutral_count': neutral_count,
+                        'average_positive_score': avg_positive_score
                     }
                 )
-
-            self.logger.info(f"已生成任務 {job.id} 的類別情感摘要")
 
         except Exception as e:
             self.logger.error(f"生成類別情感摘要時出錯: {e}", exc_info=True)
@@ -279,27 +281,28 @@ class SentimentAnalysisService:
             # 獲取情感分析結果
             sentiments = SentimentAnalysis.objects.filter(job_id=job_id)
 
-            # 統計正面和負面文章數量
+            # 統計正面、負面和中立文章數量
             positive_count = sentiments.filter(sentiment='正面').count()
             negative_count = sentiments.filter(sentiment='負面').count()
+            neutral_count = sentiments.filter(sentiment='中立').count()
 
             # 統計標題情感
             title_positive = sentiments.filter(title_sentiment='正面').count()
             title_negative = sentiments.filter(title_sentiment='負面').count()
+            title_neutral = sentiments.filter(title_sentiment='中立').count()
 
-            # 構建結果
-            result = {
+            return {
                 'content': {
                     'positive': positive_count,
-                    'negative': negative_count
+                    'negative': negative_count,
+                    'neutral': neutral_count
                 },
                 'title': {
                     'positive': title_positive,
-                    'negative': title_negative
+                    'negative': title_negative,
+                    'neutral': title_neutral
                 }
             }
-
-            return result
 
         except Exception as e:
             self.logger.error(f"獲取情感分佈時出錯: {e}", exc_info=True)
@@ -307,7 +310,7 @@ class SentimentAnalysisService:
 
 
 # 單一函數接口，用於執行情感分析任務
-def analyze_job_sentiment(job_id, batch_size=20, max_workers=4):
+def analyze_job_sentiment(job_id, batch_size=20, max_workers=4,max_check_attempts = 5):
     """
     執行情感分析任務
 
@@ -315,6 +318,7 @@ def analyze_job_sentiment(job_id, batch_size=20, max_workers=4):
         job_id: ScrapeJob的ID
         batch_size: 批次大小
         max_workers: 最大工作執行緒數
+        max_check_attempts: 最大重新檢查次數
 
     Returns:
         bool: 是否成功完成分析

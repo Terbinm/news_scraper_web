@@ -104,20 +104,27 @@ class NamedEntityAnalysis(models.Model):
 
 class SentimentAnalysis(models.Model):
     """情感分析模型"""
+    SENTIMENT_CHOICES = [
+        ('正面', '正面'),
+        ('負面', '負面'),
+        ('中立', '中立')
+    ]
 
     article = models.OneToOneField(Article, on_delete=models.CASCADE, related_name='sentiment', verbose_name='文章')
     job = models.ForeignKey(ScrapeJob, on_delete=models.CASCADE, related_name='sentiments', verbose_name='爬蟲任務')
     positive_score = models.FloatField(verbose_name='正面情感分數')
     negative_score = models.FloatField(verbose_name='負面情感分數')
-    sentiment = models.CharField(max_length=10, verbose_name='情感傾向')
-    title_sentiment = models.CharField(max_length=10, null=True, blank=True, verbose_name='標題情感傾向')
+    sentiment = models.CharField(max_length=10, choices=SENTIMENT_CHOICES, verbose_name='情感傾向')
+    title_sentiment = models.CharField(max_length=10, null=True, blank=True, choices=SENTIMENT_CHOICES,
+                                       verbose_name='標題情感傾向')
     title_positive_score = models.FloatField(null=True, blank=True, verbose_name='標題正面分數')
     title_negative_score = models.FloatField(null=True, blank=True, verbose_name='標題負面分數')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='創建時間')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='更新時間')
 
+
     def __str__(self):
-        return f"{self.article.title} - {self.sentiment} ({self.positive_score:.2f})"
+            return f"{self.article.title} - {self.sentiment} ({self.positive_score:.2f})"
 
     class Meta:
         verbose_name = '情感分析'
@@ -136,6 +143,7 @@ class CategorySentimentSummary(models.Model):
     category = models.CharField(max_length=50, verbose_name='類別')
     positive_count = models.IntegerField(default=0, verbose_name='正面文章數')
     negative_count = models.IntegerField(default=0, verbose_name='負面文章數')
+    neutral_count = models.IntegerField(default=0, verbose_name='中立文章數')
     average_positive_score = models.FloatField(verbose_name='平均正面分數')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='創建時間')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='更新時間')
