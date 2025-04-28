@@ -16,17 +16,15 @@ document.addEventListener('DOMContentLoaded', function() {
     initResultsDisplay();
     setupCalculateMatches();
 
-    // 如果有時間序列數據，初始化時間軸圖表
+    // 初始化圖表
     if (typeof timeSeriesData !== 'undefined' && timeSeriesData) {
         initTimeSeriesChart(timeSeriesData);
     }
 
-    // 如果有共現數據，初始化關係圖
     if (typeof cooccurrenceData !== 'undefined' && cooccurrenceData) {
         initCooccurrenceNetwork(cooccurrenceData);
     }
 
-    // 初始化關鍵詞和實體分布圖表
     if (typeof keywordsDistribution !== 'undefined' && keywordsDistribution) {
         initKeywordsChart(keywordsDistribution);
     }
@@ -34,6 +32,19 @@ document.addEventListener('DOMContentLoaded', function() {
     if (typeof entitiesDistribution !== 'undefined' && entitiesDistribution) {
         initEntitiesChart(entitiesDistribution);
     }
+
+    // 初始化情緒分析圖表
+    if (typeof sentimentDistribution !== 'undefined' && sentimentDistribution) {
+        initSentimentDistributionChart(sentimentDistribution);
+    }
+
+    if (typeof timeSeriesData !== 'undefined' && timeSeriesData &&
+        typeof sentimentTimeData !== 'undefined' && sentimentTimeData) {
+        initSentimentTimeSeriesChart(timeSeriesData, sentimentTimeData);
+    }
+
+    // 初始化匯出功能
+    exportSearchResults();
 });
 
 
@@ -1397,6 +1408,225 @@ function initializeDataTable(tableId) {
     });
 }
 
+
+/**
+ * 初始化情緒分布餅圖
+ * @param {Object|String} sentimentData - 情緒分析數據或JSON字符串
+ */
+function initSentimentDistributionChart(sentimentData) {
+    if (!sentimentData) {
+        console.warn("沒有提供情緒分析數據");
+        return;
+    }
+
+    const ctx = document.getElementById('sentimentDistributionChart');
+    if (!ctx) return;
+
+    try {
+        // 確保數據是JavaScript對象
+        const data = typeof sentimentData === 'string' ? JSON.parse(sentimentData) : sentimentData;
+
+        // 準備圖表資料
+        const labels = ['正面', '負面', '中立'];
+        const counts = [
+            data.positive_count || 0,
+            data.negative_count || 0,
+            data.neutral_count || 0
+        ];
+        const total = counts.reduce((a, b) => a + b, 0);
+
+        // 圖表顏色
+        const colors = {
+            backgroundColor: [
+                'rgba(40, 167, 69, 0.7)',  // 正面 - 綠色
+                'rgba(220, 53, 69, 0.7)',  // 負面 - 紅色
+                'rgba(108, 117, 125, 0.7)'  // 中立 - 灰色
+            ],
+            borderColor: [
+                'rgba(40, 167, 69, 1)',
+                'rgba(220, 53, 69, 1)',
+                'rgba(108, 117, 125, 1)'
+            ]
+        };
+
+        // 創建圖表
+        const sentimentChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: counts,
+                    backgroundColor: colors.backgroundColor,
+                    borderColor: colors.borderColor,
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: '情緒分析分布',
+                        color: '#fff'
+                    },
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: 'rgba(255, 255, 255, 0.7)'
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const value = context.raw;
+                                const percentage = ((value / total) * 100).toFixed(1);
+                                return `${context.label}: ${value} (${percentage}%)`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    } catch (error) {
+        console.error("初始化情緒分布餅圖失敗:", error);
+    }
+}
+
+/**
+ * 初始化情緒隨時間變化趨勢圖
+ * @param {Object|String} timeSeriesData - 時間序列數據或JSON字符串
+ * @param {Object|String} sentimentTimeData - 情緒時間序列數據或JSON字符串
+ */
+function initSentimentTimeSeriesChart(timeSeriesData, sentimentTimeData) {
+    if (!timeSeriesData || !sentimentTimeData) {
+        console.warn("沒有提供情緒時間序列數據");
+        return;
+    }
+
+    const ctx = document.getElementById('sentimentTimeSeriesChart');
+    if (!ctx) return;
+
+    try {
+        // 確保數據是JavaScript對象
+        const timeData = typeof timeSeriesData === 'string' ? JSON.parse(timeSeriesData) : timeSeriesData;
+        const sentimentData = typeof sentimentTimeData === 'string' ? JSON.parse(sentimentTimeData) : sentimentTimeData;
+
+        // 將數據按日期排序
+        timeData.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+        // 準備圖表資料
+        const labels = timeData.map(item => formatDate(item.date));
+
+        // 準備情緒數據
+        // 這裡假設sentimentData包含了日期對應的正面、負面和中立情緒數量
+        const positiveData = [];
+        const negativeData = [];
+        const neutralData = [];
+
+        // 對於每個日期，找到對應的情緒數據
+        for (const dateItem of timeData) {
+            const date = dateItem.date;
+            const sentiment = sentimentData[date] || { positive: 0, negative: 0, neutral: 0 };
+            positiveData.push(sentiment.positive || 0);
+            negativeData.push(sentiment.negative || 0);
+            neutralData.push(sentiment.neutral || 0);
+        }
+
+        // 創建圖表
+        const sentimentTimeChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: '正面',
+                        data: positiveData,
+                        fill: false,
+                        borderColor: 'rgba(40, 167, 69, 1)',  // 綠色
+                        backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                        tension: 0.4,
+                        pointBackgroundColor: 'rgba(40, 167, 69, 1)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgba(40, 167, 69, 1)'
+                    },
+                    {
+                        label: '負面',
+                        data: negativeData,
+                        fill: false,
+                        borderColor: 'rgba(220, 53, 69, 1)',  // 紅色
+                        backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                        tension: 0.4,
+                        pointBackgroundColor: 'rgba(220, 53, 69, 1)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgba(220, 53, 69, 1)'
+                    },
+                    {
+                        label: '中立',
+                        data: neutralData,
+                        fill: false,
+                        borderColor: 'rgba(108, 117, 125, 1)',  // 灰色
+                        backgroundColor: 'rgba(108, 117, 125, 0.1)',
+                        tension: 0.4,
+                        pointBackgroundColor: 'rgba(108, 117, 125, 1)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgba(108, 117, 125, 1)'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
+                plugins: {
+                    title: {
+                        display: true,
+                        text: '情緒隨時間變化趨勢',
+                        color: '#fff'
+                    },
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: 'rgba(255, 255, 255, 0.7)'
+                        }
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false
+                    }
+                },
+                scales: {
+                    x: {
+                        ticks: {
+                            color: 'rgba(255, 255, 255, 0.7)'
+                        },
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0,  // 只顯示整數
+                            color: 'rgba(255, 255, 255, 0.7)'
+                        },
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        }
+                    }
+                }
+            }
+        });
+    } catch (error) {
+        console.error("初始化情緒隨時間變化趨勢圖失敗:", error);
+    }
+}
+
+
 /**
  * 匯出搜尋結果為CSV
  */
@@ -1462,9 +1692,4 @@ window.addEventListener('resize', function() {
     if (typeof cooccurrenceData !== 'undefined' && cooccurrenceData) {
         initCooccurrenceNetwork(cooccurrenceData);
     }
-});
-
-// 自動初始化匯出功能
-document.addEventListener('DOMContentLoaded', function() {
-    exportSearchResults();
 });

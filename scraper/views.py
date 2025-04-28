@@ -433,13 +433,59 @@ def job_search_analysis(request, job_id):
 
                 # 獲取頂部圖片
                 top_image_url = search_service.get_top_article_image(search_results)
+
+                # 獲取情緒分布數據
+                sentiment_distribution = {
+                    'positive_count': SentimentAnalysis.objects.filter(article__in=search_results,
+                                                                       sentiment='正面').count(),
+                    'negative_count': SentimentAnalysis.objects.filter(article__in=search_results,
+                                                                       sentiment='負面').count(),
+                    'neutral_count': SentimentAnalysis.objects.filter(article__in=search_results,
+                                                                      sentiment='中立').count()
+                }
+
+                # 獲取情緒隨時間變化趨勢數據
+                sentiment_time_data = {}
+
+                # 按時間和情感分組獲取文章計數
+                from django.db.models import Count
+                from django.db.models.functions import TruncDate
+
+                time_sentiment_stats = (
+                    SentimentAnalysis.objects
+                    .filter(article__in=search_results)
+                    .annotate(date=TruncDate('article__date'))
+                    .values('date', 'sentiment')
+                    .annotate(count=Count('id'))
+                    .order_by('date', 'sentiment')
+                )
+
+                # 將結果格式化為適合圖表的格式
+                for stat in time_sentiment_stats:
+                    date_str = stat['date'].isoformat()
+                    if date_str not in sentiment_time_data:
+                        sentiment_time_data[date_str] = {'positive': 0, 'negative': 0, 'neutral': 0}
+
+                    sentiment_type = stat['sentiment']
+                    count = stat['count']
+
+                    if sentiment_type == '正面':
+                        sentiment_time_data[date_str]['positive'] = count
+                    elif sentiment_type == '負面':
+                        sentiment_time_data[date_str]['negative'] = count
+                    elif sentiment_type == '中立':
+                        sentiment_time_data[date_str]['neutral'] = count
             else:
                 # 沒有搜尋結果
                 search_results = Article.objects.none()
+                sentiment_distribution = None
+                sentiment_time_data = None
         except Exception as e:
             logger.error(f"搜尋與分析過程中發生錯誤: {e}", exc_info=True)
             messages.error(request, f"搜尋分析過程出現錯誤: {str(e)}")
             search_results = Article.objects.none()
+            sentiment_distribution = None
+            sentiment_time_data = None
 
     # 將 Python 對象轉換為 JSON 字符串，用於在模板中傳遞給 JavaScript
     # 關鍵修改：確保使用 json.dumps() 轉換為 JSON 字符串
@@ -447,9 +493,11 @@ def job_search_analysis(request, job_id):
     keywords_distribution_json = json.dumps(keywords_distribution) if keywords_distribution else None
     entities_distribution_json = json.dumps(entities_distribution) if entities_distribution else None
     cooccurrence_json = json.dumps(cooccurrence_data) if cooccurrence_data else None
+    sentiment_distribution_json = json.dumps(sentiment_distribution) if locals().get('sentiment_distribution') else None
+    sentiment_time_data_json = json.dumps(sentiment_time_data) if locals().get('sentiment_time_data') else None
 
     # 渲染模板
-    return render(request, 'scraper/job_search_analysis.html', {
+    context = {
         'job': job,
         'form': form,
         'results': search_results,
@@ -460,8 +508,12 @@ def job_search_analysis(request, job_id):
         'keywords_distribution': keywords_distribution_json,
         'entities_distribution': entities_distribution_json,
         'cooccurrence_data': cooccurrence_json,
-        'top_image_url': top_image_url
-    })
+        'top_image_url': top_image_url,
+        'sentiment_distribution': sentiment_distribution_json,
+        'sentiment_time_data': sentiment_time_data_json
+    }
+
+    return render(request, 'scraper/job_search_analysis.html', context)
 
 # 添加這個新的視圖函數用於分析搜索詞
 @login_required

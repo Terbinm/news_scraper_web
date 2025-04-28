@@ -189,7 +189,7 @@
                     </div>
                     <div class="d-flex justify-content-between align-items-center">
                         <span class="badge sentiment-neutral">中性</span>
-                        <span id="neutralCount" class="badge bg-dark">0</span>
+                        <span id="neutralCount" class="badge bg-dark">{{ sentiment_distribution.content.neutral|default:0 }}</span>
                     </div>
                 </div>
             </div>
