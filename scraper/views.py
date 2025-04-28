@@ -754,3 +754,45 @@ def start_sentiment_analysis(request, job_id):
         'status': 'success',
         'message': '情感分析任務已啟動'
     })
+
+
+@login_required
+def regenerate_sentiment_summary(request, job_id):
+    """重新生成情感分析摘要"""
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error', 'message': '只接受POST請求'})
+
+    try:
+        job = get_object_or_404(ScrapeJob, id=job_id, user=request.user)
+
+        # 檢查是否有足夠的情感分析數據
+        articles_count = Article.objects.filter(job=job).count()
+        analyzed_count = SentimentAnalysis.objects.filter(job=job).count()
+
+        if analyzed_count == 0:
+            return JsonResponse({
+                'status': 'error',
+                'message': '尚未進行情感分析，無法生成摘要'
+            })
+
+        # 清除現有的摘要
+        CategorySentimentSummary.objects.filter(job=job).delete()
+
+        # 重新生成摘要
+        sentiment_service = SentimentAnalysisService()
+        sentiment_service.generate_category_sentiment_summary(job)
+
+        # 返回成功訊息
+        return JsonResponse({
+            'status': 'success',
+            'message': '情感分析摘要已重新生成',
+            'analyzed_count': analyzed_count,
+            'total_count': articles_count
+        })
+
+    except Exception as e:
+        logger.error(f"重新生成情感摘要時出錯: {e}", exc_info=True)
+        return JsonResponse({
+            'status': 'error',
+            'message': f'處理請求時發生錯誤: {str(e)}'
+        })

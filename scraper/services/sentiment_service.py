@@ -161,18 +161,32 @@ class SentimentAnalysisService:
             ).values_list('category', flat=True).distinct()
 
             for category in categories:
-                # 獲取該類別的情感分析結果
+                # 獲取該類別的所有文章
+                articles = Article.objects.filter(
+                    job=job,
+                    category=category
+                )
+
+                # 獲取已有情感分析結果的文章
                 sentiments = SentimentAnalysis.objects.filter(
                     job=job,
                     article__category=category
                 )
 
+                # 如果該類別有文章但沒有情感分析，跳過
+                if articles.count() > 0 and sentiments.count() == 0:
+                    self.logger.info(f"類別 {category} 的文章尚未分析情感，跳過生成摘要")
+                    continue
+
                 # 統計正面和負面文章數量
                 positive_count = sentiments.filter(sentiment='正面').count()
                 negative_count = sentiments.filter(sentiment='負面').count()
 
-                # 計算平均正面情感分數
-                avg_positive = sentiments.aggregate(avg=Avg('positive_score'))['avg'] or 0
+                # 計算平均正面情感分數，避免除以零的錯誤
+                if positive_count > 0:
+                    avg_positive = sentiments.filter(sentiment='正面').aggregate(avg=Avg('positive_score'))['avg'] or 0
+                else:
+                    avg_positive = 0
 
                 # 創建或更新類別情感摘要
                 CategorySentimentSummary.objects.update_or_create(
@@ -204,6 +218,23 @@ class SentimentAnalysisService:
             # 獲取類別情感摘要
             summaries = CategorySentimentSummary.objects.filter(job_id=job_id)
 
+            if not summaries.exists():
+                self.logger.warning(f"任務 {job_id} 沒有情感摘要數據")
+                # 嘗試自動生成摘要
+                job = ScrapeJob.objects.get(id=job_id)
+                self.generate_category_sentiment_summary(job)
+                summaries = CategorySentimentSummary.objects.filter(job_id=job_id)
+
+                # 如果仍然沒有數據，返回空結果
+                if not summaries.exists():
+                    return {
+                        'categories': [],
+                        'positive_counts': [],
+                        'negative_counts': [],
+                        'average_scores': [],
+                        'total_counts': []
+                    }
+
             # 構建結果
             result = {
                 'categories': [],
@@ -225,7 +256,13 @@ class SentimentAnalysisService:
 
         except Exception as e:
             self.logger.error(f"獲取類別情感摘要時出錯: {e}", exc_info=True)
-            return None
+            return {
+                'categories': [],
+                'positive_counts': [],
+                'negative_counts': [],
+                'average_scores': [],
+                'total_counts': []
+            }
 
     def get_sentiment_distribution(self, job_id):
         """

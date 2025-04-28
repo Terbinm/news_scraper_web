@@ -194,11 +194,10 @@
                         </div>
                     </div>
                 {% elif sentiment_progress >= 100 %}
-                    <span class="badge bg-success mb-2">情感分析已完成</span>
+                    <a href="{% url 'job_sentiment_analysis' job.id %}" class="action-link">
+                        查看情感分析 <i class="bi bi-arrow-right action-icon"></i>
+                    </a>
                 {% endif %}
-                <a href="{% url 'job_sentiment_analysis' job.id %}" class="action-link">
-                    查看情感分析 <i class="bi bi-arrow-right action-icon"></i>
-                </a>
             </div>
         </div>
     </div>

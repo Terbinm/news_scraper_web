@@ -24,4 +24,5 @@ urlpatterns = [
     path('jobs/<int:job_id>/sentiment/', views.job_sentiment_analysis, name='job_sentiment_analysis'),
     path('articles/<int:article_id>/analyze-sentiment/', views.analyze_article_sentiment, name='analyze_article_sentiment'),
     path('jobs/<int:job_id>/start-sentiment-analysis/', views.start_sentiment_analysis, name='start_sentiment_analysis'),
+    path('jobs/<int:job_id>/regenerate-sentiment-summary/', views.regenerate_sentiment_summary, name='regenerate_sentiment_summary'),
 ]
