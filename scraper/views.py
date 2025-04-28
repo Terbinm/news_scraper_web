@@ -806,6 +806,37 @@ def compare_key_persons(request, job_id, person_names):
                     combined_time_data[date_str] = {}
                 combined_time_data[date_str][person_name] = time_data[date_str]
 
+            # 獲取情緒分析數據
+            # 首先檢查哪些文章有情緒分析
+            articles_with_sentiment = related_articles.filter(sentiment__isnull=False)
+
+            # 計算情緒分布
+            sentiment_stats = {
+                'positive_count': SentimentAnalysis.objects.filter(
+                    article__in=related_articles,
+                    sentiment='正面'
+                ).count(),
+                'neutral_count': SentimentAnalysis.objects.filter(
+                    article__in=related_articles,
+                    sentiment='中立'
+                ).count(),
+                'negative_count': SentimentAnalysis.objects.filter(
+                    article__in=related_articles,
+                    sentiment='負面'
+                ).count()
+            }
+
+            # 計算情緒百分比
+            sentiment_total = sum(sentiment_stats.values())
+            if sentiment_total > 0:
+                sentiment_stats['positive_percent'] = round(sentiment_stats['positive_count'] / sentiment_total * 100)
+                sentiment_stats['neutral_percent'] = round(sentiment_stats['neutral_count'] / sentiment_total * 100)
+                sentiment_stats['negative_percent'] = round(sentiment_stats['negative_count'] / sentiment_total * 100)
+            else:
+                sentiment_stats['positive_percent'] = 0
+                sentiment_stats['neutral_percent'] = 0
+                sentiment_stats['negative_percent'] = 0
+
             # 確定圖片檔名
             person_image = "leader/default_person.png"  # 預設圖片
             if person_name == "川普":
@@ -830,7 +861,8 @@ def compare_key_persons(request, job_id, person_names):
                 'main_category': main_category,
                 'category_data': category_data,
                 'time_data': time_data,
-                'color': colors[i % len(colors)]
+                'color': colors[i % len(colors)],
+                'sentiment_data': sentiment_stats
             })
 
         # 準備類別比較圖表數據

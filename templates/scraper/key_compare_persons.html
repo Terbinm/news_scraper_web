@@ -21,48 +21,97 @@
         box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
     }
 
-    .person-image {
-        max-height: 100px;
-        object-fit: contain;
-        border-radius: 10px;
-    }
-
-    .chart-container {
-        height: 400px;
-        margin-bottom: 1.5rem;
-    }
-    
     .person-stat {
         border-radius: 10px;
         padding: 15px;
-        margin-bottom: 10px;
+        margin-bottom: 15px;
         transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        min-height: 200px;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
     }
-    
+
     .person-stat:hover {
         transform: translateY(-3px);
         box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
     }
-    
+
+    .person-bg-image {
+        position: absolute;
+        top: -50px;
+        right: -50px;
+        width: 180px;
+        height: 180px;
+        object-fit: contain;
+        opacity: 0.7;
+        z-index: 0;
+    }
+
+    .person-content {
+        position: relative;
+        z-index: 1;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    }
+
     .person-name {
         font-weight: bold;
-        font-size: 1.2rem;
+        font-size: 1.3rem;
+        margin-bottom: 0.3rem;
     }
-    
+
     .stat-value {
         font-size: 1.8rem;
         font-weight: bold;
+        margin-bottom: 0.3rem;
     }
-    
+
+    .stat-details {
+        font-size: 0.9rem;
+        opacity: 0.9;
+    }
+
+    .sentiment-bar {
+        height: 8px;
+        border-radius: 4px;
+        width: 100%;
+        background-color: rgba(0, 0, 0, 0.3);
+        margin-top: 8px;
+        overflow: hidden;
+        display: flex;
+    }
+
+    .sentiment-positive {
+        background-color: rgba(40, 167, 69, 0.8);
+        height: 100%;
+    }
+
+    .sentiment-neutral {
+        background-color: rgba(108, 117, 125, 0.8);
+        height: 100%;
+    }
+
+    .sentiment-negative {
+        background-color: rgba(220, 53, 69, 0.8);
+        height: 100%;
+    }
+
     .comparison-table th,
     .comparison-table td {
         text-align: center;
         vertical-align: middle;
     }
-    
+
     .comparison-table th:first-child,
     .comparison-table td:first-child {
         text-align: left;
+    }
+
+    .chart-container {
+        height: 400px;
+        margin-bottom: 1.5rem;
     }
 </style>
 {% endblock %}
@@ -91,37 +140,52 @@
         <div class="comparison-card" data-aos="fade-up">
             <div class="card-header">
                 <h5 class="mb-0">
-                    <i class="bi bi-people-fill me-2"></i>人物聲量對比
+                    <i class="bi bi-people-fill me-2"></i>人物聲量與情緒對比
                 </h5>
             </div>
             <div class="card-body">
-                <div class="row mb-4">
+                <div class="row">
                     {% for person in persons %}
-                    <div class="col-md-{% if persons|length <= 3 %}4{% elif persons|length == 4 %}3{% else %}2{% endif %}">
-                        <div class="person-stat" style="background-color: {{ person.color }};">
-                            <div class="d-flex align-items-center mb-3">
-                                <img src="/static/images/{{ person.image }}" alt="{{ person.name }}" class="person-image me-3" style="width: 60px; height: 60px;">
-                                <div>
-                                    <div class="person-name">{{ person.name }}</div>
-                                    <div>{{ person.main_category }}</div>
+                    <div class="col-lg-4 col-md-6 mb-3">
+                        <div class="person-stat" style="background: linear-gradient(to right, {{ person.color }}, {{ person.color|replace:'0.7:0.4' }});">
+                            <img src="/static/images/{{ person.image }}" alt="{{ person.name }}" class="person-bg-image">
+                            <div class="person-content">
+                                <div class="person-name">{{ person.name }}</div>
+                                <div class="stat-value">{{ person.total }}</div>
+                                <div class="stat-details">總聲量: 提及 {{ person.total }} 次</div>
+                                <div class="stat-details">主要類別: {{ person.main_category }}</div>
+
+                                <!-- 情緒分析結果 -->
+                                <div class="stat-details mt-2">感染力:
+                                    <span class="text-success">{{ person.sentiment_data.positive_percent|default:"0" }}%</span> /
+                                    <span class="text-secondary">{{ person.sentiment_data.neutral_percent|default:"0" }}%</span> /
+                                    <span class="text-danger">{{ person.sentiment_data.negative_percent|default:"0" }}%</span>
+                                    (正面/中立/負面)
+                                </div>
+
+                                <!-- 情緒分布條 -->
+                                <div class="sentiment-bar">
+                                    <div class="sentiment-positive" style="width: {{ person.sentiment_data.positive_percent|default:"0" }}%;"></div>
+                                    <div class="sentiment-neutral" style="width: {{ person.sentiment_data.neutral_percent|default:"0" }}%;"></div>
+                                    <div class="sentiment-negative" style="width: {{ person.sentiment_data.negative_percent|default:"0" }}%;"></div>
                                 </div>
                             </div>
-                            <div class="stat-value">{{ person.total }}</div>
-                            <div>文章提及數</div>
                         </div>
                     </div>
                     {% endfor %}
                 </div>
-                
+
                 <!-- 數據比較表格 -->
-                <div class="table-responsive">
+                <div class="table-responsive mt-3">
                     <table class="table table-dark table-hover comparison-table">
                         <thead>
                             <tr>
                                 <th>人物</th>
                                 <th>提及總數</th>
+                                <th>正面文章</th>
+                                <th>中立文章</th>
+                                <th>負面文章</th>
                                 <th>主要類別</th>
-                                <th>佔比 (%)</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -134,14 +198,10 @@
                                     </div>
                                 </td>
                                 <td>{{ person.total }}</td>
+                                <td><span class="text-success">{{ person.sentiment_data.positive_count|default:"0" }} ({{ person.sentiment_data.positive_percent|default:"0" }}%)</span></td>
+                                <td><span class="text-secondary">{{ person.sentiment_data.neutral_count|default:"0" }} ({{ person.sentiment_data.neutral_percent|default:"0" }}%)</span></td>
+                                <td><span class="text-danger">{{ person.sentiment_data.negative_count|default:"0" }} ({{ person.sentiment_data.negative_percent|default:"0" }}%)</span></td>
                                 <td>{{ person.main_category }}</td>
-                                <td>
-                                    {% if person.total > 0 and person.category_data|get_item:person.main_category %}
-                                        {{ person.category_data|get_item:person.main_category|percentage:person.total|floatformat:1 }}%
-                                    {% else %}
-                                        0%
-                                    {% endif %}
-                                </td>
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -179,7 +239,7 @@
 </div>
 
 <!-- 時間趨勢圖 -->
-<div class="row">
+<div class="row mb-4">
     <div class="col-12">
         <div class="comparison-card" data-aos="fade-up" data-aos-delay="200">
             <div class="card-header">
@@ -190,6 +250,35 @@
             <div class="card-body">
                 <div class="chart-container">
                     <canvas id="timeSeriesComparisonChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 情緒分析對比 -->
+<div class="row">
+    <div class="col-12">
+        <div class="comparison-card" data-aos="fade-up" data-aos-delay="300">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="bi bi-emoji-smile me-2"></i>情緒分析對比
+                </h5>
+                <div class="btn-group btn-group-sm">
+                    <button type="button" class="btn btn-outline-info active" id="sentimentBarChartBtn">
+                        <i class="bi bi-bar-chart-fill"></i>
+                    </button>
+                    <button type="button" class="btn btn-outline-info" id="sentimentPieChartBtn">
+                        <i class="bi bi-pie-chart-fill"></i>
+                    </button>
+                    <button type="button" class="btn btn-outline-info" id="sentimentStackedChartBtn">
+                        <i class="bi bi-stack"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="sentimentComparisonChart"></canvas>
                 </div>
             </div>
         </div>
@@ -312,6 +401,189 @@
                     }
                 }
             }
+        });
+
+        // 設定情緒分析對比圖表
+        const sentimentCtx = document.getElementById('sentimentComparisonChart').getContext('2d');
+
+        // 準備情緒分析數據
+        const personNames = [];
+        const positiveData = [];
+        const neutralData = [];
+        const negativeData = [];
+
+        {% for person in persons %}
+        personNames.push("{{ person.name }}");
+        positiveData.push({{ person.sentiment_data.positive_percent|default:"0" }});
+        neutralData.push({{ person.sentiment_data.neutral_percent|default:"0" }});
+        negativeData.push({{ person.sentiment_data.negative_percent|default:"0" }});
+        {% endfor %}
+
+        const sentimentData = {
+            labels: personNames,
+            datasets: [
+                {
+                    label: '正面情緒',
+                    data: positiveData,
+                    backgroundColor: 'rgba(40, 167, 69, 0.7)',
+                    borderColor: 'rgba(40, 167, 69, 1)',
+                    borderWidth: 1
+                },
+                {
+                    label: '中立情緒',
+                    data: neutralData,
+                    backgroundColor: 'rgba(108, 117, 125, 0.7)',
+                    borderColor: 'rgba(108, 117, 125, 1)',
+                    borderWidth: 1
+                },
+                {
+                    label: '負面情緒',
+                    data: negativeData,
+                    backgroundColor: 'rgba(220, 53, 69, 0.7)',
+                    borderColor: 'rgba(220, 53, 69, 1)',
+                    borderWidth: 1
+                }
+            ]
+        };
+
+        const sentimentChart = new Chart(sentimentCtx, {
+            type: 'bar',
+            data: sentimentData,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: 'rgba(255, 255, 255, 0.7)'
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: 'rgba(255, 255, 255, 0.7)',
+                            callback: function(value) {
+                                return value + '%';
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            color: 'rgba(255, 255, 255, 0.7)'
+                        }
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                        callbacks: {
+                            label: function(context) {
+                                return context.dataset.label + ': ' + context.raw + '%';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // 情緒圖表類型切換
+        $('#sentimentBarChartBtn').click(function() {
+            $(this).addClass('active');
+            $('#sentimentPieChartBtn').removeClass('active');
+            $('#sentimentStackedChartBtn').removeClass('active');
+
+            // 更新為普通條形圖
+            sentimentChart.config.type = 'bar';
+            sentimentChart.options.scales.y.stacked = false;
+            sentimentChart.data.datasets.forEach(dataset => {
+                dataset.stack = undefined;
+            });
+            sentimentChart.update();
+        });
+
+        $('#sentimentPieChartBtn').click(function() {
+            $(this).addClass('active');
+            $('#sentimentBarChartBtn').removeClass('active');
+            $('#sentimentStackedChartBtn').removeClass('active');
+
+            // 更新為餅圖(對每個人單獨創建餅圖)
+            sentimentChart.config.type = 'pie';
+            sentimentChart.options.scales.y.stacked = false;
+
+            // 重新組織數據為每個人一個餅圖
+            const newDatasets = [];
+
+            for(let i = 0; i < personNames.length; i++) {
+                newDatasets.push({
+                    label: personNames[i],
+                    data: [positiveData[i], neutralData[i], negativeData[i]],
+                    backgroundColor: [
+                        'rgba(40, 167, 69, 0.7)',
+                        'rgba(108, 117, 125, 0.7)',
+                        'rgba(220, 53, 69, 0.7)'
+                    ],
+                    borderColor: [
+                        'rgba(40, 167, 69, 1)',
+                        'rgba(108, 117, 125, 1)',
+                        'rgba(220, 53, 69, 1)'
+                    ],
+                    borderWidth: 1
+                });
+            }
+
+            sentimentChart.data.labels = ['正面情緒', '中立情緒', '負面情緒'];
+            sentimentChart.data.datasets = newDatasets;
+            sentimentChart.update();
+        });
+
+        $('#sentimentStackedChartBtn').click(function() {
+            $(this).addClass('active');
+            $('#sentimentBarChartBtn').removeClass('active');
+            $('#sentimentPieChartBtn').removeClass('active');
+
+            // 更新為堆疊條形圖
+            sentimentChart.config.type = 'bar';
+            sentimentChart.options.scales.y.stacked = true;
+
+            // 恢復原始數據格式
+            sentimentChart.data.labels = personNames;
+            sentimentChart.data.datasets = [
+                {
+                    label: '正面情緒',
+                    data: positiveData,
+                    backgroundColor: 'rgba(40, 167, 69, 0.7)',
+                    borderColor: 'rgba(40, 167, 69, 1)',
+                    borderWidth: 1,
+                    stack: 'Stack 0'
+                },
+                {
+                    label: '中立情緒',
+                    data: neutralData,
+                    backgroundColor: 'rgba(108, 117, 125, 0.7)',
+                    borderColor: 'rgba(108, 117, 125, 1)',
+                    borderWidth: 1,
+                    stack: 'Stack 0'
+                },
+                {
+                    label: '負面情緒',
+                    data: negativeData,
+                    backgroundColor: 'rgba(220, 53, 69, 0.7)',
+                    borderColor: 'rgba(220, 53, 69, 1)',
+                    borderWidth: 1,
+                    stack: 'Stack 0'
+                }
+            ];
+
+            sentimentChart.update();
         });
     });
 </script>
