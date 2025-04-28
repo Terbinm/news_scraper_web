@@ -327,6 +327,36 @@
     </div>
 </div>
 
+<div class="row mb-4">
+    <!-- 時間軸圖表 -->
+    <div class="col-lg-8 mb-4" data-aos="fade-up" data-aos-delay="400">
+        <div class="analysis-card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-graph-up me-2"></i>文章數量時間分布
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="time-series-container">
+                    <canvas id="timeSeriesChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 頂部文章圖片 -->
+    <div class="col-lg-4 mb-4" data-aos="fade-up" data-aos-delay="500">
+        <div class="top-article-card">
+            <img src="{{ top_image_url }}" alt="文章圖片" class="top-article-img">
+            <div class="top-article-overlay">
+                <div class="top-article-title">熱門相關報導</div>
+                <div class="top-article-meta">{{ results.0.date|date:"Y-m-d H:i" }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
 <!-- 情緒分析圖表 -->
 <div class="row mb-4">
     <!-- 情緒分布餅圖 -->
@@ -357,35 +387,6 @@
                 <div class="distribution-chart-container">
                     <canvas id="sentimentTimeSeriesChart"></canvas>
                 </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="row mb-4">
-    <!-- 時間軸圖表 -->
-    <div class="col-lg-8 mb-4" data-aos="fade-up" data-aos-delay="400">
-        <div class="analysis-card">
-            <div class="card-header">
-                <h5 class="mb-0">
-                    <i class="bi bi-graph-up me-2"></i>文章數量時間分布
-                </h5>
-            </div>
-            <div class="card-body">
-                <div class="time-series-container">
-                    <canvas id="timeSeriesChart"></canvas>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- 頂部文章圖片 -->
-    <div class="col-lg-4 mb-4" data-aos="fade-up" data-aos-delay="500">
-        <div class="top-article-card">
-            <img src="{{ top_image_url }}" alt="文章圖片" class="top-article-img">
-            <div class="top-article-overlay">
-                <div class="top-article-title">熱門相關報導</div>
-                <div class="top-article-meta">{{ results.0.date|date:"Y-m-d H:i" }}</div>
             </div>
         </div>
     </div>

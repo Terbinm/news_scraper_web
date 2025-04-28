@@ -50,15 +50,24 @@ function initWordCloud(keywordsData) {
             'default': "#6c757d"
         };
 
+        // 創建Canvas元素並設置willReadFrequently屬性
+        const canvas = document.createElement('canvas');
+        canvas.width = 1;
+        canvas.height = 1;
+        const context = canvas.getContext('2d', { willReadFrequently: true });
+
         // 創建文字雲佈局
         const layout = d3.layout.cloud()
             .size([width, height])
             .words(cloudWords)
             .padding(5)
-            .rotate(() => 0) // 不旋轉文字
+            .rotate(() => 0)
             .font("Impact")
             .fontSize(d => d.size)
-            .spiral("archimedean") // 使用阿基米德螺旋線排列
+            .spiral("archimedean")
+            .canvas(function() {
+                return canvas;
+            })
             .on("end", draw);
 
         // 開始佈局計算
