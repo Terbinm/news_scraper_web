@@ -1,0 +1,211 @@
+{% extends 'base.html' %}
+
+{% block title %}選擇關鍵人物分析 | 新聞爬蟲系統{% endblock %}
+
+{% block extra_css %}
+<style>
+    .leader-card {
+        border: none;
+        border-radius: 10px;
+        background: linear-gradient(145deg, #2a2d3a, #212330);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        height: 100%;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .leader-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+    }
+    
+    .leader-card.selected {
+        border: 3px solid #17a2b8;
+        box-shadow: 0 0 15px rgba(23, 162, 184, 0.5);
+    }
+    
+    .leader-card.selected:after {
+        content: "✓";
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background-color: #17a2b8;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    }
+    
+    .leader-image {
+        max-height: 180px;
+        object-fit: contain;
+        padding: 1rem;
+        border-radius: 10px;
+    }
+    
+    .mode-switch-container {
+        background: rgba(0, 0, 0, 0.2);
+        padding: 15px;
+        border-radius: 10px;
+        margin-bottom: 2rem;
+    }
+    
+    .form-check-input:checked {
+        background-color: #17a2b8;
+        border-color: #17a2b8;
+    }
+    
+    .comparison-note {
+        font-size: 0.9rem;
+        color: rgba(255, 255, 255, 0.7);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h1 class="display-6 fw-bold text-info">
+            <i class="bi bi-person-badge me-2"></i>關鍵人物分析
+        </h1>
+        <p class="text-light">任務 #{{ job.id }} - {{ job.categories }}</p>
+    </div>
+    <div class="col-md-4 text-md-end">
+        <a href="{% url 'job_detail' job.id %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>返回概覽
+        </a>
+    </div>
+</div>
+
+<!-- 模式選擇 -->
+<div class="mode-switch-container" data-aos="fade-up">
+    <form id="modeForm" method="get">
+        <div class="form-check form-switch mb-2">
+            <input class="form-check-input" type="checkbox" id="compareMode" name="compare" value="true" {% if compare_mode %}checked{% endif %}>
+            <label class="form-check-label" for="compareMode">比較模式</label>
+        </div>
+        <div class="comparison-note">
+            {% if compare_mode %}
+                <i class="bi bi-info-circle me-1"></i>您可以選擇2個或更多領導人進行比較分析
+            {% else %}
+                <i class="bi bi-info-circle me-1"></i>開啟比較模式可同時分析多位領導人
+            {% endif %}
+        </div>
+    </form>
+</div>
+
+<!-- 領導人選擇區 -->
+<div class="row" data-aos="fade-up" data-aos-delay="200">
+    <div class="col-12 mb-4">
+        <div class="card">
+            <div class="card-header bg-dark">
+                <h5 class="mb-0">
+                    <i class="bi bi-people-fill me-2"></i>選擇要分析的領導人
+                </h5>
+            </div>
+            <div class="card-body">
+                <form id="leaderSelectionForm" method="get" class="mb-3">
+                    <input type="hidden" name="compare" value="{% if compare_mode %}true{% else %}false{% endif %}">
+                    
+                    <div class="row g-4">
+                        {% for leader in leaders %}
+                        <div class="col-md-4 mb-4">
+                            <div class="leader-card {% if leader.name in selected_leaders %}selected{% endif %}" data-leader="{{ leader.name }}">
+                                <div class="card-body text-center">
+                                    <img src="/static/images/{{ leader.image }}" alt="{{ leader.name }}" class="leader-image img-fluid mb-3">
+                                    <h4 class="text-info mb-2">{{ leader.name }}</h4>
+                                    <p class="mb-1">{{ leader.title }}</p>
+                                    <p class="small text-muted">{{ leader.description }}</p>
+                                    <input type="checkbox" name="selected" value="{{ leader.name }}" class="d-none leader-checkbox" {% if leader.name in selected_leaders %}checked{% endif %}>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="text-center mt-4">
+                        <button type="submit" name="analyze" value="true" class="btn btn-info px-4 py-2" id="analyzeBtn" disabled>
+                            <i class="bi bi-search me-2"></i>開始分析
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary ms-2" id="clearSelectionBtn">
+                            <i class="bi bi-x-circle me-2"></i>清除選擇
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        // 更新按鈕狀態函數
+        function updateButtonStatus() {
+            const selectedCount = $('.leader-checkbox:checked').length;
+            const compareMode = $('#compareMode').is(':checked');
+            
+            // 在比較模式下需要選擇至少2個，在單人模式下需要選擇1個
+            if ((compareMode && selectedCount >= 2) || (!compareMode && selectedCount === 1)) {
+                $('#analyzeBtn').prop('disabled', false);
+            } else {
+                $('#analyzeBtn').prop('disabled', true);
+            }
+            
+            // 如果是單人模式但選擇了多個，只保留第一個選擇
+            if (!compareMode && selectedCount > 1) {
+                // 找到第一個選中的項目
+                const firstChecked = $('.leader-checkbox:checked').first();
+                // 取消其他選中項
+                $('.leader-checkbox:checked').not(firstChecked).prop('checked', false);
+                $('.leader-card.selected').not(firstChecked.closest('.leader-card')).removeClass('selected');
+                // 重新檢查按鈕狀態
+                updateButtonStatus();
+            }
+        }
+        
+        // 初始化檢查
+        updateButtonStatus();
+        
+        // 點擊領導人卡片
+        $('.leader-card').click(function() {
+            const checkbox = $(this).find('.leader-checkbox');
+            const compareMode = $('#compareMode').is(':checked');
+            
+            // 單人模式下先取消所有選擇
+            if (!compareMode) {
+                $('.leader-checkbox').prop('checked', false);
+                $('.leader-card').removeClass('selected');
+            }
+            
+            // 切換選擇狀態
+            checkbox.prop('checked', !checkbox.prop('checked'));
+            $(this).toggleClass('selected', checkbox.prop('checked'));
+            
+            // 更新按鈕狀態
+            updateButtonStatus();
+        });
+        
+        // 切換比較模式
+        $('#compareMode').change(function() {
+            // 提交表單以更新URL
+            $('#modeForm').submit();
+        });
+        
+        // 清除選擇按鈕
+        $('#clearSelectionBtn').click(function() {
+            $('.leader-checkbox').prop('checked', false);
+            $('.leader-card').removeClass('selected');
+            updateButtonStatus();
+        });
+    });
+</script>
+{% endblock %}

@@ -579,12 +579,81 @@ def analyze_search_terms(request):
 
 
 @login_required
-def analyze_key_person(request, job_id):
+def key_person_selection(request, job_id):
+    """領導人選擇路由頁面"""
+    job = get_object_or_404(ScrapeJob, id=job_id, user=request.user)
+
+    # 定義可選擇的領導人
+    leaders = [
+        {
+            'id': 'trump',
+            'name': '川普',
+            'image': 'trump.png',
+            'title': '美國前總統',
+            'description': '第45任美國總統，共和黨人物。'
+        },
+        {
+            'id': 'xi',
+            'name': '習近平',
+            'image': 'xi.png',
+            'title': '中國國家主席',
+            'description': '中國共產黨總書記，中華人民共和國主席。'
+        },
+        {
+            'id': 'tsai',
+            'name': '蔡英文',
+            'image': 'tsai.png',
+            'title': '台灣前總統',
+            'description': '中華民國第14、15任總統，民主進步黨前主席。'
+        },
+        {
+            'id': 'biden',
+            'name': '拜登',
+            'image': 'biden.png',
+            'title': '美國總統',
+            'description': '第46任美國總統，民主黨人物。'
+        },
+        {
+            'id': 'lai',
+            'name': '賴清德',
+            'image': 'lai.png',
+            'title': '台灣總統',
+            'description': '中華民國第16任總統，民主進步黨黨員。'
+        }
+    ]
+
+    # 檢查是否為比較模式
+    compare_mode = request.GET.get('compare', 'false') == 'true'
+
+    # 獲取已選擇的領導人
+    selected_leaders = request.GET.getlist('selected')
+
+    # 檢查是否已經提交選擇
+    if 'analyze' in request.GET and selected_leaders:
+        if len(selected_leaders) == 1:
+            # 單一領導人模式
+            leader_name = selected_leaders[0]
+            return redirect('analyze_key_person', job_id=job_id, person_name=leader_name)
+        else:
+            # 比較模式
+            return redirect('compare_key_persons', job_id=job_id, person_names=','.join(selected_leaders))
+
+    return render(request, 'scraper/key_person_selection.html', {
+        'job': job,
+        'leaders': leaders,
+        'compare_mode': compare_mode,
+        'selected_leaders': selected_leaders
+    })
+
+
+@login_required
+def analyze_key_person(request, job_id, person_name=None):
     """
     關鍵人物分析視圖
     """
     try:
-        person_name = request.GET.get('name', '川普')  # 默認為川普，可通過參數修改
+        if person_name is None:
+            person_name = request.GET.get('name', '川普')  # 默認為川普，可通過參數修改
 
         # 如果沒有提供job_id，返回錯誤
         if not job_id:
@@ -594,9 +663,11 @@ def analyze_key_person(request, job_id):
         job = get_object_or_404(ScrapeJob, id=job_id, user=request.user)
 
         # 根據人名搜尋相關文章
+        # 這裡可以加入內容過濾邏輯，例如在標題或內容中搜尋人名
         related_articles = Article.objects.filter(
-            job=job
-        ).order_by('-date')  # 修正這裡的 order_by
+            job=job,
+            content__icontains=person_name  # 在內容中搜尋人名
+        ).order_by('-date')
 
         # 計算總出現次數
         total_occurrences = related_articles.count()
@@ -635,7 +706,7 @@ def analyze_key_person(request, job_id):
             time_data.append(count)
 
         # 確定圖片檔名
-        person_image = "trump.png"  # 預設圖片
+        person_image = "default_person.png"  # 預設圖片
 
         if person_name == "川普":
             person_image = "trump.png"
@@ -643,6 +714,10 @@ def analyze_key_person(request, job_id):
             person_image = "tsai.png"
         elif person_name == "習近平":
             person_image = "xi.png"
+        elif person_name == "拜登":
+            person_image = "biden.png"
+        elif person_name == "賴清德":
+            person_image = "lai.png"
 
         # 準備上下文資料
         context = {
@@ -665,6 +740,143 @@ def analyze_key_person(request, job_id):
         logger.error(f"關鍵人物分析視圖出錯: {e}", exc_info=True)
         return HttpResponse(f"處理請求時發生錯誤: {str(e)}", status=500)
 
+
+@login_required
+def compare_key_persons(request, job_id, person_names):
+    """比較多位關鍵人物視圖"""
+    try:
+        # 獲取任務
+        job = get_object_or_404(ScrapeJob, id=job_id, user=request.user)
+
+        # 分割人名字符串
+        persons = person_names.split(',')
+
+        # 儲存每位人物的分析結果
+        persons_data = []
+
+        # 數據匯總
+        all_category_labels = set()
+        all_time_labels = set()
+        combined_time_data = {}
+
+        # 預設顏色
+        colors = [
+            'rgba(54, 162, 235, 0.7)',  # 藍色
+            'rgba(255, 99, 132, 0.7)',  # 紅色
+            'rgba(255, 206, 86, 0.7)',  # 黃色
+            'rgba(75, 192, 192, 0.7)',  # 綠色
+            'rgba(153, 102, 255, 0.7)'  # 紫色
+        ]
+
+        # 分析每位人物
+        for i, person_name in enumerate(persons):
+            # 根據人名搜尋相關文章
+            related_articles = Article.objects.filter(
+                job=job,
+                content__icontains=person_name
+            )
+
+            # 計算總出現次數
+            total_occurrences = related_articles.count()
+
+            # 按類別統計出現次數
+            category_stats = (
+                related_articles.values('category')
+                .annotate(count=Count('id'))
+                .order_by('-count')
+            )
+
+            # 提取類別和計數資料
+            category_data = {}
+            for stat in category_stats:
+                category = stat['category']
+                count = stat['count']
+                category_data[category] = count
+                all_category_labels.add(category)
+
+            # 按時間統計趨勢
+            time_data = defaultdict(int)
+            for article in related_articles:
+                date_str = article.date.strftime('%Y-%m-%d')
+                time_data[date_str] += 1
+                all_time_labels.add(date_str)
+
+                # 儲存到合併數據中
+                if date_str not in combined_time_data:
+                    combined_time_data[date_str] = {}
+                combined_time_data[date_str][person_name] = time_data[date_str]
+
+            # 確定圖片檔名
+            person_image = "default_person.png"
+            if person_name == "川普":
+                person_image = "trump.png"
+            elif person_name == "蔡英文":
+                person_image = "tsai.png"
+            elif person_name == "習近平":
+                person_image = "xi.png"
+            elif person_name == "拜登":
+                person_image = "biden.png"
+            elif person_name == "賴清德":
+                person_image = "lai.png"
+
+            # 主要出現類別
+            main_category = next(iter(category_stats))['category'] if category_stats else "無"
+
+            # 添加人物數據
+            persons_data.append({
+                'name': person_name,
+                'image': person_image,
+                'total': total_occurrences,
+                'main_category': main_category,
+                'category_data': category_data,
+                'time_data': time_data,
+                'color': colors[i % len(colors)]
+            })
+
+        # 準備類別比較圖表數據
+        all_category_labels = sorted(list(all_category_labels))
+        category_datasets = []
+
+        for person in persons_data:
+            dataset = {
+                'label': person['name'],
+                'data': [person['category_data'].get(cat, 0) for cat in all_category_labels],
+                'backgroundColor': person['color'],
+                'borderColor': person['color'].replace('0.7', '1'),
+                'borderWidth': 1
+            }
+            category_datasets.append(dataset)
+
+        # 準備時間趨勢圖表數據
+        all_time_labels = sorted(list(all_time_labels))
+        time_datasets = []
+
+        for person in persons_data:
+            dataset = {
+                'label': person['name'],
+                'data': [person['time_data'].get(date, 0) for date in all_time_labels],
+                'fill': False,
+                'backgroundColor': person['color'],
+                'borderColor': person['color'].replace('0.7', '1'),
+                'tension': 0.4
+            }
+            time_datasets.append(dataset)
+
+        # 準備上下文資料
+        context = {
+            'job': job,
+            'persons': persons_data,
+            'all_category_labels': json.dumps(all_category_labels),
+            'category_datasets': json.dumps(category_datasets),
+            'all_time_labels': json.dumps(all_time_labels),
+            'time_datasets': json.dumps(time_datasets)
+        }
+
+        return render(request, 'scraper/compare_key_persons.html', context)
+
+    except Exception as e:
+        logger.error(f"比較關鍵人物視圖出錯: {e}", exc_info=True)
+        return HttpResponse(f"處理請求時發生錯誤: {str(e)}", status=500)
 
 ###########################################
 @login_required

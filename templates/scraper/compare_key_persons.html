@@ -1,0 +1,311 @@
+{% extends 'base.html' %}
+{% load custom_filters %}
+
+{% block title %}人物對比分析 | 新聞爬蟲系統{% endblock %}
+
+{% block extra_css %}
+<!-- 引入共用樣式 -->
+<link rel="stylesheet" href="/static/css/analysis.css">
+<!-- 頁面特有樣式 -->
+<style>
+    .comparison-card {
+        border: none;
+        border-radius: 10px;
+        background: linear-gradient(145deg, #2a2d3a, #212330);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .comparison-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+    }
+
+    .person-image {
+        max-height: 100px;
+        object-fit: contain;
+        border-radius: 10px;
+    }
+
+    .chart-container {
+        height: 400px;
+        margin-bottom: 1.5rem;
+    }
+    
+    .person-stat {
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 10px;
+        transition: all 0.3s ease;
+    }
+    
+    .person-stat:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+    
+    .person-name {
+        font-weight: bold;
+        font-size: 1.2rem;
+    }
+    
+    .stat-value {
+        font-size: 1.8rem;
+        font-weight: bold;
+    }
+    
+    .comparison-table th,
+    .comparison-table td {
+        text-align: center;
+        vertical-align: middle;
+    }
+    
+    .comparison-table th:first-child,
+    .comparison-table td:first-child {
+        text-align: left;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h1 class="display-6 fw-bold text-info">
+            <i class="bi bi-people-fill me-2"></i>關鍵人物對比分析
+        </h1>
+        <p class="text-light">任務 #{{ job.id }} - {{ job.categories }}</p>
+    </div>
+    <div class="col-md-4 text-md-end">
+        <a href="{% url 'key_person_selection' job.id %}" class="btn btn-outline-secondary me-2">
+            <i class="bi bi-arrow-left me-1"></i>返回選擇
+        </a>
+        <a href="{% url 'job_detail' job.id %}" class="btn btn-outline-secondary">
+            <i class="bi bi-house me-1"></i>任務概覽
+        </a>
+    </div>
+</div>
+
+<!-- 人物對比卡片 -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="comparison-card" data-aos="fade-up">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-people-fill me-2"></i>人物聲量對比
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-4">
+                    {% for person in persons %}
+                    <div class="col-md-{% if persons|length <= 3 %}4{% elif persons|length == 4 %}3{% else %}2{% endif %}">
+                        <div class="person-stat" style="background-color: {{ person.color }};">
+                            <div class="d-flex align-items-center mb-3">
+                                <img src="/static/images/{{ person.image }}" alt="{{ person.name }}" class="person-image me-3" style="width: 60px; height: 60px;">
+                                <div>
+                                    <div class="person-name">{{ person.name }}</div>
+                                    <div>{{ person.main_category }}</div>
+                                </div>
+                            </div>
+                            <div class="stat-value">{{ person.total }}</div>
+                            <div>文章提及數</div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <!-- 數據比較表格 -->
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover comparison-table">
+                        <thead>
+                            <tr>
+                                <th>人物</th>
+                                <th>提及總數</th>
+                                <th>主要類別</th>
+                                <th>佔比 (%)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for person in persons %}
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div style="width: 15px; height: 15px; background-color: {{ person.color }}; border-radius: 50%; margin-right: 10px;"></div>
+                                        {{ person.name }}
+                                    </div>
+                                </td>
+                                <td>{{ person.total }}</td>
+                                <td>{{ person.main_category }}</td>
+                                <td>{{ person.category_data|get_item:person.main_category|divisor:person.total|multiply:100|floatformat:1 }}%</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 類別分布圖表 -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="comparison-card" data-aos="fade-up" data-aos-delay="100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="bi bi-bar-chart-fill me-2"></i>各類別聲量分布對比
+                </h5>
+                <div class="btn-group btn-group-sm">
+                    <button type="button" class="btn btn-outline-info active" id="categoryBarChartBtn">
+                        <i class="bi bi-bar-chart-fill"></i>
+                    </button>
+                    <button type="button" class="btn btn-outline-info" id="categoryLineChartBtn">
+                        <i class="bi bi-graph-up"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="categoryComparisonChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 時間趨勢圖 -->
+<div class="row">
+    <div class="col-12">
+        <div class="comparison-card" data-aos="fade-up" data-aos-delay="200">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-graph-up me-2"></i>聲量時間趨勢對比
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="timeSeriesComparisonChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<!-- 引入共用腳本 -->
+<script src="/static/js/analysis.js"></script>
+<!-- 頁面特有腳本 -->
+<script>
+    $(document).ready(function() {
+        // 設定類別比較圖表
+        const categoryCtx = document.getElementById('categoryComparisonChart').getContext('2d');
+        const categoryLabels = {{ all_category_labels|safe }};
+        const categoryDatasets = {{ category_datasets|safe }};
+
+        const categoryChart = new Chart(categoryCtx, {
+            type: 'bar',
+            data: {
+                labels: categoryLabels,
+                datasets: categoryDatasets
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: 'rgba(255, 255, 255, 0.7)'
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: 'rgba(255, 255, 255, 0.7)'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            color: 'rgba(255, 255, 255, 0.7)'
+                        }
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false
+                    }
+                }
+            }
+        });
+
+        // 切換圖表類型
+        $('#categoryBarChartBtn').click(function() {
+            $(this).addClass('active');
+            $('#categoryLineChartBtn').removeClass('active');
+            categoryChart.config.type = 'bar';
+            categoryChart.update();
+        });
+
+        $('#categoryLineChartBtn').click(function() {
+            $(this).addClass('active');
+            $('#categoryBarChartBtn').removeClass('active');
+            categoryChart.config.type = 'line';
+            categoryChart.update();
+        });
+
+        // 設定時間趨勢圖表
+        const timeCtx = document.getElementById('timeSeriesComparisonChart').getContext('2d');
+        const timeLabels = {{ all_time_labels|safe }};
+        const timeDatasets = {{ time_datasets|safe }};
+
+        const timeChart = new Chart(timeCtx, {
+            type: 'line',
+            data: {
+                labels: timeLabels,
+                datasets: timeDatasets
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: 'rgba(255, 255, 255, 0.7)'
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: 'rgba(255, 255, 255, 0.7)'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            color: 'rgba(255, 255, 255, 0.7)'
+                        }
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}
