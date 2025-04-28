@@ -1,0 +1,760 @@
+{% extends 'base.html' %}
+{% load custom_filters %}
+
+{% block title %}情感分析 | 新聞爬蟲系統{% endblock %}
+
+{% block extra_css %}
+<!-- 引入共用樣式 -->
+<link rel="stylesheet" href="/static/css/analysis.css">
+<!-- 頁面特有樣式 -->
+<style>
+    /* 情感分析特有樣式 */
+    .sentiment-card {
+        border: none;
+        border-radius: 10px;
+        background: linear-gradient(145deg, #2a2d3a, #212330);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .sentiment-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+    }
+
+    .sentiment-positive {
+        background-color: rgba(40, 167, 69, 0.7);
+        border: 1px solid rgba(40, 167, 69, 1);
+    }
+
+    .sentiment-negative {
+        background-color: rgba(220, 53, 69, 0.7);
+        border: 1px solid rgba(220, 53, 69, 1);
+    }
+
+    .sentiment-neutral {
+        background-color: rgba(108, 117, 125, 0.7);
+        border: 1px solid rgba(108, 117, 125, 1);
+    }
+
+    .score-bar {
+        height: 10px;
+        border-radius: 5px;
+        margin-bottom: 8px;
+    }
+
+    .positive-bar {
+        background-color: rgba(40, 167, 69, 0.7);
+    }
+
+    .negative-bar {
+        background-color: rgba(220, 53, 69, 0.7);
+    }
+
+    .article-card {
+        height: 100%;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .article-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .article-title {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        height: 48px;
+    }
+
+    .article-meta {
+        font-size: 0.85rem;
+        color: rgba(255, 255, 255, 0.7);
+    }
+
+    .sentiment-tag {
+        display: inline-block;
+        padding: 0.25rem 0.5rem;
+        margin-right: 0.5rem;
+        margin-bottom: 0.5rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+    }
+
+    .category-distribution {
+        max-height: 300px;
+        overflow-y: auto;
+    }
+
+    .animate-pulse {
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0% { opacity: 0.6; }
+        50% { opacity: 1; }
+        100% { opacity: 0.6; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h1 class="display-6 fw-bold text-info">
+            <i class="bi bi-emoji-smile me-2"></i>情感分析
+        </h1>
+        <p class="text-light">任務 #{{ job.id }} - {{ job.categories }}</p>
+    </div>
+    <div class="col-md-4 text-md-end">
+        <a href="{% url 'job_detail' job.id %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>返回概覽
+        </a>
+    </div>
+</div>
+
+{% if not all_analyzed %}
+<!-- 未完成分析提示 -->
+<div class="alert alert-info d-flex align-items-center mb-4" role="alert" data-aos="fade-up">
+    <i class="bi bi-info-circle-fill me-2 fs-4"></i>
+    <div>
+        <strong>分析進度:</strong> 已完成 {{ analyzed_articles }} / {{ total_articles }} 篇文章的情感分析
+        {% if analyzed_articles > 0 %}
+        ({{ analyzed_articles|floatformat:0|default:0 }}%)
+        {% endif %}
+        
+        <div class="progress mt-2" style="height: 10px;">
+            <div class="progress-bar progress-bar-striped progress-bar-animated bg-info" 
+                 role="progressbar" 
+                 style="width: {% widthratio analyzed_articles total_articles 100 %}%;" 
+                 aria-valuenow="{{ analyzed_articles }}" 
+                 aria-valuemin="0" 
+                 aria-valuemax="{{ total_articles }}">
+            </div>
+        </div>
+        <div class="mt-2">
+            <form method="post" action="{% url 'start_sentiment_analysis' job.id %}" id="startAnalysisForm">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-info btn-sm" id="startAnalysisBtn">
+                    <i class="bi bi-play-fill me-1"></i>開始/繼續分析
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- 情感分析概覽統計 -->
+<div class="row mb-4">
+    {% if sentiment_distribution %}
+    <!-- 情感分布統計卡片 -->
+    <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="100">
+        <div class="sentiment-card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-pie-chart-fill me-2"></i>情感分布
+                </h5>
+            </div>
+            <div class="card-body text-center">
+                <div class="pie-chart-container-1 mb-3">
+                    <canvas id="sentimentPieChart"></canvas>
+                </div>
+                
+                <div class="mt-3 text-start">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="badge sentiment-positive">正面</span>
+                        <span id="positiveCount" class="badge bg-dark">{{ sentiment_distribution.positive|default:0 }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="badge sentiment-negative">負面</span>
+                        <span id="negativeCount" class="badge bg-dark">{{ sentiment_distribution.negative|default:0 }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="badge sentiment-neutral">中性</span>
+                        <span id="neutralCount" class="badge bg-dark">{{ sentiment_distribution.neutral|default:0 }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 類別情感統計卡片 -->
+    <div class="col-md-8 mb-4" data-aos="fade-up" data-aos-delay="200">
+        <div class="sentiment-card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-bar-chart-fill me-2"></i>各類別情感分布
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="categorySentimentChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <!-- 未分析顯示 -->
+    <div class="col-12 mb-4" data-aos="fade-up">
+        <div class="sentiment-card">
+            <div class="card-body text-center py-5">
+                <i class="bi bi-emoji-neutral display-1 text-muted mb-3"></i>
+                <h4 class="text-light">尚未進行情感分析</h4>
+                <p class="text-muted mb-4">點擊「開始分析」按鈕以開始分析文章情感傾向</p>
+                
+                <form method="post" action="{% url 'start_sentiment_analysis' job.id %}" id="startAnalysisFormEmpty">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-lg btn-info" id="startAnalysisBtnEmpty">
+                        <i class="bi bi-play-fill me-2"></i>開始分析
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+{% if category_summary %}
+<!-- 類別情感詳細統計 -->
+<div class="row mb-4">
+    <div class="col-12" data-aos="fade-up" data-aos-delay="300">
+        <div class="sentiment-card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-table me-2"></i>各類別情感分析摘要
+                </h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover" id="categorySummaryTable">
+                        <thead>
+                            <tr>
+                                <th>類別</th>
+                                <th>文章總數</th>
+                                <th>正面文章數</th>
+                                <th>負面文章數</th>
+                                <th>正負比例</th>
+                                <th>平均正面分數</th>
+                                <th>平均負面分數</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for category in category_summary %}
+                            <tr>
+                                <td>
+                                    <span class="badge" style="background-color: 
+                                        {% if category.category == '財經' %}rgba(54, 162, 235, 0.7)
+                                        {% elif category.category == '政治' %}rgba(255, 99, 132, 0.7)
+                                        {% elif category.category == '社會' %}rgba(255, 159, 64, 0.7)
+                                        {% elif category.category == '科技' %}rgba(75, 192, 192, 0.7)
+                                        {% elif category.category == '國際' %}rgba(153, 102, 255, 0.7)
+                                        {% elif category.category == '娛樂' %}rgba(255, 205, 86, 0.7)
+                                        {% elif category.category == '生活' %}rgba(201, 203, 207, 0.7)
+                                        {% elif category.category == '言論' %}rgba(0, 204, 150, 0.7)
+                                        {% elif category.category == '軍事' %}rgba(255, 0, 110, 0.7)
+                                        {% else %}rgba(100, 100, 100, 0.7){% endif %}">
+                                        {{ category.category }}
+                                    </span>
+                                </td>
+                                <td>{{ category.total_count }}</td>
+                                <td>{{ category.positive_count }}</td>
+                                <td>{{ category.negative_count }}</td>
+                                <td>
+                                    {% if category.negative_count > 0 %}
+                                    {{ category.positive_count|floatformat:1 }} : 1
+                                    {% else %}
+                                    全正面
+                                    {% endif %}
+                                </td>
+                                <td>{{ category.average_positive_score|floatformat:2 }}</td>
+                                <td>{{ category.average_negative_score|floatformat:2 }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 最極端情感文章區塊 -->
+<div class="row">
+    <!-- 最正面的文章 -->
+    <div class="col-md-6 mb-4" data-aos="fade-up" data-aos-delay="400">
+        <div class="sentiment-card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-emoji-smile-fill me-2 text-success"></i>最正面的文章
+                </h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush">
+                    {% for sentiment in top_positive_articles %}
+                    <div class="list-group-item bg-transparent text-white border-bottom border-secondary">
+                        <div class="d-flex w-100 justify-content-between mb-1">
+                            <h6 class="mb-1">{{ sentiment.article.title }}</h6>
+                            <small class="badge sentiment-positive">{{ sentiment.positive_score|floatformat:2 }}</small>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <small class="badge" style="background-color: rgba(100, 100, 200, 0.7);">{{ sentiment.article.category }}</small>
+                                <small class="text-muted ms-2">{{ sentiment.article.date|date:"Y-m-d" }}</small>
+                            </div>
+                            <div>
+                                <button type="button" class="btn btn-sm btn-outline-info article-preview-btn"
+                                        data-id="{{ sentiment.article.id }}"
+                                        data-title="{{ sentiment.article.title }}"
+                                        data-content="{{ sentiment.article.content }}"
+                                        data-category="{{ sentiment.article.category }}"
+                                        data-date="{{ sentiment.article.date|date:'Y-m-d H:i' }}"
+                                        data-author="{{ sentiment.article.author }}"
+                                        data-link="{{ sentiment.article.link }}"
+                                        data-sentiment="正面"
+                                        data-positive-score="{{ sentiment.positive_score }}"
+                                        data-negative-score="{{ sentiment.negative_score }}">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="list-group-item bg-transparent text-white text-center py-4">
+                        <i class="bi bi-emoji-neutral me-2"></i>尚無分析結果
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 最負面的文章 -->
+    <div class="col-md-6 mb-4" data-aos="fade-up" data-aos-delay="500">
+        <div class="sentiment-card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-emoji-frown-fill me-2 text-danger"></i>最負面的文章
+                </h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush">
+                    {% for sentiment in top_negative_articles %}
+                    <div class="list-group-item bg-transparent text-white border-bottom border-secondary">
+                        <div class="d-flex w-100 justify-content-between mb-1">
+                            <h6 class="mb-1">{{ sentiment.article.title }}</h6>
+                            <small class="badge sentiment-negative">{{ sentiment.negative_score|floatformat:2 }}</small>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <small class="badge" style="background-color: rgba(100, 100, 200, 0.7);">{{ sentiment.article.category }}</small>
+                                <small class="text-muted ms-2">{{ sentiment.article.date|date:"Y-m-d" }}</small>
+                            </div>
+                            <div>
+                                <button type="button" class="btn btn-sm btn-outline-info article-preview-btn"
+                                        data-id="{{ sentiment.article.id }}"
+                                        data-title="{{ sentiment.article.title }}"
+                                        data-content="{{ sentiment.article.content }}"
+                                        data-category="{{ sentiment.article.category }}"
+                                        data-date="{{ sentiment.article.date|date:'Y-m-d H:i' }}"
+                                        data-author="{{ sentiment.article.author }}"
+                                        data-link="{{ sentiment.article.link }}"
+                                        data-sentiment="負面"
+                                        data-positive-score="{{ sentiment.positive_score }}"
+                                        data-negative-score="{{ sentiment.negative_score }}">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="list-group-item bg-transparent text-white text-center py-4">
+                        <i class="bi bi-emoji-neutral me-2"></i>尚無分析結果
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- 文章預覽模態框 -->
+<div class="modal fade" id="articleModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content bg-dark text-white">
+            <div class="modal-header">
+                <h5 class="modal-title" id="articleTitle"></h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- 情感分析結果區 -->
+                <div class="card bg-dark mb-3">
+                    <div class="card-body">
+                        <h6 class="text-info">情感分析結果</h6>
+                        <div class="d-flex align-items-center mb-2">
+                            <div class="me-2" style="width: 80px;">正面分數:</div>
+                            <div class="flex-grow-1">
+                                <div class="score-bar positive-bar" id="positiveScoreBar"></div>
+                            </div>
+                            <div class="ms-2" id="positiveScoreValue"></div>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <div class="me-2" style="width: 80px;">負面分數:</div>
+                            <div class="flex-grow-1">
+                                <div class="score-bar negative-bar" id="negativeScoreBar"></div>
+                            </div>
+                            <div class="ms-2" id="negativeScoreValue"></div>
+                        </div>
+                        <div class="text-end mt-2">
+                            <span class="badge" id="sentimentBadge"></span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <div class="badge bg-info me-2" id="articleCategory"></div>
+                    <small class="text-white" id="articleDate"></small>
+                    <small class="text-white ms-2" id="articleAuthor"></small>
+                </div>
+                <div class="article-content" id="articleContent"></div>
+            </div>
+            <div class="modal-footer">
+                <a href="#" class="btn btn-outline-info" id="articleLink" target="_blank">
+                    <i class="bi bi-box-arrow-up-right me-1"></i>原始文章
+                </a>
+                <a href="#" class="btn btn-info" id="articleDetailLink">
+                    <i class="bi bi-info-circle me-1"></i>查看詳情
+                </a>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">關閉</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        // 初始化數據表格
+        if ($.fn.DataTable && document.getElementById('categorySummaryTable')) {
+            $('#categorySummaryTable').DataTable({
+                language: {
+                    "processing": "處理中...",
+                    "loadingRecords": "載入中...",
+                    "lengthMenu": "顯示 _MENU_ 項結果",
+                    "zeroRecords": "沒有符合的結果",
+                    "info": "顯示第 _START_ 至 _END_ 項結果，共 _TOTAL_ 項",
+                    "infoEmpty": "顯示第 0 至 0 項結果，共 0 項",
+                    "infoFiltered": "(從 _MAX_ 項結果中過濾)",
+                    "search": "搜尋:",
+                    "paginate": {
+                        "first": "第一頁",
+                        "previous": "上一頁",
+                        "next": "下一頁",
+                        "last": "最後一頁"
+                    }
+                },
+                pageLength: 10,
+                responsive: true
+            });
+        }
+
+        // 情感分布圓餅圖
+        if (document.getElementById('sentimentPieChart')) {
+            const sentimentCtx = document.getElementById('sentimentPieChart').getContext('2d');
+
+            // 獲取情感分布數據
+            const positiveCount = {{ sentiment_distribution.positive|default:0 }};
+            const negativeCount = {{ sentiment_distribution.negative|default:0 }};
+            const neutralCount = {{ sentiment_distribution.neutral|default:0 }};
+
+            const sentimentChart = new Chart(sentimentCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['正面', '負面', '中性'],
+                    datasets: [{
+                        data: [positiveCount, negativeCount, neutralCount],
+                        backgroundColor: [
+                            'rgba(40, 167, 69, 0.8)',  // 正面 - 綠色
+                            'rgba(220, 53, 69, 0.8)',  // 負面 - 紅色
+                            'rgba(108, 117, 125, 0.8)' // 中性 - 灰色
+                        ],
+                        borderColor: [
+                            'rgba(40, 167, 69, 1)',
+                            'rgba(220, 53, 69, 1)',
+                            'rgba(108, 117, 125, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const labels = ['正面', '負面', '中性'];
+                                    const total = positiveCount + negativeCount + neutralCount;
+                                    const percentage = Math.round((context.raw / total) * 100);
+                                    return `${labels[context.dataIndex]}: ${context.raw} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 類別情感分布長條圖
+        if (document.getElementById('categorySentimentChart')) {
+            const categoryCtx = document.getElementById('categorySentimentChart').getContext('2d');
+
+            // 從後端獲取類別情感數據
+            // 檢查是否有空值，如果有則初始化為空陣列
+            const categorySummary = [];
+
+            try {
+                // 嘗試使用Django模板變數生成的數據
+                // 如果模板變數為空或格式不正確，將使用空陣列
+                {% for category in category_summary %}
+                categorySummary.push({
+                    category: "{{ category.category|default:'未分類' }}",
+                    positive: {{ category.positive_count|default:0 }},
+                    negative: {{ category.negative_count|default:0 }}
+                });
+                {% empty %}
+                // 如果沒有類別摘要數據，則使用空陣列
+                {% endfor %}
+            } catch (e) {
+                console.error('類別數據格式不正確:', e);
+            }
+
+            // 確保有數據才建立圖表
+            if (categorySummary.length > 0) {
+                // 準備圖表數據
+                const labels = categorySummary.map(item => item.category);
+                const positiveData = categorySummary.map(item => item.positive);
+                const negativeData = categorySummary.map(item => item.negative);
+
+                const categorySentimentChart = new Chart(categoryCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: '正面文章',
+                                data: positiveData,
+                                backgroundColor: 'rgba(40, 167, 69, 0.7)',
+                                borderColor: 'rgba(40, 167, 69, 1)',
+                                borderWidth: 1
+                            },
+                            {
+                                label: '負面文章',
+                                data: negativeData,
+                                backgroundColor: 'rgba(220, 53, 69, 0.7)',
+                                borderColor: 'rgba(220, 53, 69, 1)',
+                                borderWidth: 1
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            x: {
+                                stacked: false,
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.1)'
+                                },
+                                ticks: {
+                                    color: 'rgba(255, 255, 255, 0.7)'
+                                }
+                            },
+                            y: {
+                                stacked: false,
+                                beginAtZero: true,
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.1)'
+                                },
+                                ticks: {
+                                    color: 'rgba(255, 255, 255, 0.7)'
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                labels: {
+                                    color: 'rgba(255, 255, 255, 0.7)'
+                                }
+                            }
+                        }
+                    }
+                });
+            } else {
+                // 如果沒有數據，顯示一個提示訊息
+                const chartContainer = document.getElementById('categorySentimentChart').parentNode;
+                chartContainer.innerHTML = '<div class="text-center py-5 text-light">尚無類別情感分布數據</div>';
+            }
+        }
+
+        // 文章預覽功能
+        $('.article-preview-btn').click(function() {
+            const id = $(this).data('id');
+            const title = $(this).data('title');
+            const category = $(this).data('category');
+            const date = $(this).data('date');
+            const author = $(this).data('author');
+            const content = $(this).data('content');
+            const link = $(this).data('link');
+            const sentiment = $(this).data('sentiment');
+            const positiveScore = $(this).data('positive-score');
+            const negativeScore = $(this).data('negative-score');
+
+            $('#articleTitle').text(title);
+            $('#articleCategory').text(category);
+            $('#articleDate').text(date);
+            $('#articleAuthor').text('作者: ' + author);
+            $('#articleContent').html(content.replace(/\n/g, '<br>'));
+            $('#articleLink').attr('href', link);
+            $('#articleDetailLink').attr('href', `/articles/${id}/`);
+
+            // 設置情感分析結果
+            $('#positiveScoreValue').text(positiveScore.toFixed(2));
+            $('#negativeScoreValue').text(negativeScore.toFixed(2));
+
+            // 設置情感分數條寬度
+            $('#positiveScoreBar').css('width', `${positiveScore * 100}%`);
+            $('#negativeScoreBar').css('width', `${negativeScore * 100}%`);
+
+            // 設置情感徽章
+            if (sentiment === '正面') {
+                $('#sentimentBadge')
+                    .removeClass('sentiment-negative sentiment-neutral')
+                    .addClass('sentiment-positive')
+                    .text('正面情感');
+            } else if (sentiment === '負面') {
+                $('#sentimentBadge')
+                    .removeClass('sentiment-positive sentiment-neutral')
+                    .addClass('sentiment-negative')
+                    .text('負面情感');
+            } else {
+                $('#sentimentBadge')
+                    .removeClass('sentiment-positive sentiment-negative')
+                    .addClass('sentiment-neutral')
+                    .text('中性情感');
+            }
+
+            const articleModal = new bootstrap.Modal(document.getElementById('articleModal'));
+            articleModal.show();
+        });
+
+        // 啟動情感分析按鈕AJAX處理
+        $('#startAnalysisForm, #startAnalysisFormEmpty').submit(function(e) {
+            e.preventDefault();
+
+            const form = $(this);
+            const btn = form.find('button[type="submit"]');
+
+            // 禁用按鈕並顯示加載指示
+            btn.prop('disabled', true);
+            const originalText = btn.html();
+            btn.html('<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>正在啟動分析...');
+
+            // 發送AJAX請求
+            $.ajax({
+                url: form.attr('action'),
+                type: 'POST',
+                data: form.serialize(),
+                success: function(response) {
+                    if (response.status === 'success') {
+                        // 顯示成功訊息
+                        Swal.fire({
+                            title: '情感分析已啟動',
+                            text: '系統正在背景分析文章情感，請稍後刷新頁面查看進度',
+                            icon: 'success',
+                            confirmButtonText: '確定'
+                        });
+
+                        // 設置自動刷新
+                        setTimeout(function() {
+                            location.reload();
+                        }, 10000);
+                    } else {
+                        // 顯示錯誤訊息
+                        Swal.fire({
+                            title: '啟動失敗',
+                            text: response.message || '無法啟動情感分析，請稍後再試',
+                            icon: 'error',
+                            confirmButtonText: '確定'
+                        });
+
+                        // 還原按鈕狀態
+                        btn.prop('disabled', false);
+                        btn.html(originalText);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    // 顯示錯誤訊息
+                    Swal.fire({
+                        title: '發生錯誤',
+                        text: '伺服器回應錯誤，請稍後再試',
+                        icon: 'error',
+                        confirmButtonText: '確定'
+                    });
+
+                    // 還原按鈕狀態
+                    btn.prop('disabled', false);
+                    btn.html(originalText);
+                }
+            });
+        });
+
+        // 如果有進行中的分析，定時刷新頁面
+        {% if not all_analyzed and analyzed_articles > 0 %}
+        setTimeout(function() {
+            location.reload();
+        }, 30000); // 30秒自動刷新
+        {% endif %}
+    });
+
+    // 導出數據功能
+    function exportCategorySummary() {
+        // 獲取表格數據
+        const table = document.getElementById('categorySummaryTable');
+        if (!table) return;
+
+        let csv = [];
+        let rows = table.querySelectorAll('tr');
+
+        for (let i = 0; i < rows.length; i++) {
+            let row = [], cols = rows[i].querySelectorAll('td, th');
+
+            for (let j = 0; j < cols.length; j++) {
+                // 處理文字內容
+                let text = cols[j].innerText.trim();
+
+                // 處理逗號和引號
+                text = text.replace(/"/g, '""');
+                row.push('"' + text + '"');
+            }
+
+            csv.push(row.join(','));
+        }
+
+        // 創建下載連結
+        const csvFile = new Blob([csv.join('\n')], {type: 'text/csv;charset=utf-8;'});
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(csvFile);
+        link.setAttribute('download', '情感分析摘要_{{ job.id }}.csv');
+        link.style.display = 'none';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+</script>
+{% endblock %}
