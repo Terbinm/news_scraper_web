@@ -16,3 +16,35 @@ def get_item(dictionary, key):
         return getattr(dictionary, key)
     except (AttributeError, TypeError):
         return None
+
+@register.filter
+def divisor(value, arg):
+    """將值除以參數"""
+    try:
+        return float(value) / float(arg)
+    except (ValueError, ZeroDivisionError):
+        return 0
+
+@register.filter
+def multiply(value, arg):
+    """將值乘以參數"""
+    try:
+        return float(value) * float(arg)
+    except ValueError:
+        return 0
+
+@register.filter
+def subtract(value, arg):
+    """從值中減去參數"""
+    try:
+        return float(value) - float(arg)
+    except ValueError:
+        return 0
+
+@register.filter
+def percentage(value, arg):
+    """計算百分比"""
+    try:
+        return (float(value) / float(arg)) * 100
+    except (ValueError, ZeroDivisionError):
+        return 0

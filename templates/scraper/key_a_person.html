@@ -44,8 +44,11 @@
         <p class="text-light">任務 #{{ job.id }} - {{ job.categories }}</p>
     </div>
     <div class="col-md-4 text-md-end">
+        <a href="{% url 'key_person_selection' job.id %}" class="btn btn-outline-secondary me-2">
+            <i class="bi bi-arrow-left me-1"></i>返回選擇
+        </a>
         <a href="{% url 'job_detail' job.id %}" class="btn btn-outline-secondary">
-            <i class="bi bi-arrow-left me-1"></i>返回概覽
+            <i class="bi bi-house me-1"></i>任務概覽
         </a>
     </div>
 </div>
@@ -67,7 +70,7 @@
             </div>
         </div>
     </div>
-    
+
     <div class="col-md-8">
         <div class="person-card mb-4" data-aos="fade-up" data-aos-delay="100">
             <div class="card-header d-flex justify-content-between align-items-center">
@@ -222,15 +225,15 @@
             $('#articleCategory').text(category);
             $('#articleDate').text(date);
             $('#articleAuthor').text('作者: ' + author);
-            
+
             // 將名字高亮顯示
             const highlightedContent = content.replace(new RegExp('{{ person_name }}', 'gi'),
                 match => `<mark class="highlight">${match}</mark>`);
             $('#articleContent').html(highlightedContent.replace(/\n/g, '<br>'));
-            
+
             $('#articleLink').attr('href', link);
             $('#articleDetailLink').attr('href', `/articles/${id}/`);
-            
+
             const articleModal = new bootstrap.Modal(document.getElementById('articleModal'));
             articleModal.show();
         });

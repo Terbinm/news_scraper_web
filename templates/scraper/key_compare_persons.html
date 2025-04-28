@@ -135,7 +135,13 @@
                                 </td>
                                 <td>{{ person.total }}</td>
                                 <td>{{ person.main_category }}</td>
-                                <td>{{ person.category_data|get_item:person.main_category|divisor:person.total|multiply:100|floatformat:1 }}%</td>
+                                <td>
+                                    {% if person.total > 0 and person.category_data|get_item:person.main_category %}
+                                        {{ person.category_data|get_item:person.main_category|percentage:person.total|floatformat:1 }}%
+                                    {% else %}
+                                        0%
+                                    {% endif %}
+                                </td>
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -190,6 +196,7 @@
     </div>
 </div>
 
+{% endblock %}
 {% block extra_js %}
 <!-- 引入共用腳本 -->
 <script src="/static/js/analysis.js"></script>

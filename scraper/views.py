@@ -633,7 +633,7 @@ def key_person_selection(request, job_id):
         if len(selected_leaders) == 1:
             # 單一領導人模式
             leader_name = selected_leaders[0]
-            return redirect('analyze_key_person', job_id=job_id, person_name=leader_name)
+            return redirect('analyze_key_person_with_name', job_id=job_id, person_name=leader_name)
         else:
             # 比較模式
             return redirect('compare_key_persons', job_id=job_id, person_names=','.join(selected_leaders))
@@ -706,18 +706,18 @@ def analyze_key_person(request, job_id, person_name=None):
             time_data.append(count)
 
         # 確定圖片檔名
-        person_image = "default_person.png"  # 預設圖片
+        person_image = "leader/default_person.jpg"  # 預設圖片
 
         if person_name == "川普":
-            person_image = "trump.png"
+            person_image = "leader/trump.png"
         elif person_name == "蔡英文":
-            person_image = "tsai.png"
+            person_image = "leader/tsai.jpg"
         elif person_name == "習近平":
-            person_image = "xi.png"
+            person_image = "leader/xi.jpg"
         elif person_name == "拜登":
-            person_image = "biden.png"
+            person_image = "leader/biden.jpg"
         elif person_name == "賴清德":
-            person_image = "lai.png"
+            person_image = "leader/lai.jpg"
 
         # 準備上下文資料
         context = {
@@ -734,7 +734,7 @@ def analyze_key_person(request, job_id, person_name=None):
             'time_data': json.dumps(time_data)
         }
 
-        return render(request, 'scraper/job_key_person.html', context)
+        return render(request, 'scraper/key_a_person.html', context)
 
     except Exception as e:
         logger.error(f"關鍵人物分析視圖出錯: {e}", exc_info=True)
@@ -807,17 +807,17 @@ def compare_key_persons(request, job_id, person_names):
                 combined_time_data[date_str][person_name] = time_data[date_str]
 
             # 確定圖片檔名
-            person_image = "default_person.png"
+            person_image = "leader/default_person.png"  # 預設圖片
             if person_name == "川普":
-                person_image = "trump.png"
+                person_image = "leader/trump.png"
             elif person_name == "蔡英文":
-                person_image = "tsai.png"
+                person_image = "leader/tsai.jpg"
             elif person_name == "習近平":
-                person_image = "xi.png"
+                person_image = "leader/xi.jpg"
             elif person_name == "拜登":
-                person_image = "biden.png"
+                person_image = "leader/biden.jpg"
             elif person_name == "賴清德":
-                person_image = "lai.png"
+                person_image = "leader/lai.jpg"
 
             # 主要出現類別
             main_category = next(iter(category_stats))['category'] if category_stats else "無"
@@ -872,7 +872,7 @@ def compare_key_persons(request, job_id, person_names):
             'time_datasets': json.dumps(time_datasets)
         }
 
-        return render(request, 'scraper/compare_key_persons.html', context)
+        return render(request, 'scraper/key_compare_persons.html', context)
 
     except Exception as e:
         logger.error(f"比較關鍵人物視圖出錯: {e}", exc_info=True)
