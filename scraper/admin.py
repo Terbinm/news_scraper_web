@@ -1,6 +1,16 @@
 from django.contrib import admin
-from .models import ScrapeJob, Article, KeywordAnalysis, NamedEntityAnalysis
+from .models import ScrapeJob, Article, KeywordAnalysis, NamedEntityAnalysis, SentimentAnalysis, CategorySentimentSummary
 
+@admin.register(SentimentAnalysis)
+class SentimentAnalysisAdmin(admin.ModelAdmin):
+    list_display = ('id', 'article', 'sentiment', 'positive_score', 'negative_score')
+    list_filter = ('sentiment', 'job')
+    search_fields = ('article__title',)
+
+@admin.register(CategorySentimentSummary)
+class CategorySentimentSummaryAdmin(admin.ModelAdmin):
+    list_display = ('id', 'job', 'category', 'positive_count', 'negative_count', 'average_positive_score')
+    list_filter = ('job', 'category')
 
 @admin.register(ScrapeJob)
 class ScrapeJobAdmin(admin.ModelAdmin):

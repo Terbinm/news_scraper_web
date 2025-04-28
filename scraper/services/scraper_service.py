@@ -5,10 +5,13 @@ from datetime import datetime
 from django.conf import settings
 from django.utils import timezone
 import importlib
+import threading
 
 from ..models import ScrapeJob, Article, KeywordAnalysis, NamedEntityAnalysis
+from ..services.sentiment_service import analyze_job_sentiment
 
 logger = logging.getLogger(__name__)
+
 
 
 def run_scraper(job_id):
@@ -166,6 +169,14 @@ def process_scraper_results(job, result_file_path):
             batch_size = 100
             for i in range(0, len(entity_objects), batch_size):
                 NamedEntityAnalysis.objects.bulk_create(entity_objects[i:i + batch_size])
+
+        # 數據處理完成後，自動啟動情感分析
+        logger.info(f"爬蟲任務 {job.id} 數據處理完成，自動啟動情感分析...")
+        # 使用線程執行情感分析，避免阻塞主流程
+        sentiment_thread = threading.Thread(target=analyze_job_sentiment, args=(job.id,))
+        sentiment_thread.daemon = True
+        sentiment_thread.start()
+        logger.info(f"情感分析線程已啟動，任務ID: {job.id}")
 
     except Exception as e:
         logger.error(f"處理爬蟲結果時發生錯誤: {e}", exc_info=True)

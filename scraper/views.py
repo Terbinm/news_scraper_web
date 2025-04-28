@@ -92,6 +92,12 @@ def job_detail(request, job_id):
     keywords_count = KeywordAnalysis.objects.filter(job=job).count()
     entities_count = NamedEntityAnalysis.objects.filter(job=job).count()
 
+    # 獲取情感分析狀態
+    sentiment_count = SentimentAnalysis.objects.filter(job=job).count()
+    sentiment_progress = 0
+    if articles_count > 0:
+        sentiment_progress = int((sentiment_count / articles_count) * 100)
+
     # 獲取每個類別的文章數量
     category_stats = (Article.objects
                       .filter(job=job)
@@ -109,6 +115,8 @@ def job_detail(request, job_id):
         'entities_count': entities_count,
         'category_stats': category_stats,
         'recent_articles': recent_articles,
+        'sentiment_count': sentiment_count,
+        'sentiment_progress': sentiment_progress,
     })
 
 

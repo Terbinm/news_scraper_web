@@ -178,15 +178,26 @@
         </div>
     </div>
 
-    <!-- 進階搜尋與分析 -->
+    <!-- 情感分析狀態 -->
     <div class="col-md-3 mb-4" data-aos="fade-up" data-aos-delay="400">
         <div class="card overview-card">
             <div class="card-body p-4 text-center">
-                <i class="bi bi-search stat-icon text-info"></i>
-                <h3 class="stat-value">進階</h3>
-                <p class="stat-label">搜尋與數據分析</p>
-                <a href="{% url 'job_search_analysis' job.id %}" class="action-link">
-                    開始進階分析 <i class="bi bi-arrow-right action-icon"></i>
+                <i class="bi bi-emoji-smile stat-icon {% if sentiment_progress >= 100 %}text-success{% elif sentiment_progress > 0 %}text-warning{% else %}text-secondary{% endif %}"></i>
+                <h3 class="stat-value">{{ sentiment_count }}</h3>
+                <p class="stat-label">情感分析處理文章數</p>
+                {% if sentiment_progress < 100 and sentiment_progress > 0 %}
+                    <div class="progress mb-2 mt-2" style="height: 10px;">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated bg-warning"
+                             role="progressbar" style="width: {{ sentiment_progress }}%;"
+                             aria-valuenow="{{ sentiment_progress }}" aria-valuemin="0" aria-valuemax="100">
+                            {{ sentiment_progress }}%
+                        </div>
+                    </div>
+                {% elif sentiment_progress >= 100 %}
+                    <span class="badge bg-success mb-2">情感分析已完成</span>
+                {% endif %}
+                <a href="{% url 'job_sentiment_analysis' job.id %}" class="action-link">
+                    查看情感分析 <i class="bi bi-arrow-right action-icon"></i>
                 </a>
             </div>
         </div>
@@ -211,8 +222,8 @@
                         </a>
                     </div>
                     <div class="col-md-2">
-                        <a href="#" class="btn btn-sm btn-outline-success w-100">
-                            <i class="bi bi-graph-up me-1"></i>熱門趨勢
+                        <a href="{% url 'job_search_analysis' job.id %}" class="btn btn-sm btn-outline-success w-100">
+                            <i class="bi bi-graph-up me-1"></i>搜尋與數據分析
                         </a>
                     </div>
                     <div class="col-md-2">
