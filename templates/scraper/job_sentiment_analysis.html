@@ -504,6 +504,50 @@
 {% block extra_js %}
 <script>
     $(document).ready(function() {
+        // 初始化變數與常量
+        const jobId = {{ job.id }};
+        let autoRefreshTimer = null;
+
+        // 警示訊息顯示函數
+        function showAlert(type, message, timeout = 3000) {
+            Swal.fire({
+                title: type === 'success' ? '成功' : '錯誤',
+                text: message,
+                icon: type,
+                timer: timeout,
+                timerProgressBar: true,
+                confirmButtonText: '確定'
+            });
+        }
+
+        // 按鈕加載狀態處理函數
+        function setButtonLoading(button, isLoading, originalText, loadingText = '處理中...') {
+            if (isLoading) {
+                button.prop('disabled', true);
+                button.html(`<span class="spinner-border spinner-border-sm me-2" role="status"></span>${loadingText}`);
+            } else {
+                button.prop('disabled', false);
+                button.html(originalText);
+            }
+        }
+
+        // AJAX請求處理函數
+        function sendAjaxRequest(url, method, data, successCallback, errorCallback) {
+            $.ajax({
+                url: url,
+                type: method,
+                data: data,
+                success: successCallback,
+                error: function(xhr, status, error) {
+                    if (errorCallback) {
+                        errorCallback(xhr, status, error);
+                    } else {
+                        showAlert('error', '伺服器回應錯誤，請稍後再試');
+                    }
+                }
+            });
+        }
+
         // 初始化數據表格
         if ($.fn.DataTable && document.getElementById('categorySummaryTable')) {
             $('#categorySummaryTable').DataTable({
@@ -529,34 +573,24 @@
         }
 
         // 情感分布圓餅圖
-        if (document.getElementById('sentimentPieChart')) {
+        function initSentimentPieChart() {
+            if (!document.getElementById('sentimentPieChart')) return;
+
             const sentimentCtx = document.getElementById('sentimentPieChart').getContext('2d');
 
             // 獲取情感分布數據
-            let positiveCount = 0;
-            let negativeCount = 0;
-            let neutralCount = 0;
-            
-            // 嘗試從模板獲取數據，如果失敗則使用預設值
-            try {
-                {% if sentiment_distribution.content %}
-                positiveCount = {{ sentiment_distribution.content.positive|default:0 }};
-                negativeCount = {{ sentiment_distribution.content.negative|default:0 }};
-                neutralCount = {{ sentiment_distribution.content.neutral|default:0 }};
-                {% endif %}
-            } catch (e) {
-                console.log('無法獲取情感分布數據，使用預設值');
-            }
+            let positiveCount = {{ sentiment_distribution.content.positive|default:0 }};
+            let negativeCount = {{ sentiment_distribution.content.negative|default:0 }};
+            let neutralCount = {{ sentiment_distribution.content.neutral|default:0 }};
 
             // 確保數據有效
             if (positiveCount + negativeCount + neutralCount === 0) {
-                // 如果沒有數據，顯示預設圖表
                 positiveCount = 1;
                 negativeCount = 1;
                 neutralCount = 0;
             }
 
-            const sentimentChart = new Chart(sentimentCtx, {
+            new Chart(sentimentCtx, {
                 type: 'doughnut',
                 data: {
                     labels: ['正面', '負面', '中性'],
@@ -597,36 +631,20 @@
         }
 
         // 類別情感分布長條圖
-        if (document.getElementById('categorySentimentChart')) {
+        function initCategorySentimentChart() {
+            if (!document.getElementById('categorySentimentChart')) return;
+
             const categoryCtx = document.getElementById('categorySentimentChart').getContext('2d');
 
             // 準備類別情感數據
-            let categoryLabels = [];
-            let positiveData = [];
-            let negativeData = [];
-
-            // 嘗試從模板獲取類別情感數據
-            try {
-                {% if category_summary.categories %}
-                categoryLabels = {{ category_summary.categories|safe }};
-                positiveData = {{ category_summary.positive_counts|safe }};
-                negativeData = {{ category_summary.negative_counts|safe }};
-                {% else %}
-                // 如果沒有數據，使用預設值
-                categoryLabels = ['財經', '政治', '社會'];
-                positiveData = [2, 3, 1];
-                negativeData = [1, 2, 0];
-                {% endif %}
-            } catch (e) {
-                console.log('無法獲取類別情感數據，使用預設值');
-                categoryLabels = ['財經', '政治', '社會'];
-                positiveData = [2, 3, 1];
-                negativeData = [1, 2, 0];
-            }
+            let categoryLabels = {{ category_summary.categories|default:"[]"|safe }};
+            let positiveData = {{ category_summary.positive_counts|default:"[]"|safe }};
+            let negativeData = {{ category_summary.negative_counts|default:"[]"|safe }};
+            let neutralData = {{ category_summary.neutral_counts|default:"[]"|safe }};
 
             // 確保有數據才建立圖表
             if (categoryLabels.length > 0) {
-                const categorySentimentChart = new Chart(categoryCtx, {
+                new Chart(categoryCtx, {
                     type: 'bar',
                     data: {
                         labels: categoryLabels,
@@ -643,6 +661,13 @@
                                 data: negativeData,
                                 backgroundColor: 'rgba(220, 53, 69, 0.7)',
                                 borderColor: 'rgba(220, 53, 69, 1)',
+                                borderWidth: 1
+                            },
+                            {
+                                label: '中性文章',
+                                data: neutralData,
+                                backgroundColor: 'rgba(108, 117, 125, 0.7)',
+                                borderColor: 'rgba(108, 117, 125, 1)',
                                 borderWidth: 1
                             }
                         ]
@@ -680,129 +705,98 @@
                     }
                 });
             } else {
-                // 如果沒有數據，顯示一個提示訊息
+                // 無數據顯示提示訊息
                 const chartContainer = document.getElementById('categorySentimentChart').parentNode;
                 chartContainer.innerHTML = '<div class="text-center py-5 text-light">尚無類別情感分布數據</div>';
             }
         }
 
+        // 初始化所有圖表
+        initSentimentPieChart();
+        initCategorySentimentChart();
+
         // 文章預覽功能
         $('.article-preview-btn').click(function() {
-            const id = $(this).data('id');
-            const title = $(this).data('title');
-            const category = $(this).data('category');
-            const date = $(this).data('date');
-            const author = $(this).data('author');
-            const content = $(this).data('content');
-            const link = $(this).data('link');
-            const sentiment = $(this).data('sentiment');
-            const positiveScore = $(this).data('positive-score');
-            const negativeScore = $(this).data('negative-score');
+            const article = {
+                id: $(this).data('id'),
+                title: $(this).data('title'),
+                category: $(this).data('category'),
+                date: $(this).data('date'),
+                author: $(this).data('author'),
+                content: $(this).data('content'),
+                link: $(this).data('link'),
+                sentiment: $(this).data('sentiment'),
+                positiveScore: $(this).data('positive-score'),
+                negativeScore: $(this).data('negative-score')
+            };
 
-            $('#articleTitle').text(title);
-            $('#articleCategory').text(category);
-            $('#articleDate').text(date);
-            $('#articleAuthor').text('作者: ' + author);
-            $('#articleContent').html(content.replace(/\n/g, '<br>'));
-            $('#articleLink').attr('href', link);
-            $('#articleDetailLink').attr('href', `/articles/${id}/`);
+            $('#articleTitle').text(article.title);
+            $('#articleCategory').text(article.category);
+            $('#articleDate').text(article.date);
+            $('#articleAuthor').text('作者: ' + article.author);
+            $('#articleContent').html(article.content.replace(/\n/g, '<br>'));
+            $('#articleLink').attr('href', article.link);
+            $('#articleDetailLink').attr('href', `/articles/${article.id}/`);
 
             // 設置情感分析結果
-            $('#positiveScoreValue').text(positiveScore.toFixed(2));
-            $('#negativeScoreValue').text(negativeScore.toFixed(2));
-
-            // 設置情感分數條寬度
-            $('#positiveScoreBar').css('width', `${positiveScore * 100}%`);
-            $('#negativeScoreBar').css('width', `${negativeScore * 100}%`);
+            $('#positiveScoreValue').text(article.positiveScore.toFixed(2));
+            $('#negativeScoreValue').text(article.negativeScore.toFixed(2));
+            $('#positiveScoreBar').css('width', `${article.positiveScore * 100}%`);
+            $('#negativeScoreBar').css('width', `${article.negativeScore * 100}%`);
 
             // 設置情感徽章
-            if (sentiment === '正面') {
-                $('#sentimentBadge')
-                    .removeClass('sentiment-negative sentiment-neutral')
-                    .addClass('sentiment-positive')
-                    .text('正面情感');
-            } else if (sentiment === '負面') {
-                $('#sentimentBadge')
-                    .removeClass('sentiment-positive sentiment-neutral')
-                    .addClass('sentiment-negative')
-                    .text('負面情感');
-            } else {
-                $('#sentimentBadge')
-                    .removeClass('sentiment-positive sentiment-negative')
-                    .addClass('sentiment-neutral')
-                    .text('中性情感');
-            }
+            const sentimentClass = {
+                '正面': 'sentiment-positive',
+                '負面': 'sentiment-negative',
+                '中立': 'sentiment-neutral'
+            };
+
+            $('#sentimentBadge')
+                .removeClass('sentiment-positive sentiment-negative sentiment-neutral')
+                .addClass(sentimentClass[article.sentiment])
+                .text(`${article.sentiment}情感`);
 
             const articleModal = new bootstrap.Modal(document.getElementById('articleModal'));
             articleModal.show();
         });
 
-        // 啟動情感分析按鈕AJAX處理
+        // 啟動情感分析按鈕
         $('#startAnalysisForm, #startAnalysisFormEmpty').submit(function(e) {
             e.preventDefault();
 
             const form = $(this);
             const btn = form.find('button[type="submit"]');
-
-            // 禁用按鈕並顯示加載指示
-            btn.prop('disabled', true);
             const originalText = btn.html();
-            btn.html('<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>正在啟動分析...');
 
-            // 發送AJAX請求
-            $.ajax({
-                url: form.attr('action'),
-                type: 'POST',
-                data: form.serialize(),
-                success: function(response) {
+            setButtonLoading(btn, true, originalText, '正在啟動分析...');
+
+            sendAjaxRequest(
+                form.attr('action'),
+                'POST',
+                form.serialize(),
+                function(response) {
                     if (response.status === 'success') {
-                        // 顯示成功訊息
-                        Swal.fire({
-                            title: '情感分析已啟動',
-                            text: '系統正在背景分析文章情感，請稍後刷新頁面查看進度',
-                            icon: 'success',
-                            confirmButtonText: '確定'
-                        });
+                        showAlert('success', '系統正在背景分析文章情感，請稍後刷新頁面查看進度');
 
-                        // 設置自動刷新
-                        setTimeout(function() {
-                            location.reload();
-                        }, 10000);
+                        // 10秒後自動刷新頁面
+                        setTimeout(() => location.reload(), 10000);
                     } else {
-                        // 顯示錯誤訊息
-                        Swal.fire({
-                            title: '啟動失敗',
-                            text: response.message || '無法啟動情感分析，請稍後再試',
-                            icon: 'error',
-                            confirmButtonText: '確定'
-                        });
-
-                        // 還原按鈕狀態
-                        btn.prop('disabled', false);
-                        btn.html(originalText);
+                        showAlert('error', response.message || '無法啟動情感分析，請稍後再試');
+                        setButtonLoading(btn, false, originalText);
                     }
                 },
-                error: function(xhr, status, error) {
-                    // 顯示錯誤訊息
-                    Swal.fire({
-                        title: '發生錯誤',
-                        text: '伺服器回應錯誤，請稍後再試',
-                        icon: 'error',
-                        confirmButtonText: '確定'
-                    });
-
-                    // 還原按鈕狀態
-                    btn.prop('disabled', false);
-                    btn.html(originalText);
+                function() {
+                    showAlert('error', '伺服器回應錯誤，請稍後再試');
+                    setButtonLoading(btn, false, originalText);
                 }
-            });
+            );
         });
 
         // 重新生成摘要按鈕功能
         $('#regenerateSummaryBtn').click(function() {
             const btn = $(this);
+            const originalText = btn.html();
 
-            // 顯示確認對話框
             Swal.fire({
                 title: '確定要重新生成摘要？',
                 text: '將會使用當前的情感分析結果重新計算各類別的統計數據',
@@ -812,60 +806,92 @@
                 cancelButtonText: '取消'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    // 禁用按鈕並顯示加載指示
-                    btn.prop('disabled', true);
-                    const originalText = btn.html();
-                    btn.html('<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>處理中...');
+                    setButtonLoading(btn, true, originalText);
 
-                    // 發送 AJAX 請求
-                    $.ajax({
-                        url: '{% url "regenerate_sentiment_summary" job.id %}',
-                        type: 'POST',
-                        data: {
-                            'csrfmiddlewaretoken': '{{ csrf_token }}'
-                        },
-                        success: function(response) {
+                    sendAjaxRequest(
+                        '{% url "regenerate_sentiment_summary" job.id %}',
+                        'POST',
+                        { 'csrfmiddlewaretoken': '{{ csrf_token }}' },
+                        function(response) {
                             if (response.status === 'success') {
-                                Swal.fire({
-                                    title: '成功',
-                                    text: response.message,
-                                    icon: 'success',
-                                    confirmButtonText: '確定'
-                                }).then(() => {
-                                    // 重新載入頁面以顯示更新後的數據
-                                    location.reload();
-                                });
+                                showAlert('success', response.message);
+                                setTimeout(() => location.reload(), 2000);
                             } else {
-                                Swal.fire({
-                                    title: '錯誤',
-                                    text: response.message,
-                                    icon: 'error',
-                                    confirmButtonText: '確定'
-                                });
-                                // 還原按鈕狀態
-                                btn.prop('disabled', false);
-                                btn.html(originalText);
+                                showAlert('error', response.message);
+                                setButtonLoading(btn, false, originalText);
                             }
                         },
-                        error: function(xhr, status, error) {
-                            Swal.fire({
-                                title: '發生錯誤',
-                                text: '伺服器回應錯誤，請稍後再試',
-                                icon: 'error',
-                                confirmButtonText: '確定'
-                            });
-                            // 還原按鈕狀態
-                            btn.prop('disabled', false);
-                            btn.html(originalText);
+                        function() {
+                            showAlert('error', '伺服器回應錯誤，請稍後再試');
+                            setButtonLoading(btn, false, originalText);
                         }
-                    });
+                    );
                 }
             });
         });
 
-        // 如果有進行中的分析，定時刷新頁面
+        // 分析單篇文章按鈕
+        $('.analyze-article-btn').click(function() {
+            const btn = $(this);
+            const articleId = btn.data('article-id');
+            const originalText = btn.html();
+
+            setButtonLoading(btn, true, originalText, '');
+
+            sendAjaxRequest(
+                `/jobs/${jobId}/analyze-single-article/${articleId}/`,
+                'POST',
+                { 'csrfmiddlewaretoken': '{{ csrf_token }}' },
+                function(response) {
+                    if (response.status === 'success') {
+                        // 更新按鈕
+                        btn.html('✓');
+                        btn.addClass('btn-success').removeClass('btn-primary');
+                        btn.prop('disabled', true);
+
+                        // 更新進度條和統計文字
+                        updateAnalysisProgress(response.analyzed_articles, response.total_articles, response.analysis_progress);
+
+                        showAlert('success', response.already_analyzed ? '文章已經分析過' : '文章分析成功！');
+                    } else {
+                        showAlert('error', response.message);
+                        setButtonLoading(btn, false, originalText);
+                    }
+                },
+                function() {
+                    showAlert('error', '伺服器回應錯誤，請稍後再試');
+                    setButtonLoading(btn, false, originalText);
+                }
+            );
+        });
+
+        // 更新分析進度函數
+        function updateAnalysisProgress(analyzedCount, totalCount, progressPercent) {
+            const progressBar = document.querySelector('.progress-bar');
+            const countText = document.querySelector('.text-sm.mt-2');
+
+            if (progressBar) {
+                progressBar.style.width = `${progressPercent}%`;
+                progressBar.setAttribute('aria-valuenow', progressPercent);
+                progressBar.textContent = `${progressPercent}%`;
+            }
+
+            if (countText) {
+                let message = `已分析 ${analyzedCount} / ${totalCount} 篇文章`;
+
+                if (analyzedCount < totalCount) {
+                    message += ` <span class="text-warning">（尚有 ${totalCount - analyzedCount} 篇文章未分析）</span>`;
+                } else {
+                    message += ` <span class="text-success">（所有文章已分析完成）</span>`;
+                }
+
+                countText.innerHTML = message;
+            }
+        }
+
+        // 自動刷新頁面（用於正在進行的分析）
         {% if not all_analyzed and analyzed_articles > 0 %}
-        setTimeout(function() {
+        autoRefreshTimer = setTimeout(function() {
             location.reload();
         }, 30000); // 30秒自動刷新
         {% endif %}
@@ -873,7 +899,6 @@
 
     // 導出數據功能
     function exportCategorySummary() {
-        // 獲取表格數據
         const table = document.getElementById('categorySummaryTable');
         if (!table) return;
 
@@ -884,11 +909,8 @@
             let row = [], cols = rows[i].querySelectorAll('td, th');
 
             for (let j = 0; j < cols.length; j++) {
-                // 處理文字內容
-                let text = cols[j].innerText.trim();
-
-                // 處理逗號和引號
-                text = text.replace(/"/g, '""');
+                // 處理文字內容並處理逗號和引號
+                let text = cols[j].innerText.trim().replace(/"/g, '""');
                 row.push('"' + text + '"');
             }
 

@@ -632,6 +632,15 @@ def job_sentiment_analysis(request, job_id):
     # 獲取情感分析服務
     sentiment_service = SentimentAnalysisService()
 
+    # 獲取情感分析統計
+    total_articles = Article.objects.filter(job=job).count()
+    analyzed_articles = SentimentAnalysis.objects.filter(job=job).count()
+
+    # 獲取未分析的文章
+    unanalyzed_articles = None
+    if total_articles > analyzed_articles:
+        unanalyzed_articles = sentiment_service.get_unanalyzed_articles(job_id, limit=50)
+
     # 獲取類別情感摘要
     category_summary = sentiment_service.get_category_sentiment_summary(job_id)
 
@@ -649,12 +658,9 @@ def job_sentiment_analysis(request, job_id):
         sentiment='負面'
     ).order_by('-negative_score')[:5]
 
-    # 獲取分析統計
-    total_articles = Article.objects.filter(job=job).count()
-    analyzed_articles = SentimentAnalysis.objects.filter(job=job).count()
-
     # 檢查是否所有文章都已分析
     all_analyzed = total_articles == analyzed_articles and total_articles > 0
+    analysis_progress = int((analyzed_articles / total_articles * 100) if total_articles > 0 else 0)
 
     # 將分析結果添加到上下文
     context = {
@@ -666,9 +672,12 @@ def job_sentiment_analysis(request, job_id):
         'total_articles': total_articles,
         'analyzed_articles': analyzed_articles,
         'all_analyzed': all_analyzed,
+        'analysis_progress': analysis_progress,
+        'unanalyzed_articles': unanalyzed_articles,
     }
 
     return render(request, 'scraper/job_sentiment_analysis.html', context)
+
 
 
 @login_required
@@ -744,6 +753,10 @@ def start_sentiment_analysis(request, job_id):
             'message': '只能分析已完成的爬蟲任務'
         })
 
+    # 獲取情感分析統計
+    total_articles = Article.objects.filter(job=job).count()
+    analyzed_articles = SentimentAnalysis.objects.filter(job=job).count()
+
     # 啟動情感分析
     import threading
     thread = threading.Thread(target=analyze_job_sentiment, args=(job_id,))
@@ -752,7 +765,10 @@ def start_sentiment_analysis(request, job_id):
 
     return JsonResponse({
         'status': 'success',
-        'message': '情感分析任務已啟動'
+        'message': '情感分析任務已啟動',
+        'total_articles': total_articles,
+        'analyzed_articles': analyzed_articles,
+        'remaining': total_articles - analyzed_articles
     })
 
 
@@ -775,23 +791,124 @@ def regenerate_sentiment_summary(request, job_id):
                 'message': '尚未進行情感分析，無法生成摘要'
             })
 
-        # 清除現有的摘要
-        CategorySentimentSummary.objects.filter(job=job).delete()
-
-        # 重新生成摘要
+        # 建立情感分析服務
         sentiment_service = SentimentAnalysisService()
-        sentiment_service.generate_category_sentiment_summary(job)
 
-        # 返回成功訊息
-        return JsonResponse({
-            'status': 'success',
-            'message': '情感分析摘要已重新生成',
-            'analyzed_count': analyzed_count,
-            'total_count': articles_count
-        })
+        # 使用新的regenerate_sentiment_summary方法徹底重建摘要
+        success = sentiment_service.regenerate_sentiment_summary(job)
+
+        if success:
+            # 返回成功訊息
+            return JsonResponse({
+                'status': 'success',
+                'message': '情感分析摘要已重新生成',
+                'analyzed_count': analyzed_count,
+                'total_count': articles_count
+            })
+        else:
+            return JsonResponse({
+                'status': 'error',
+                'message': '摘要生成失敗，請查看日誌'
+            })
 
     except Exception as e:
         logger.error(f"重新生成情感摘要時出錯: {e}", exc_info=True)
+        return JsonResponse({
+            'status': 'error',
+            'message': f'處理請求時發生錯誤: {str(e)}'
+        })
+
+
+@login_required
+def get_sentiment_stats(request, job_id):
+    """獲取情感分析統計數據"""
+    try:
+        job = get_object_or_404(ScrapeJob, id=job_id, user=request.user)
+
+        # 建立情感分析服務
+        sentiment_service = SentimentAnalysisService()
+
+        # 獲取情感分析統計
+        total_articles = Article.objects.filter(job=job).count()
+        analyzed_articles = SentimentAnalysis.objects.filter(job=job).count()
+        analysis_progress = int((analyzed_articles / total_articles * 100) if total_articles > 0 else 0)
+
+        # 獲取整體情感分布
+        sentiment_distribution = sentiment_service.get_sentiment_distribution(job_id)
+
+        # 獲取類別情感摘要
+        category_summary = sentiment_service.get_category_sentiment_summary(job_id)
+
+        return JsonResponse({
+            'status': 'success',
+            'total_articles': total_articles,
+            'analyzed_articles': analyzed_articles,
+            'analysis_progress': analysis_progress,
+            'sentiment_distribution': sentiment_distribution if sentiment_distribution else {},
+            'category_summary': category_summary
+        })
+
+    except Exception as e:
+        logger.error(f"獲取情感分析統計時出錯: {e}", exc_info=True)
+        return JsonResponse({
+            'status': 'error',
+            'message': f'處理請求時發生錯誤: {str(e)}'
+        })
+
+@login_required
+def analyze_single_article(request, job_id, article_id):
+    """手動分析單篇文章情感"""
+    try:
+        job = get_object_or_404(ScrapeJob, id=job_id, user=request.user)
+        article = get_object_or_404(Article, id=article_id, job=job)
+
+        # 檢查是否已分析
+        existing_analysis = SentimentAnalysis.objects.filter(article=article).first()
+
+        if existing_analysis:
+            return JsonResponse({
+                'status': 'success',
+                'message': '該文章已分析過',
+                'already_analyzed': True
+            })
+
+        # 執行分析
+        sentiment_service = SentimentAnalysisService()
+        result = sentiment_service.analyze_article(article)
+
+        if result:
+            # 保存分析結果
+            SentimentAnalysis.objects.create(
+                article=article,
+                job=job,
+                positive_score=result['content']['positive'],
+                negative_score=result['content']['negative'],
+                sentiment=result['content']['sentiment'],
+                title_sentiment=result['title']['sentiment'],
+                title_positive_score=result['title']['positive'],
+                title_negative_score=result['title']['negative']
+            )
+
+            # 獲取更新後的統計
+            total_articles = Article.objects.filter(job=job).count()
+            analyzed_articles = SentimentAnalysis.objects.filter(job=job).count()
+
+            return JsonResponse({
+                'status': 'success',
+                'message': '文章分析成功',
+                'already_analyzed': False,
+                'total_articles': total_articles,
+                'analyzed_articles': analyzed_articles,
+                'analysis_progress': int((analyzed_articles / total_articles * 100) if total_articles > 0 else 0)
+            })
+        else:
+            return JsonResponse({
+                'status': 'error',
+                'message': '文章分析失敗'
+            })
+
+    except Exception as e:
+        logger.error(f"手動分析文章時出錯: {e}", exc_info=True)
         return JsonResponse({
             'status': 'error',
             'message': f'處理請求時發生錯誤: {str(e)}'
