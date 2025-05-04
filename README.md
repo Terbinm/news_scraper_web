@@ -4,6 +4,8 @@
 
 本專案是一個基於Django的新聞爬蟲與分析系統，主要功能包括從中時電子報(China Times)抓取新聞文章，進行中文自然語言處理分析，並提供全文檢索、關鍵詞分析、命名實體識別、情感分析以及領導人物提及分析等功能。系統使用了現代化的前後端技術，實現了新聞資料的自動抓取、存儲、分析與可視化。
 
+本項目代碼託管於 GitHub：[https://github.com/Terbinm/news_scraper_web](https://github.com/Terbinm/news_scraper_web)
+
 ### 主要特點
 
 - **多類別新聞爬取**：支援財經、政治、社會等9個類別的新聞抓取
@@ -27,6 +29,105 @@
 
 ### 系統模組
 
+```mermaid
+flowchart TD
+    %% User Interface Layer
+    subgraph "User Interface"
+        Browser["User Browser"]:::external
+    end
+
+    %% Web Application Layer
+    subgraph "Web Layer"
+        DjangoServer["Django Server (ASGI/WSGI)"]:::web
+        URLRouter["URL Router"]:::web
+        Views["Views (scraper/views.py)"]:::web
+        Templates["Templates"]:::web
+        StaticAssets["Static Assets (CSS/JS)"]:::web
+        Browser -->|"HTTP Request"| DjangoServer
+        DjangoServer -->|"routes to"| URLRouter
+        URLRouter -->|"calls"| Views
+        Views -->|"renders"| Templates
+        Views -->|"serves"| StaticAssets
+    end
+
+    %% Service Layer
+    subgraph "Services Layer"
+        ScraperService["ScraperService"]:::service
+        AnalysisService["AnalysisService"]:::service
+        SentimentService["SentimentService"]:::service
+        SearchService["SearchService"]:::service
+        TaskService["TaskService"]:::service
+    end
+
+    %% Background Task Layer
+    subgraph "Background Layer"
+        CeleryWorker["Celery Worker"]:::background
+        RedisBroker["Redis (Broker & Cache)"]:::data
+        Views -->|"trigger task"| TaskService
+        TaskService -->|"enqueue"| CeleryWorker
+        CeleryWorker -->|"uses"| ScraperService
+        CeleryWorker -->|"uses"| AnalysisService
+        CeleryWorker -->|"uses"| SentimentService
+        CeleryWorker -->|"uses"| SearchService
+        CeleryWorker -->|"publishes"| RedisBroker
+    end
+
+    %% Data Layer
+    subgraph "Data Layer"
+        Database["Database (SQLite/PostgreSQL)"]:::data
+        Media["Media Storage"]:::data
+        Cache["Redis Cache"]:::data
+        ScraperService -->|"writes Article, ScrapeJob"| Database
+        AnalysisService -->|"writes Analysis tables"| Database
+        SentimentService -->|"writes Sentiment tables"| Database
+        SearchService -->|"queries"| Database
+        SearchService -->|"reads/writes"| Cache
+    end
+
+    %% External Dependencies
+    subgraph "External Services"
+        ChinaTimes["China Times Website"]:::external
+        CKIP["CKIP Transformers"]:::external
+        HFModels["HuggingFace Models"]:::external
+        ScraperService -->|"crawls"| ChinaTimes
+        AnalysisService -->|"calls"| CKIP
+        SentimentService -->|"loads"| HFModels
+    end
+
+    %% Search flow back to UI
+    SearchService -->|"returns data"| Views
+    Views -->|"JSON/HTML"| Browser
+
+    %% Click Events
+    click DjangoServer "https://github.com/terbinm/news_scraper_web/blob/master/news_scraper_web/asgi.py"
+    click DjangoServer "https://github.com/terbinm/news_scraper_web/blob/master/news_scraper_web/wsgi.py"
+    click URLRouter "https://github.com/terbinm/news_scraper_web/blob/master/news_scraper_web/urls.py"
+    click Views "https://github.com/terbinm/news_scraper_web/blob/master/scraper/views.py"
+    click Templates "https://github.com/terbinm/news_scraper_web/blob/master/templates/base.html"
+    click Templates "https://github.com/terbinm/news_scraper_web/blob/master/templates/scraper/*.html"
+    click StaticAssets "https://github.com/terbinm/news_scraper_web/blob/master/static/css/main.css"
+    click StaticAssets "https://github.com/terbinm/news_scraper_web/blob/master/static/js/main.js"
+    click ScraperService "https://github.com/terbinm/news_scraper_web/blob/master/scraper/services/scraper_service.py"
+    click AnalysisService "https://github.com/terbinm/news_scraper_web/blob/master/scraper/services/analysis_service.py"
+    click SentimentService "https://github.com/terbinm/news_scraper_web/blob/master/scraper/services/sentiment_service.py"
+    click SearchService "https://github.com/terbinm/news_scraper_web/blob/master/scraper/services/search_service.py"
+    click TaskService "https://github.com/terbinm/news_scraper_web/blob/master/scraper/services/task_service.py"
+    click RedisBroker "https://github.com/terbinm/news_scraper_web/blob/master/requirements.txt"
+    click Database "https://github.com/terbinm/news_scraper_web/blob/master/database-erd.mermaid"
+    click Views "https://github.com/terbinm/news_scraper_web/blob/master/scraper/urls.py"
+    click Views "https://github.com/terbinm/news_scraper_web/blob/master/scraper/forms.py"
+    click Views "https://github.com/terbinm/news_scraper_web/blob/master/scraper/api.py"
+    click Views "https://github.com/terbinm/news_scraper_web/blob/master/scraper/admin.py"
+    click CeleryWorker "https://github.com/terbinm/news_scraper_web/blob/master/scraper/tasks.py"
+
+    %% Styles
+    classDef web fill:#b3d7ff,stroke:#036,stroke-width:1px
+    classDef service fill:#c2f0c2,stroke:#070,stroke-width:1px
+    classDef background fill:#ffd9b3,stroke:#f60,stroke-width:1px
+    classDef data fill:#e0e0e0,stroke:#666,stroke-width:1px
+    classDef external fill:#e6ccff,stroke:#704,stroke-width:1px
+```
+
 系統主要由以下模組組成：
 
 1. **爬蟲模組**：負責自動抓取新聞文章
@@ -35,6 +136,51 @@
 4. **情感分析模組**：分析文章情感傾向
 5. **視覺化模組**：將分析結果轉換為圖表
 6. **用戶管理模組**：處理用戶認證與權限
+
+
+### 項目目錄結構
+
+```
+news_scraper_web/
+├── manage.py                  # Django 管理腳本
+├── news_scraper_web/          # 主項目目錄
+│   ├── __init__.py
+│   ├── asgi.py                # ASGI 配置
+│   ├── settings.py            # 項目設置
+│   ├── urls.py                # URL 配置
+│   └── wsgi.py                # WSGI 配置
+├── scraper/                   # 爬蟲應用
+│   ├── __init__.py
+│   ├── admin.py               # 管理界面配置
+│   ├── api.py                 # API 接口
+│   ├── apps.py                # 應用配置
+│   ├── forms.py               # 表單定義
+│   ├── migrations/            # 資料庫遷移文件
+│   ├── models.py              # 資料庫模型
+│   ├── services/              # 服務模塊
+│   │   ├── __init__.py
+│   │   ├── analysis_service.py # 分析服務
+│   │   ├── scraper_service.py  # 爬蟲服務
+│   │   ├── search_service.py   # 搜索服務
+│   │   ├── sentiment_service.py # 情感分析服務
+│   │   └── task_service.py     # 任務服務
+│   ├── tasks.py               # 後台任務
+│   ├── templatetags/          # 模板標籤
+│   ├── tests.py               # 測試
+│   ├── urls.py                # URL 配置
+│   ├── utils/                 # 工具函數
+│   │   ├── __init__.py
+│   │   ├── chart_utils.py     # 圖表工具
+│   │   ├── scraper_utils.py   # 爬蟲工具
+│   │   └── sentiment_analyzer.py # 情感分析器
+│   └── views.py               # 視圖函數
+├── media/                     # 媒體文件
+│   ├── charts/                # 圖表
+│   ├── models/                # 模型文件
+│   └── scraper_output/        # 爬蟲輸出
+├── static/                    # 靜態文件
+└── templates/                 # 模板文件
+```
 
 ## 資料庫設計
 
@@ -142,7 +288,98 @@ ScrapeJob (1) ──────┬───────> Article (n)
                     │
                     └───────> CategorySentimentSummary (n)
 ```
-![img.png](database-erd.png)
+
+```mermaid
+erDiagram
+    User ||--o{ ScrapeJob : "創建"
+    ScrapeJob ||--o{ Article : "包含"
+    ScrapeJob ||--o{ KeywordAnalysis : "產生"
+    ScrapeJob ||--o{ NamedEntityAnalysis : "產生"
+    ScrapeJob ||--o{ CategorySentimentSummary : "總結"
+    Article ||--o| SentimentAnalysis : "分析"
+    ScrapeJob ||--o{ SentimentAnalysis : "關聯"
+    
+    User {
+        int id PK
+        string username
+        string password
+        string email
+    }
+    
+    ScrapeJob {
+        int id PK
+        int user_id FK
+        datetime created_at
+        datetime updated_at
+        string status
+        string categories
+        int limit_per_category
+        boolean use_threading
+        int max_workers
+        string result_file_path
+        boolean sentiment_analyzed
+    }
+    
+    Article {
+        int id PK
+        int job_id FK
+        string item_id
+        string category
+        string title
+        text content
+        datetime date
+        string author
+        url link
+        text photo_links
+    }
+    
+    KeywordAnalysis {
+        int id PK
+        int job_id FK
+        string word
+        string pos
+        int frequency
+        string category
+        datetime created_at
+    }
+    
+    NamedEntityAnalysis {
+        int id PK
+        int job_id FK
+        string entity
+        string entity_type
+        int frequency
+        string category
+        datetime created_at
+    }
+    
+    SentimentAnalysis {
+        int id PK
+        int article_id FK "OneToOne"
+        int job_id FK
+        float positive_score
+        float negative_score
+        string sentiment
+        string title_sentiment
+        float title_positive_score
+        float title_negative_score
+        datetime created_at
+        datetime updated_at
+    }
+    
+    CategorySentimentSummary {
+        int id PK
+        int job_id FK
+        string category
+        int positive_count
+        int negative_count
+        int neutral_count
+        float average_positive_score
+        datetime created_at
+        datetime updated_at
+    }
+```
+
 ## 全文檢索與關聯分析系統設計
 
 ### 全文檢索引擎
@@ -335,30 +572,6 @@ ScrapeJob (1) ──────┬───────> Article (n)
    python manage.py runserver
    ```
 
-### 生產環境部署
-
-生產環境建議使用以下配置：
-
-1. 使用PostgreSQL替換SQLite作為資料庫
-2. 使用Gunicorn作為WSGI服務器
-3. 使用Nginx作為反向代理
-4. 使用Supervisor管理進程
-5. 使用Redis作為緩存和任務隊列
-6. 使用Celery處理後台任務
-
-## 擴展與優化方向
-
-系統還可以在以下方向進行擴展和優化：
-
-1. **增加更多新聞源**：擴展爬蟲支援更多新聞網站
-2. **改進NLP模型**：使用更先進的中文NLP模型
-3. **全文索引引擎**：使用Elasticsearch提升檢索效能
-4. **分散式爬蟲**：實現分散式爬蟲系統提高效率
-5. **API接口**：提供RESTful API供外部系統集成
-6. **專題分析**：增加熱點事件、專題分析功能
-7. **輿情預警**：增加輿情監測和預警功能
-8. **使用者定制**：允許用戶自定義分析維度和指標
-
 ## 系統展示
 
 ### 爬蟲任務創建頁面
@@ -412,50 +625,4 @@ ScrapeJob (1) ──────┬───────> Article (n)
 
 ## 附錄
 
-### 項目目錄結構
-
-```
-news_scraper_web/
-├── manage.py                  # Django 管理腳本
-├── news_scraper_web/          # 主項目目錄
-│   ├── __init__.py
-│   ├── asgi.py                # ASGI 配置
-│   ├── settings.py            # 項目設置
-│   ├── urls.py                # URL 配置
-│   └── wsgi.py                # WSGI 配置
-├── scraper/                   # 爬蟲應用
-│   ├── __init__.py
-│   ├── admin.py               # 管理界面配置
-│   ├── api.py                 # API 接口
-│   ├── apps.py                # 應用配置
-│   ├── forms.py               # 表單定義
-│   ├── migrations/            # 資料庫遷移文件
-│   ├── models.py              # 資料庫模型
-│   ├── services/              # 服務模塊
-│   │   ├── __init__.py
-│   │   ├── analysis_service.py # 分析服務
-│   │   ├── scraper_service.py  # 爬蟲服務
-│   │   ├── search_service.py   # 搜索服務
-│   │   ├── sentiment_service.py # 情感分析服務
-│   │   └── task_service.py     # 任務服務
-│   ├── tasks.py               # 後台任務
-│   ├── templatetags/          # 模板標籤
-│   ├── tests.py               # 測試
-│   ├── urls.py                # URL 配置
-│   ├── utils/                 # 工具函數
-│   │   ├── __init__.py
-│   │   ├── chart_utils.py     # 圖表工具
-│   │   ├── scraper_utils.py   # 爬蟲工具
-│   │   └── sentiment_analyzer.py # 情感分析器
-│   └── views.py               # 視圖函數
-├── media/                     # 媒體文件
-│   ├── charts/                # 圖表
-│   ├── models/                # 模型文件
-│   └── scraper_output/        # 爬蟲輸出
-├── static/                    # 靜態文件
-└── templates/                 # 模板文件
-```
-
 ### GitHub 項目地址
-
-本項目代碼託管於 GitHub：[https://github.com/yourusername/news-scraper-web](https://github.com/yourusername/news-scraper-web)
