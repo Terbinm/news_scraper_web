@@ -1,6 +1,11 @@
 from django.contrib import admin
 from .models import ScrapeJob, Article, KeywordAnalysis, NamedEntityAnalysis, SentimentAnalysis, CategorySentimentSummary
 
+admin.site.site_header = 'LED管理後台'  # 设置header
+admin.site.site_title = 'LED管理後台'  # 设置title
+admin.site.index_title = 'LED管理後台'
+
+
 @admin.register(SentimentAnalysis)
 class SentimentAnalysisAdmin(admin.ModelAdmin):
     list_display = ('id', 'article', 'sentiment', 'positive_score', 'negative_score')

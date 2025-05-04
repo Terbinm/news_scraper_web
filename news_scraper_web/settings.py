@@ -31,6 +31,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'simpleui',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -153,3 +154,6 @@ LOGIN_URL = '/login/'
 
 CONN_MAX_AGE = 60  # 60秒後關閉數據庫連接
 
+# SIMPLEUI SETTING
+SIMPLEUI_HOME_INFO = False
+SIMPLEUI_ANALYSIS = False

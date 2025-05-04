@@ -122,9 +122,8 @@ class SentimentAnalysis(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='創建時間')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='更新時間')
 
-
     def __str__(self):
-            return f"{self.article.title} - {self.sentiment} ({self.positive_score:.2f})"
+        return f"{self.article.title} - {self.sentiment} ({self.positive_score:.2f})"
 
     class Meta:
         verbose_name = '情感分析'
