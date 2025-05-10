@@ -1858,14 +1858,23 @@ function generateAIReport() {
         })
     })
     .then(response => {
+        console.log('Response status:', response.status);
+        console.log('Response headers:', response.headers);
+
+        // 添加更詳細的錯誤處理
         if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
+            return response.text().then(text => {
+                console.error('Error response:', text);
+                throw new Error(`HTTP error! Status: ${response.status}, Body: ${text}`);
+            });
         }
         return response.json();
     })
     .then(data => {
-        // 報告生成請求成功
-        if (data.status === 'success') {
+        console.log('Success response:', data);
+
+        // 檢查後端回應格式
+        if (data.status === 'pending') {
             // 設置報告進度信息
             const progressInfoElement = document.getElementById('reportProgressInfo');
             if (progressInfoElement) {
@@ -1886,15 +1895,24 @@ function generateAIReport() {
             // 顯示成功視圖
             showReportModalView('success');
         } else {
-            // 報告生成請求失敗
-            showReportError(data.message || '未知錯誤');
+            // 報告生成請求失敗 - 這裡要更詳細地處理
+            const errorMessage = data.message || data.error || '未知錯誤';
+            console.error('Backend error:', errorMessage);
+            showReportError(errorMessage);
         }
     })
     .catch(error => {
         console.error('生成報告請求失敗:', error);
-        showReportError(error.message);
+
+        // 檢查是否為網路錯誤
+        if (error.message.includes('Failed to fetch')) {
+            showReportError('網路連接失敗，請檢查網路狀態');
+        } else {
+            showReportError(`請求失敗: ${error.message}`);
+        }
     });
 }
+
 
 /**
  * 獲取當前搜索參數

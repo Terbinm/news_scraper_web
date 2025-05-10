@@ -1,5 +1,6 @@
 import json
 import logging
+import os
 
 from datetime import datetime
 
@@ -1400,3 +1401,29 @@ def regenerate_ai_report(request, job_id, report_id):
 
     messages.success(request, '報告重新生成請求已提交，請稍後查看')
     return redirect('ai_report_detail', job_id=job_id, report_id=report_id)
+
+
+@login_required
+def delete_ai_report(request, job_id, report_id):
+    """刪除 AI 報告"""
+    if request.method != 'POST':
+        return redirect('ai_report_view', job_id=job_id)
+
+    job = get_object_or_404(ScrapeJob, id=job_id, user=request.user)
+    report = get_object_or_404(AIReport, id=report_id, job=job)
+
+    try:
+        # 如果有報告文件，則刪除文件
+        report_file_path = report.get_file_path()
+        if os.path.exists(report_file_path):
+            os.remove(report_file_path)
+
+        # 刪除資料庫記錄
+        report.delete()
+
+        messages.success(request, f'報告 #{report_id} 已成功刪除')
+    except Exception as e:
+        logger.error(f"刪除報告時出錯: {e}")
+        messages.error(request, f'刪除報告失敗: {str(e)}')
+
+    return redirect('ai_report_view', job_id=job_id)

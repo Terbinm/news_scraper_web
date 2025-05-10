@@ -70,20 +70,25 @@
                                 </td>
                                 <td>
                                     <div class="btn-group btn-group-sm">
-                                        <a href="{% url 'ai_report_detail' job.id report.id %}" class="btn btn-sm btn-outline-info">
+                                        <a href="{% url 'ai_report_detail' job.id report.id %}" class="btn btn-sm btn-outline-info" title="查看報告">
                                             <i class="bi bi-eye"></i>
                                         </a>
                                         {% if report.status == 'completed' %}
-                                        <a href="{% url 'ai_report_download' job.id report.id %}" class="btn btn-sm btn-outline-success">
+                                        <a href="{% url 'ai_report_download' job.id report.id %}" class="btn btn-sm btn-outline-success" title="下載報告">
                                             <i class="bi bi-download"></i>
                                         </a>
                                         {% endif %}
                                         {% if report.status != 'pending' and report.status != 'running' %}
-                                        <button type="button" class="btn btn-sm btn-outline-warning regenerate-btn" 
-                                                data-job-id="{{ job.id }}" data-report-id="{{ report.id }}">
+                                        <button type="button" class="btn btn-sm btn-outline-warning regenerate-btn"
+                                                data-job-id="{{ job.id }}" data-report-id="{{ report.id }}" title="重新生成">
                                             <i class="bi bi-arrow-clockwise"></i>
                                         </button>
                                         {% endif %}
+                                        <!-- 添加刪除按鈕 -->
+                                        <button type="button" class="btn btn-sm btn-outline-danger delete-btn"
+                                                data-job-id="{{ job.id }}" data-report-id="{{ report.id }}" title="刪除報告">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
                                     </div>
                                 </td>
                             </tr>
@@ -97,7 +102,7 @@
                     <h4 class="text-muted">尚未生成任何報告</h4>
                     <p class="mb-4">使用進階搜尋功能搜尋文章並生成AI分析報告</p>
                     <a href="{% url 'job_search_analysis' job.id %}" class="btn btn-info">
-                        <i class="bi bi-search me-2"></i>前往進階搜尋
+                        <i class="bi bi-search me-2">前往進階搜尋</i>
                     </a>
                 </div>
                 {% endif %}
@@ -175,6 +180,31 @@
         </div>
     </div>
 </div>
+
+<!-- 刪除報告確認模態框 -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">確認刪除報告</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>您確定要刪除此報告嗎？此操作無法復原。</p>
+                <p>報告 ID: <span id="deleteReportId"></span></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <form id="deleteForm" method="post" action="">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash me-1"></i>確定刪除
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block extra_js %}
@@ -189,6 +219,22 @@
                 form.action = `/jobs/${jobId}/ai-report/${reportId}/regenerate/`;
                 
                 const modal = new bootstrap.Modal(document.getElementById('regenerateModal'));
+                modal.show();
+            });
+        });
+
+        // 初始化刪除報告按鈕
+        document.querySelectorAll('.delete-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const jobId = this.dataset.jobId;
+                const reportId = this.dataset.reportId;
+                const form = document.getElementById('deleteForm');
+                form.action = `/jobs/${jobId}/ai-report/${reportId}/delete/`;
+
+                // 顯示報告ID
+                document.getElementById('deleteReportId').textContent = reportId;
+
+                const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
                 modal.show();
             });
         });

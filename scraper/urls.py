@@ -49,4 +49,6 @@ urlpatterns = [
     path('api/jobs/<int:job_id>/ai-report/', api.AIReportAPIView.as_view(), name='api_ai_report'),
     path('api/jobs/<int:job_id>/ai-report/<int:report_id>/', api.AIReportAPIView.as_view(),
          name='api_ai_report_detail'),
+    path('jobs/<int:job_id>/ai-report/<int:report_id>/delete/', views.delete_ai_report, name='delete_ai_report'),
+
 ]
