@@ -102,12 +102,32 @@ def _prepare_report_prompt(search_params, search_results, language='zh-TW'):
     # 準備文章摘要
     article_summaries = []
     for i, article in enumerate(search_results[:10]):  # 限制使用前10篇文章
+        # 判斷 article 是否為字典還是 Article 模型實例
+        if isinstance(article, dict):
+            # 如果是字典，使用 .get() 方法
+            title = article.get('title', '')
+            category = article.get('category', '')
+            date = article.get('date', '')
+            content = article.get('content', '')
+        else:
+            # 如果是 Article 模型實例，直接訪問屬性
+            title = getattr(article, 'title', '')
+            category = getattr(article, 'category', '')
+            date = getattr(article, 'date', '')
+            content = getattr(article, 'content', '')
+
+        # 確保 content 是字符串並截取前200個字符
+        if content:
+            content_preview = str(content)[:200] + "..."
+        else:
+            content_preview = "無內容摘要"
+
         article_summaries.append(
             f"文章{i + 1}:\n"
-            f"標題: {article.get('title', '')}\n"
-            f"類別: {article.get('category', '')}\n"
-            f"日期: {article.get('date', '')}\n"
-            f"內容摘要: {article.get('content', '')[:200]}...\n"
+            f"標題: {title}\n"
+            f"類別: {category}\n"
+            f"日期: {date}\n"
+            f"內容摘要: {content_preview}\n"
         )
 
     article_data = "\n".join(article_summaries)

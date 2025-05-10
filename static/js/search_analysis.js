@@ -15,6 +15,8 @@ document.addEventListener('DOMContentLoaded', function() {
     setupEntityTypeFilters();
     initResultsDisplay();
     setupCalculateMatches();
+    exportSearchResults();
+    initAIReportFeature();
 
     // 初始化圖表
     if (typeof timeSeriesData !== 'undefined' && timeSeriesData) {
@@ -49,7 +51,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (typeof sentimentDistribution !== 'undefined' && sentimentDistribution) {
             try {
                 initSentimentDistributionChart(sentimentDistribution);
-                console.log("情緒分布圖表初始化完成");
+                console.log("情緒分布圖表初始化完成了");
             } catch (e) {
                 console.error("情緒分布圖表初始化失敗:", e);
             }
@@ -66,11 +68,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }, 500);
 
-    // 初始化匯出功能
-    exportSearchResults();
-
-    // 初始化AI報告功能
-    initAIReportFeature();
+    console.log("全部初始化完成");
 });
 
 
@@ -1554,8 +1552,10 @@ function initSentimentTimeSeriesChart(timeSeriesData, sentimentTimeData) {
            sentimentData = JSON.parse(sentimentTimeData);
        }
 
-       console.log("時間序列數據:", timeData);
-       console.log("情緒時間數據:", sentimentData);
+
+       // 測試用
+       // console.log("時間序列數據:", timeData);
+       // console.log("情緒時間數據:", sentimentData);
 
        if (!Array.isArray(timeData)) {
            console.error("時間序列數據格式錯誤，預期是數組");
@@ -1946,6 +1946,55 @@ function getSearchParams() {
     searchParams.time_grouping = formData.get('time_grouping') || 'day';
 
     return searchParams;
+}
+
+/**
+ * 獲取當前搜索結果
+ * @returns {Array} 搜索結果數組
+ */
+function getSearchResults() {
+    const results = [];
+
+    // 從表格中獲取搜索結果
+    const resultsTable = document.getElementById('articlesTable');
+    if (!resultsTable) return results;
+
+    // 獲取所有行
+    const rows = resultsTable.querySelectorAll('tbody tr');
+
+    // 遍歷每一行，提取文章信息
+    rows.forEach(row => {
+        // 從行中提取文章信息
+        const titleCell = row.querySelector('td:nth-child(2)');
+        const categoryCell = row.querySelector('td:nth-child(3)');
+        const dateCell = row.querySelector('td:nth-child(4)');
+        const authorCell = row.querySelector('td:nth-child(5)');
+        const previewBtn = row.querySelector('.article-preview-btn');
+
+        if (titleCell && previewBtn) {
+            // 獲取文章詳細內容
+            const articleId = previewBtn.dataset.id;
+            const title = titleCell.textContent.trim();
+            const category = categoryCell?.querySelector('.badge')?.textContent.trim() || '';
+            const date = dateCell?.textContent.trim() || '';
+            const author = authorCell?.textContent.trim() || '';
+            const content = previewBtn.dataset.content || '';
+            const link = previewBtn.dataset.link || '';
+
+            // 添加到結果數組
+            results.push({
+                id: articleId,
+                title: title,
+                category: category,
+                date: date,
+                author: author,
+                content: content,
+                link: link
+            });
+        }
+    });
+
+    return results;
 }
 
 /**
