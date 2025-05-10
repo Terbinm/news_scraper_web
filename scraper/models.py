@@ -1,6 +1,11 @@
+import os
+import logging
 from django.db import models
+from django.urls import reverse
+from django.conf import settings
 from django.contrib.auth.models import User
 
+logger = logging.getLogger(__name__)
 
 class ScrapeJob(models.Model):
     """爬蟲任務模型"""
@@ -155,3 +160,55 @@ class CategorySentimentSummary(models.Model):
         verbose_name_plural = '類別情感摘要'
         ordering = ['-positive_count']
         unique_together = ('job', 'category')
+
+
+class AIReport(models.Model):
+    """AI 生成的報告模型"""
+
+    job = models.ForeignKey(ScrapeJob, on_delete=models.CASCADE, related_name='ai_reports', verbose_name='爬蟲任務')
+    search_query = models.TextField(verbose_name='搜索查詢條件', blank=True, null=True)
+    content = models.TextField(verbose_name='報告內容')
+    generated_at = models.DateTimeField(auto_now_add=True, verbose_name='生成時間')
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='更新時間')
+    language = models.CharField(max_length=10, default='zh-TW', verbose_name='報告語言')
+    article_count = models.IntegerField(default=0, verbose_name='分析文章數')
+    status = models.CharField(
+        max_length=20,
+        default='pending',
+        choices=[
+            ('pending', '處理中'),
+            ('completed', '已完成'),
+            ('failed', '失敗')
+        ],
+        verbose_name='狀態'
+    )
+    error_message = models.TextField(verbose_name='錯誤訊息', blank=True, null=True)
+
+    # 存儲報告生成用的原始搜索參數
+    search_params = models.JSONField(verbose_name='搜索參數', blank=True, null=True)
+
+    class Meta:
+        verbose_name = 'AI報告'
+        verbose_name_plural = 'AI報告'
+        ordering = ['-generated_at']
+
+    def __str__(self):
+        return f"AI報告 #{self.id} ({self.job.id}) - {self.generated_at.strftime('%Y-%m-%d %H:%M')}"
+
+    def get_absolute_url(self):
+        """獲取報告詳情頁面URL"""
+        return reverse('ai_report_detail', kwargs={'pk': self.pk})
+
+    def get_file_path(self):
+        """獲取報告文件保存路徑"""
+        return os.path.join(settings.AI_REPORT_SETTINGS['SAVE_PATH'], f'report_{self.id}.md')
+
+    def save_to_file(self):
+        """將報告內容保存為文件"""
+        try:
+            with open(self.get_file_path(), 'w', encoding='utf-8') as f:
+                f.write(self.content)
+            return True
+        except Exception as e:
+            logger.error(f"保存報告文件時出錯: {e}")
+            return False

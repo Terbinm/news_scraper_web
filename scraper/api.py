@@ -7,7 +7,7 @@ from django.conf import settings
 from django.utils.decorators import method_decorator
 from django.views import View
 
-from .models import ScrapeJob, Article, KeywordAnalysis, NamedEntityAnalysis
+from .models import ScrapeJob, Article, KeywordAnalysis, NamedEntityAnalysis, AIReport
 from .utils.scraper_utils import CTTextProcessor
 
 logger = logging.getLogger(__name__)
@@ -230,3 +230,99 @@ def analyze_search_terms_api(request):
             'status': 'error',
             'message': str(e)
         }, status=500)
+
+
+@method_decorator(login_required, name='dispatch')
+class AIReportAPIView(BaseAPIView):
+    """AI報告生成API"""
+
+    def post(self, request, job_id):
+        """處理POST請求，生成AI報告"""
+        try:
+            # 檢查任務是否存在並屬於當前用戶
+            try:
+                job = ScrapeJob.objects.get(id=job_id, user=request.user)
+            except ScrapeJob.DoesNotExist:
+                return self.get_error_response('任務不存在或無權訪問', status=404)
+
+            # 解析請求數據
+            try:
+                data = json.loads(request.body)
+            except json.JSONDecodeError:
+                return self.get_error_response('無效的JSON數據')
+
+            # 獲取搜索參數
+            search_params = data.get('search_params', {})
+
+            # 獲取分析結果
+            search_results = data.get('search_results', [])
+
+            # 獲取報告語言
+            language = data.get('language', settings.AI_REPORT_SETTINGS['DEFAULT_LANGUAGE'])
+
+            # 创建AI報告記錄
+            report = AIReport.objects.create(
+                job=job,
+                search_query=search_params.get('search_terms', ''),
+                language=language,
+                article_count=len(search_results) if isinstance(search_results, list) else 0,
+                status='pending',
+                search_params=search_params
+            )
+
+            # 啟動非同步任務生成報告
+            from .services.ai_service import generate_report_async
+            generate_report_async(report.id, search_params, search_results)
+
+            return self.get_success_response({
+                'message': '已啟動報告生成任務，請稍後查看',
+                'report_id': report.id,
+                'status': 'pending'
+            })
+
+        except Exception as e:
+            logger.error(f"生成AI報告時出錯: {e}", exc_info=True)
+            return self.get_error_response(f"處理請求時發生錯誤: {str(e)}", status=500)
+
+    def get(self, request, job_id, report_id=None):
+        """獲取報告狀態或內容"""
+        try:
+            # 檢查任務是否存在並屬於當前用戶
+            try:
+                job = ScrapeJob.objects.get(id=job_id, user=request.user)
+            except ScrapeJob.DoesNotExist:
+                return self.get_error_response('任務不存在或無權訪問', status=404)
+
+            # 如果提供了特定報告ID，返回該報告詳情
+            if report_id:
+                try:
+                    report = AIReport.objects.get(id=report_id, job=job)
+                    return self.get_success_response({
+                        'id': report.id,
+                        'status': report.status,
+                        'content': report.content if report.status == 'completed' else '',
+                        'error': report.error_message,
+                        'generated_at': report.generated_at.isoformat(),
+                        'article_count': report.article_count
+                    })
+                except AIReport.DoesNotExist:
+                    return self.get_error_response('報告不存在', status=404)
+
+            # 否則返回該任務的所有報告列表
+            reports = AIReport.objects.filter(job=job).order_by('-generated_at')
+            return self.get_success_response({
+                'reports': [
+                    {
+                        'id': report.id,
+                        'status': report.status,
+                        'search_query': report.search_query,
+                        'generated_at': report.generated_at.isoformat(),
+                        'article_count': report.article_count
+                    }
+                    for report in reports
+                ]
+            })
+
+        except Exception as e:
+            logger.error(f"獲取AI報告時出錯: {e}", exc_info=True)
+            return self.get_error_response(f"處理請求時發生錯誤: {str(e)}", status=500)

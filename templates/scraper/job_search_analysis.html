@@ -6,6 +6,7 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="/static/css/search_analysis.css">
+<link rel="stylesheet" href="/static/css/ai_report.css">
 {% endblock %}
 
 {% block content %}
@@ -477,9 +478,288 @@
             </div>
         </div>
     </div>
-
-
 </div>
+
+{# 在結果分析區塊後面添加AI報告功能按鈕 #}
+{% if results %}
+<!-- 添加AI報告生成按鈕 -->
+<div class="row mb-4" data-aos="fade-up" data-aos-delay="350">
+    <div class="col-12">
+        <div class="ai-report-card">
+            <div class="card-body d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center">
+                    <div class="ai-icon-container me-3">
+                        <i class="bi bi-robot"></i>
+                    </div>
+                    <div>
+                        <h5 class="mb-1">使用AI生成詳細分析報告</h5>
+                        <p class="mb-0 text-light-muted">讓 {{ ollama_settings.model }} 模型根據搜尋結果生成全面的分析報告</p>
+                    </div>
+                </div>
+                <div style="margin-right: 20px">
+                    <button type="button" class="btn btn-primary generate-report-btn" id="generateReportBtn">
+                        <i class="bi bi-magic me-2"></i>生成AI報告
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- 最近生成的報告 -->
+{% if ai_reports %}
+<div class="row mb-4" data-aos="fade-up" data-aos-delay="380">
+    <div class="col-12">
+        <div class="card recent-reports-card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="bi bi-file-earmark-text me-2"></i>最近生成的AI報告
+                </h5>
+                <a href="{% url 'ai_report_view' job.id %}" class="btn btn-sm btn-outline-info">
+                    <i class="bi bi-list me-1"></i>查看全部報告
+                </a>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover">
+                        <thead>
+                            <tr>
+                                <th style="width: 50px">#</th>
+                                <th>搜尋條件</th>
+                                <th style="width: 120px">文章數</th>
+                                <th style="width: 180px">生成時間</th>
+                                <th style="width: 100px">狀態</th>
+                                <th style="width: 120px">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for report in ai_reports %}
+                            <tr>
+                                <td>{{ report.id }}</td>
+                                <td>{{ report.search_query|default:"無搜尋條件" }}</td>
+                                <td>{{ report.article_count }} 篇</td>
+                                <td>{{ report.generated_at|date:"Y-m-d H:i" }}</td>
+                                <td>
+                                    {% if report.status == 'completed' %}
+                                    <span class="badge bg-success">已完成</span>
+                                    {% elif report.status == 'failed' %}
+                                    <span class="badge bg-danger">失敗</span>
+                                    {% else %}
+                                    <span class="badge bg-warning">處理中</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="{% url 'ai_report_detail' job.id report.id %}" class="btn btn-sm btn-outline-info">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        {% if report.status == 'completed' %}
+                                        <a href="{% url 'ai_report_download' job.id report.id %}" class="btn btn-sm btn-outline-success">
+                                            <i class="bi bi-download"></i>
+                                        </a>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- AI報告生成模態框 -->
+<div class="modal fade" id="generateReportModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-robot me-2"></i>生成AI分析報告
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="report-options-container">
+                    <div class="mb-4">
+                        <h6 class="text-info">報告內容</h6>
+                        <p>AI報告將基於當前搜尋條件和結果生成，共分析 <strong id="reportArticleCount">{{ results|length }}</strong> 篇文章</p>
+
+                        <div class="search-criteria-summary mb-3 p-3 bg-dark rounded">
+                            <p class="mb-2"><i class="bi bi-search me-2"></i><strong>搜尋條件摘要：</strong></p>
+                            <ul class="list-unstyled mb-0">
+                                {% if form.search_terms.value %}
+                                <li><i class="bi bi-dot me-2"></i>搜尋詞：{{ form.search_terms.value }}</li>
+                                {% endif %}
+
+                                {% if form.categories.value %}
+                                <li><i class="bi bi-dot me-2"></i>類別：{{ form.categories.value|join:", " }}</li>
+                                {% endif %}
+
+                                {% if form.date_from.value and form.date_to.value %}
+                                <li><i class="bi bi-dot me-2"></i>時間範圍：{{ form.date_from.value }} 至 {{ form.date_to.value }}</li>
+                                {% endif %}
+
+                                <li><i class="bi bi-dot me-2"></i>搜尋模式：{{ form.search_mode.value|upper }}（{{ form.search_mode.value|lower }}模式）</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <h6 class="text-info">報告語言</h6>
+                        <div class="language-selector">
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="reportLanguage" id="langZhTW" value="zh-TW" checked>
+                                <label class="form-check-label" for="langZhTW">繁體中文</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="reportLanguage" id="langZhCN" value="zh-CN">
+                                <label class="form-check-label" for="langZhCN">簡體中文</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="reportLanguage" id="langEnUS" value="en-US">
+                                <label class="form-check-label" for="langEnUS">英文</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <h6 class="text-info">報告部分</h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="includeKeywordAnalysis" checked>
+                                    <label class="form-check-label" for="includeKeywordAnalysis">
+                                        <i class="bi bi-key me-1 text-info"></i>關鍵詞分析
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="includeTimeTrend" checked>
+                                    <label class="form-check-label" for="includeTimeTrend">
+                                        <i class="bi bi-graph-up me-1 text-info"></i>時間趨勢分析
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="includeCategoryAnalysis" checked>
+                                    <label class="form-check-label" for="includeCategoryAnalysis">
+                                        <i class="bi bi-pie-chart me-1 text-info"></i>類別分布分析
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="includeTopicAnalysis" checked>
+                                    <label class="form-check-label" for="includeTopicAnalysis">
+                                        <i class="bi bi-chat-square-text me-1 text-info"></i>核心主題分析
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="includeImpactAnalysis" checked>
+                                    <label class="form-check-label" for="includeImpactAnalysis">
+                                        <i class="bi bi-lightning me-1 text-info"></i>潛在影響分析
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="includeSummary" checked>
+                                    <label class="form-check-label" for="includeSummary">
+                                        <i class="bi bi-file-text me-1 text-info"></i>總結建議
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="model-info-container">
+                        <div class="d-flex align-items-center">
+                            <div class="model-badge me-3">{{ ollama_settings.model }}</div>
+                            <div class="model-info-text">
+                                <p class="mb-0 small text-muted">使用 Ollama 服務提供的 {{ ollama_settings.model }} 模型生成報告</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="report-generating-container" style="display: none;">
+                    <div class="text-center py-4">
+                        <div class="spinner-border text-info mb-3" role="status">
+                            <span class="visually-hidden">生成中...</span>
+                        </div>
+                        <h5 class="text-info mb-3">正在生成AI報告</h5>
+                        <p>系統正在使用AI模型分析數據並生成報告，這可能需要幾分鐘時間</p>
+                        <div class="progress mt-4 mx-auto" style="max-width: 400px">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated bg-info" role="progressbar" style="width: 100%"></div>
+                        </div>
+                        <p class="mt-3 small text-light-muted">您可以關閉此窗口，報告將在後台繼續生成</p>
+                    </div>
+                </div>
+
+                <div class="report-success-container" style="display: none;">
+                    <div class="text-center py-4">
+                        <div class="success-icon mb-3">
+                            <i class="bi bi-check-circle"></i>
+                        </div>
+                        <h5 class="text-success mb-3">報告生成請求已提交</h5>
+                        <p>系統已開始生成AI報告，您可以在報告列表中查看進度</p>
+                        <div id="reportProgressInfo" class="mt-3"></div>
+                    </div>
+                </div>
+
+                <div class="report-error-container" style="display: none;">
+                    <div class="text-center py-4">
+                        <div class="error-icon mb-3">
+                            <i class="bi bi-exclamation-triangle"></i>
+                        </div>
+                        <h5 class="text-danger mb-3">報告生成請求失敗</h5>
+                        <p>提交報告生成請求時發生錯誤</p>
+                        <div class="error-details mt-3 mx-auto text-start" style="max-width: 400px">
+                            <pre class="bg-dark text-danger p-3 rounded" id="errorMessage">未知錯誤</pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div class="options-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" id="submitReportBtn">
+                        <i class="bi bi-magic me-1"></i>生成報告
+                    </button>
+                </div>
+                <div class="generating-footer" style="display: none;">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">關閉</button>
+                </div>
+                <div class="success-footer" style="display: none;">
+                    <a href="#" class="btn btn-outline-info" id="viewReportBtn">
+                        <i class="bi bi-eye me-1"></i>查看報告
+                    </a>
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">關閉</button>
+                </div>
+                <div class="error-footer" style="display: none;">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">關閉</button>
+                    <button type="button" class="btn btn-warning" id="retryReportBtn">
+                        <i class="bi bi-arrow-clockwise me-1"></i>重試
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 <!-- 搜尋結果列表 -->
 <div class="results-table-card" data-aos="fade-up" data-aos-delay="900">
@@ -729,6 +1009,7 @@
     {% else %}
     const sentimentTimeData = null;
     {% endif %}
+
 </script>
 <script src="/static/js/search_analysis.js"></script>
 <script src="/static/js/word_cloud_analysis.js"></script>

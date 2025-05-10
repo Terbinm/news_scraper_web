@@ -1,5 +1,7 @@
+# 在scraper/urls.py文件中添加以下URL配置
 from django.urls import path
 from . import views
+from . import api
 
 urlpatterns = [
     path('', views.job_list, name='job_list'),
@@ -7,9 +9,6 @@ urlpatterns = [
     path('logout/', views.logout_view, name='logout'),
     path('jobs/', views.job_list, name='job_list'),
     path('jobs/create/', views.job_create, name='job_create'),
-
-    # path('jobs/<int:job_id>/', views.job_detail, name='job_detail'),
-    # path('jobs/<int:job_id>/chart/', views.generate_keyword_chart, name='generate_chart'),
     path('jobs/delete/<int:job_id>/', views.job_delete, name='job_delete'),
     path('articles/<int:article_id>/', views.article_detail, name='article_detail'),
 
@@ -36,4 +35,18 @@ urlpatterns = [
          name='start_sentiment_analysis'),
     path('jobs/<int:job_id>/regenerate-sentiment-summary/', views.regenerate_sentiment_summary,
          name='regenerate_sentiment_summary'),
+
+
+
+    # AI 報告相關路由
+    path('jobs/<int:job_id>/ai-report/', views.ai_report_view, name='ai_report_view'),
+    path('jobs/<int:job_id>/ai-report/<int:report_id>/', views.ai_report_detail, name='ai_report_detail'),
+    path('jobs/<int:job_id>/ai-report/<int:report_id>/download/', views.ai_report_download, name='ai_report_download'),
+    path('jobs/<int:job_id>/ai-report/<int:report_id>/regenerate/', views.regenerate_ai_report,
+         name='regenerate_ai_report'),
+
+    # AI 報告API
+    path('api/jobs/<int:job_id>/ai-report/', api.AIReportAPIView.as_view(), name='api_ai_report'),
+    path('api/jobs/<int:job_id>/ai-report/<int:report_id>/', api.AIReportAPIView.as_view(),
+         name='api_ai_report_detail'),
 ]

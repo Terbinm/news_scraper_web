@@ -1,0 +1,238 @@
+{# templates/scraper/ai_report_detail.html #}
+{% extends 'base.html' %}
+{% load custom_filters %}
+
+{% block title %}AI 報告詳情 | 新聞爬蟲系統{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/static/css/ai_report.css">
+<!-- 添加highlight.js用於代碼高亮 -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/github-dark.min.css">
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h1 class="display-6 fw-bold text-info">
+            <i class="bi bi-file-earmark-text me-2"></i>AI 報告詳情
+        </h1>
+        <p class="text-light">報告 #{{ report.id }} - 任務 #{{ job.id }}</p>
+    </div>
+    <div class="col-md-4 text-md-end">
+        <a href="{% url 'ai_report_view' job.id %}" class="btn btn-outline-secondary me-2">
+            <i class="bi bi-arrow-left me-1"></i>返回報告列表
+        </a>
+        {% if is_completed %}
+        <a href="{% url 'ai_report_download' job.id report.id %}" class="btn btn-outline-success">
+            <i class="bi bi-download me-1"></i>下載報告
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+<!-- 報告元數據 -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card report-meta-card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-info-circle me-2"></i>報告資訊
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 mb-3 mb-md-0">
+                        <div class="d-flex flex-column">
+                            <span class="text-muted small">搜尋條件</span>
+                            <span class="fw-bold">{{ report.search_query|default:"未指定搜尋條件" }}</span>
+                        </div>
+                    </div>
+                    <div class="col-md-2 mb-3 mb-md-0">
+                        <div class="d-flex flex-column">
+                            <span class="text-muted small">分析文章數</span>
+                            <span class="fw-bold">{{ report.article_count }} 篇文章</span>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3 mb-md-0">
+                        <div class="d-flex flex-column">
+                            <span class="text-muted small">生成時間</span>
+                            <span class="fw-bold">{{ report.generated_at|date:"Y-m-d H:i:s" }}</span>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="d-flex flex-column">
+                            <span class="text-muted small">狀態</span>
+                            <span class="fw-bold">
+                                {% if report.status == 'completed' %}
+                                <span class="badge bg-success">已完成</span>
+                                {% elif report.status == 'failed' %}
+                                <span class="badge bg-danger">失敗</span>
+                                {% else %}
+                                <span class="badge bg-warning">處理中</span>
+                                <small class="text-info loading-dot-animation">生成中</small>
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 報告內容 -->
+<div class="row">
+    <div class="col-12">
+        <div class="card report-content-card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="bi bi-file-earmark-text me-2"></i>報告內容
+                </h5>
+                {% if is_completed %}
+                <div>
+                    <button class="btn btn-sm btn-outline-info" id="copyReportBtn">
+                        <i class="bi bi-clipboard me-1"></i>複製內容
+                    </button>
+                    <a href="{% url 'ai_report_download' job.id report.id %}" class="btn btn-sm btn-outline-success ms-2">
+                        <i class="bi bi-download me-1"></i>下載報告
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                {% if report.status == 'completed' and rendered_content %}
+                <div class="markdown-content" id="reportContent">
+                    {{ rendered_content|safe }}
+                </div>
+                {% elif report.status == 'failed' %}
+                <div class="error-container text-center py-5">
+                    <i class="bi bi-exclamation-triangle display-4 text-danger mb-3"></i>
+                    <h4 class="text-danger">報告生成失敗</h4>
+                    <p>生成報告時發生錯誤，請查看錯誤訊息：</p>
+                    <div class="error-message mt-3 mx-auto text-start">
+                        <pre class="bg-dark text-danger p-3 rounded">{{ report.error_message|default:"未知錯誤" }}</pre>
+                    </div>
+                    <div class="mt-4">
+                        <button class="btn btn-warning regenerate-btn" data-job-id="{{ job.id }}" data-report-id="{{ report.id }}">
+                            <i class="bi bi-arrow-clockwise me-1"></i>重新嘗試生成
+                        </button>
+                    </div>
+                </div>
+                {% else %}
+                <div class="loading-container text-center py-5">
+                    <div class="spinner-border text-info mb-4" role="status">
+                        <span class="visually-hidden">載入中...</span>
+                    </div>
+                    <h4 class="text-info mb-3">報告生成中，請稍候...</h4>
+                    <p>系統正在使用 AI 模型分析您的數據並生成報告，這可能需要幾分鐘的時間。</p>
+                    <div class="progress mt-4 mx-auto" style="max-width: 500px">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated bg-info" role="progressbar" style="width: 100%"></div>
+                    </div>
+                    <p class="mt-3 small text-muted">頁面將每 15 秒自動刷新，您也可以手動刷新頁面檢查進度</p>
+                    <div class="mt-3">
+                        <div class="btn-group" role="group">
+                            <button class="btn btn-outline-secondary" id="refreshBtn">
+                                <i class="bi bi-arrow-clockwise me-1"></i>立即刷新
+                            </button>
+                            <a href="{% url 'ai_report_view' job.id %}" class="btn btn-outline-info">
+                                <i class="bi bi-list me-1"></i>報告列表
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 重新生成報告確認模態框 -->
+<div class="modal fade" id="regenerateModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">確認重新生成報告</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>您確定要重新生成此報告嗎？這將使用原始搜索條件再次執行AI分析。</p>
+                <p>重新生成可能需要一些時間，請確認後繼續。</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <form id="regenerateForm" method="post" action="{% url 'regenerate_ai_report' job.id report.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-warning">
+                        <i class="bi bi-arrow-clockwise me-1"></i>重新生成
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- 添加highlight.js用於代碼高亮 -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // 初始化代碼高亮
+        document.querySelectorAll('pre code').forEach((block) => {
+            hljs.highlightBlock(block);
+        });
+        
+        // 複製報告內容
+        const copyReportBtn = document.getElementById('copyReportBtn');
+        if (copyReportBtn) {
+            copyReportBtn.addEventListener('click', function() {
+                const reportContent = document.getElementById('reportContent');
+                if (reportContent) {
+                    // 創建一個隱藏的textarea來複製純文本
+                    const textarea = document.createElement('textarea');
+                    textarea.value = reportContent.textContent;
+                    document.body.appendChild(textarea);
+                    textarea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textarea);
+                    
+                    // 顯示成功提示
+                    const originalText = copyReportBtn.innerHTML;
+                    copyReportBtn.innerHTML = '<i class="bi bi-check-lg me-1"></i>已複製';
+                    copyReportBtn.classList.remove('btn-outline-info');
+                    copyReportBtn.classList.add('btn-success');
+                    
+                    setTimeout(() => {
+                        copyReportBtn.innerHTML = originalText;
+                        copyReportBtn.classList.remove('btn-success');
+                        copyReportBtn.classList.add('btn-outline-info');
+                    }, 2000);
+                }
+            });
+        }
+        
+        // 初始化重新生成報告按鈕
+        document.querySelectorAll('.regenerate-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const modal = new bootstrap.Modal(document.getElementById('regenerateModal'));
+                modal.show();
+            });
+        });
+        
+        // 立即刷新按鈕
+        const refreshBtn = document.getElementById('refreshBtn');
+        if (refreshBtn) {
+            refreshBtn.addEventListener('click', function() {
+                location.reload();
+            });
+        }
+        
+        // 如果報告處理中，設置自動刷新
+        {% if report.status == 'pending' or report.status == 'running' %}
+        setTimeout(() => {
+            location.reload();
+        }, 15000); // 15秒自動刷新
+        {% endif %}
+    });
+</script>
+{% endblock %}

@@ -68,7 +68,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // 初始化匯出功能
     exportSearchResults();
+
+    // 初始化AI報告功能
+    initAIReportFeature();
 });
+
 
 
 /**
@@ -1756,6 +1760,255 @@ function exportSearchResults() {
         link.click();
         document.body.removeChild(link);
     });
+}
+
+/**
+ * 初始化AI報告功能
+ */
+function initAIReportFeature() {
+    // 獲取生成報告按鈕
+    const generateReportBtn = document.getElementById('generateReportBtn');
+    if (!generateReportBtn) return;
+
+    // 生成報告按鈕點擊事件
+    generateReportBtn.addEventListener('click', function() {
+        // 檢查是否有搜索結果
+        const resultsTable = document.getElementById('articlesTable');
+        if (!resultsTable || !resultsTable.querySelector('tbody tr')) {
+            Swal.fire({
+                title: '無法生成報告',
+                text: '沒有搜索結果，無法生成AI報告',
+                icon: 'warning',
+                confirmButtonText: '確定'
+            });
+            return;
+        }
+
+        // 顯示生成報告模態框
+        const modal = new bootstrap.Modal(document.getElementById('generateReportModal'));
+        modal.show();
+    });
+
+    // 提交生成報告請求按鈕
+    const submitReportBtn = document.getElementById('submitReportBtn');
+    if (submitReportBtn) {
+        submitReportBtn.addEventListener('click', function() {
+            generateAIReport();
+        });
+    }
+
+    // 重試按鈕
+    const retryReportBtn = document.getElementById('retryReportBtn');
+    if (retryReportBtn) {
+        retryReportBtn.addEventListener('click', function() {
+            // 切換回選項視圖
+            showReportModalView('options');
+        });
+    }
+}
+
+/**
+ * 生成AI報告
+ */
+function generateAIReport() {
+    // 獲取當前作業ID
+    const jobId = document.querySelector('.search-form-card')?.dataset.jobId ||
+                  window.location.pathname.split('/')[2]; // 從URL中提取job_id
+
+    if (!jobId) {
+        console.error('無法獲取作業ID');
+        showReportError('無法獲取作業ID');
+        return;
+    }
+
+    // 獲取報告語言
+    const language = document.querySelector('input[name="reportLanguage"]:checked')?.value || 'zh-TW';
+
+    // 獲取報告選項
+    const reportOptions = {
+        includeKeywordAnalysis: document.getElementById('includeKeywordAnalysis')?.checked || false,
+        includeTimeTrend: document.getElementById('includeTimeTrend')?.checked || false,
+        includeCategoryAnalysis: document.getElementById('includeCategoryAnalysis')?.checked || false,
+        includeTopicAnalysis: document.getElementById('includeTopicAnalysis')?.checked || false,
+        includeImpactAnalysis: document.getElementById('includeImpactAnalysis')?.checked || false,
+        includeSummary: document.getElementById('includeSummary')?.checked || false
+    };
+
+    // 獲取搜索參數
+    const searchParams = getSearchParams();
+
+    // 獲取搜索結果
+    const searchResults = getSearchResults();
+
+    // 顯示生成中視圖
+    showReportModalView('generating');
+
+    // 發送請求生成報告
+    fetch(`/api/jobs/${jobId}/ai-report/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCsrfToken()
+        },
+        body: JSON.stringify({
+            language: language,
+            report_options: reportOptions,
+            search_params: searchParams,
+            search_results: searchResults
+        })
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        // 報告生成請求成功
+        if (data.status === 'success') {
+            // 設置報告進度信息
+            const progressInfoElement = document.getElementById('reportProgressInfo');
+            if (progressInfoElement) {
+                progressInfoElement.innerHTML = `
+                    <div class="alert alert-info">
+                        <p class="mb-0">報告 ID: <strong>${data.report_id}</strong></p>
+                        <p class="mb-0">狀態: <span class="badge bg-warning">處理中</span></p>
+                    </div>
+                `;
+            }
+
+            // 設置查看報告按鈕
+            const viewReportBtn = document.getElementById('viewReportBtn');
+            if (viewReportBtn) {
+                viewReportBtn.href = `/jobs/${jobId}/ai-report/${data.report_id}/`;
+            }
+
+            // 顯示成功視圖
+            showReportModalView('success');
+        } else {
+            // 報告生成請求失敗
+            showReportError(data.message || '未知錯誤');
+        }
+    })
+    .catch(error => {
+        console.error('生成報告請求失敗:', error);
+        showReportError(error.message);
+    });
+}
+
+/**
+ * 獲取當前搜索參數
+ * @returns {Object} 搜索參數對象
+ */
+function getSearchParams() {
+    // 從表單中獲取搜索參數
+    const searchForm = document.getElementById('searchForm');
+    if (!searchForm) return {};
+
+    const formData = new FormData(searchForm);
+    const searchParams = {};
+
+    // 處理搜索詞
+    searchParams.search_terms = formData.get('search_terms') || '';
+
+    // 處理搜索模式
+    searchParams.search_mode = formData.get('search_mode') || 'and';
+
+    // 處理搜索類型
+    if (formData.get('search_keyword') && formData.get('search_entity')) {
+        searchParams.search_type = 'both';
+    } else if (formData.get('search_keyword')) {
+        searchParams.search_type = 'keyword';
+    } else if (formData.get('search_entity')) {
+        searchParams.search_type = 'entity';
+    } else {
+        searchParams.search_type = 'both';
+    }
+
+    // 處理詞性選擇
+    searchParams.pos_types = formData.getAll('pos_types');
+
+    // 處理實體類型選擇
+    searchParams.entity_types = formData.getAll('entity_types');
+
+    // 處理類別選擇
+    searchParams.categories = formData.getAll('categories');
+
+    // 處理日期範圍
+    searchParams.date_from = formData.get('date_from') || '';
+    searchParams.date_to = formData.get('date_to') || '';
+
+    // 處理最小關鍵詞和實體數量
+    searchParams.min_keywords_count = formData.get('min_keywords_count') || '0';
+    searchParams.min_entities_count = formData.get('min_entities_count') || '0';
+
+    // 處理時間軸分組
+    searchParams.time_grouping = formData.get('time_grouping') || 'day';
+
+    return searchParams;
+}
+
+/**
+ * 顯示報告模態框視圖
+ * @param {string} view - 要顯示的視圖名稱：'options'、'generating'、'success'、'error'
+ */
+function showReportModalView(view) {
+    // 獲取各視圖容器
+    const optionsContainer = document.querySelector('.report-options-container');
+    const generatingContainer = document.querySelector('.report-generating-container');
+    const successContainer = document.querySelector('.report-success-container');
+    const errorContainer = document.querySelector('.report-error-container');
+
+    // 獲取各頁腳
+    const optionsFooter = document.querySelector('.options-footer');
+    const generatingFooter = document.querySelector('.generating-footer');
+    const successFooter = document.querySelector('.success-footer');
+    const errorFooter = document.querySelector('.error-footer');
+
+    // 隱藏所有容器
+    [optionsContainer, generatingContainer, successContainer, errorContainer].forEach(container => {
+        if (container) container.style.display = 'none';
+    });
+
+    // 隱藏所有頁腳
+    [optionsFooter, generatingFooter, successFooter, errorFooter].forEach(footer => {
+        if (footer) footer.style.display = 'none';
+    });
+
+    // 顯示指定視圖
+    switch (view) {
+        case 'options':
+            if (optionsContainer) optionsContainer.style.display = 'block';
+            if (optionsFooter) optionsFooter.style.display = 'block';
+            break;
+        case 'generating':
+            if (generatingContainer) generatingContainer.style.display = 'block';
+            if (generatingFooter) generatingFooter.style.display = 'block';
+            break;
+        case 'success':
+            if (successContainer) successContainer.style.display = 'block';
+            if (successFooter) successFooter.style.display = 'block';
+            break;
+        case 'error':
+            if (errorContainer) errorContainer.style.display = 'block';
+            if (errorFooter) errorFooter.style.display = 'block';
+            break;
+    }
+}
+
+/**
+ * 顯示報告錯誤信息
+ * @param {string} errorMessage - 錯誤信息
+ */
+function showReportError(errorMessage) {
+    // 設置錯誤信息
+    const errorMessageElement = document.getElementById('errorMessage');
+    if (errorMessageElement) {
+        errorMessageElement.textContent = errorMessage;
+    }
+
+    // 顯示錯誤視圖
+    showReportModalView('error');
 }
 
 // 當視窗調整大小時重繪圖表

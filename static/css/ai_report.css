@@ -1,0 +1,316 @@
+/**
+ * AI報告相關樣式
+ * 提供報告頁面與元素的樣式定義
+ */
+
+/* AI報告卡片樣式 */
+.ai-report-card {
+    background: linear-gradient(145deg, #2a3044, #1a2038);
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+}
+
+.ai-report-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+}
+
+.ai-icon-container {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: rgba(23, 162, 184, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ai-icon-container i {
+    font-size: 30px;
+    color: #17a2b8;
+}
+
+/* 報告列表卡片樣式 */
+.report-list-card {
+    border: none;
+    border-radius: 10px;
+    background: linear-gradient(145deg, #2a2d3a, #212330);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    margin-bottom: 1.5rem;
+}
+
+.report-list-card .card-header {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    background-color: rgba(0, 0, 0, 0.15);
+}
+
+/* AI信息卡片樣式 */
+.ai-info-card {
+    border: none;
+    border-radius: 10px;
+    background: linear-gradient(145deg, #2a2d3a, #212330);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.ai-feature-list {
+    padding-left: 1rem;
+}
+
+.ai-feature-list li {
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+}
+
+.ai-model-info {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    padding: 1.5rem;
+}
+
+.model-badge {
+    display: inline-block;
+    background: linear-gradient(45deg, #17a2b8, #0056b3);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+/* 報告詳情頁面樣式 */
+.report-meta-card,
+.report-content-card {
+    border: none;
+    border-radius: 10px;
+    background: linear-gradient(145deg, #2a2d3a, #212330);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    margin-bottom: 1.5rem;
+}
+
+.report-meta-card .card-header,
+.report-content-card .card-header {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    background-color: rgba(0, 0, 0, 0.15);
+}
+
+/* Markdown 內容樣式 */
+.markdown-content {
+    color: #f8f9fa;
+    font-family: 'Noto Sans TC', sans-serif;
+    line-height: 1.8;
+}
+
+.markdown-content h1,
+.markdown-content h2,
+.markdown-content h3,
+.markdown-content h4,
+.markdown-content h5,
+.markdown-content h6 {
+    margin-top: 1.5rem;
+    margin-bottom: 1rem;
+    color: #17a2b8;
+    font-weight: 600;
+}
+
+.markdown-content h1 {
+    font-size: 2rem;
+    border-bottom: 1px solid rgba(23, 162, 184, 0.3);
+    padding-bottom: 0.5rem;
+}
+
+.markdown-content h2 {
+    font-size: 1.75rem;
+}
+
+.markdown-content h3 {
+    font-size: 1.5rem;
+}
+
+.markdown-content p {
+    margin-bottom: 1rem;
+}
+
+.markdown-content ul,
+.markdown-content ol {
+    margin-bottom: 1rem;
+    padding-left: 1.5rem;
+}
+
+.markdown-content li {
+    margin-bottom: 0.5rem;
+}
+
+.markdown-content code {
+    background-color: rgba(0, 0, 0, 0.3);
+    color: #f8f9fa;
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-family: monospace;
+}
+
+.markdown-content pre {
+    background-color: rgba(0, 0, 0, 0.3);
+    padding: 1rem;
+    border-radius: 5px;
+    margin-bottom: 1rem;
+    overflow-x: auto;
+}
+
+.markdown-content pre code {
+    background-color: transparent;
+    padding: 0;
+}
+
+.markdown-content blockquote {
+    border-left: 4px solid #17a2b8;
+    padding-left: 1rem;
+    margin-left: 0;
+    margin-bottom: 1rem;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.markdown-content hr {
+    border-color: rgba(255, 255, 255, 0.1);
+    margin: 2rem 0;
+}
+
+.markdown-content table {
+    width: 100%;
+    margin-bottom: 1rem;
+    color: #f8f9fa;
+    border-collapse: collapse;
+}
+
+.markdown-content th,
+.markdown-content td {
+    padding: 0.75rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.markdown-content th {
+    background-color: rgba(0, 0, 0, 0.3);
+    font-weight: 600;
+}
+
+.markdown-content tr:nth-child(even) {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+/* 加載中動畫 */
+.loading-dot-animation:after {
+    content: '...';
+    animation: loading-dots 1.5s infinite;
+    display: inline-block;
+    width: 20px;
+    text-align: left;
+}
+
+@keyframes loading-dots {
+    0% { content: '.'; }
+    25% { content: '..'; }
+    50% { content: '...'; }
+    75% { content: '....'; }
+    100% { content: '.'; }
+}
+
+/* 報告狀態徽章 */
+.status-badge {
+    padding: 0.35em 0.65em;
+    border-radius: 20px;
+    font-weight: 500;
+    font-size: 0.85em;
+}
+
+.status-badge.pending {
+    background-color: rgba(255, 193, 7, 0.2);
+    color: #ffc107;
+    border: 1px solid rgba(255, 193, 7, 0.3);
+}
+
+.status-badge.completed {
+    background-color: rgba(40, 167, 69, 0.2);
+    color: #28a745;
+    border: 1px solid rgba(40, 167, 69, 0.3);
+}
+
+.status-badge.failed {
+    background-color: rgba(220, 53, 69, 0.2);
+    color: #dc3545;
+    border: 1px solid rgba(220, 53, 69, 0.3);
+}
+
+/* 生成報告模態框樣式 */
+.report-options-container {
+    color: #f8f9fa;
+}
+
+.search-criteria-summary {
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 20px;
+}
+
+.language-selector {
+    margin-bottom: 20px;
+}
+
+.language-selector .form-check-inline {
+    margin-right: 20px;
+}
+
+.model-info-container {
+    margin-top: 25px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.model-info-text {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+/* 報告生成狀態容器 */
+.report-generating-container,
+.report-success-container,
+.report-error-container {
+    color: #f8f9fa;
+}
+
+.success-icon {
+    font-size: 3rem;
+    color: #28a745;
+    margin-bottom: 1rem;
+}
+
+.error-icon {
+    font-size: 3rem;
+    color: #dc3545;
+    margin-bottom: 1rem;
+}
+
+.error-details {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+/* 響應式調整 */
+@media (max-width: 767.98px) {
+    .ai-icon-container {
+        width: 50px;
+        height: 50px;
+    }
+
+    .ai-icon-container i {
+        font-size: 24px;
+    }
+
+    .model-badge {
+        font-size: 0.9rem;
+        padding: 0.35rem 0.8rem;
+    }
+}

@@ -1,6 +1,8 @@
 import json
 import logging
 
+from datetime import datetime
+
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
@@ -10,7 +12,8 @@ from django.http import JsonResponse, HttpResponse
 from django.db import models
 
 from news_scraper_web import settings
-from .models import ScrapeJob, Article, KeywordAnalysis, NamedEntityAnalysis, SentimentAnalysis, CategorySentimentSummary
+from .models import ScrapeJob, Article, KeywordAnalysis, NamedEntityAnalysis, SentimentAnalysis, \
+    CategorySentimentSummary, AIReport
 from .forms import LoginForm, ScrapeJobForm, KeywordFilterForm, AdvancedSearchForm
 from .services.search_service import SearchAnalysisService
 from .services.task_service import execute_scraper_task
@@ -385,6 +388,8 @@ def job_search_analysis(request, job_id):
     entities_distribution = None
     cooccurrence_data = None
     top_image_url = None
+    sentiment_distribution = None
+    sentiment_time_data = None
 
     # 處理AJAX計算請求 - 只返回匹配數量而不執行完整搜索
     if request.method == 'POST' and request.headers.get('X-Requested-With') == 'XMLHttpRequest':
@@ -487,14 +492,16 @@ def job_search_analysis(request, job_id):
             sentiment_distribution = None
             sentiment_time_data = None
 
+    # 獲取現有AI報告列表
+    ai_reports = AIReport.objects.filter(job=job).order_by('-generated_at')[:5]
+
     # 將 Python 對象轉換為 JSON 字符串，用於在模板中傳遞給 JavaScript
-    # 關鍵修改：確保使用 json.dumps() 轉換為 JSON 字符串
     time_series_json = json.dumps(time_series_data) if time_series_data else None
     keywords_distribution_json = json.dumps(keywords_distribution) if keywords_distribution else None
     entities_distribution_json = json.dumps(entities_distribution) if entities_distribution else None
     cooccurrence_json = json.dumps(cooccurrence_data) if cooccurrence_data else None
-    sentiment_distribution_json = json.dumps(sentiment_distribution) if locals().get('sentiment_distribution') else None
-    sentiment_time_data_json = json.dumps(sentiment_time_data) if locals().get('sentiment_time_data') else None
+    sentiment_distribution_json = json.dumps(sentiment_distribution) if sentiment_distribution else None
+    sentiment_time_data_json = json.dumps(sentiment_time_data) if sentiment_time_data else None
 
     # 渲染模板
     context = {
@@ -503,14 +510,20 @@ def job_search_analysis(request, job_id):
         'results': search_results,
         'available_categories': available_categories,
         'category_colors': category_colors,
-        'time_series_data': time_series_json,  # 將 JSON 字符串傳遞給模板
+        'time_series_data': time_series_json,
         'time_series_count': len(time_series_data) if time_series_data else 0,
         'keywords_distribution': keywords_distribution_json,
         'entities_distribution': entities_distribution_json,
         'cooccurrence_data': cooccurrence_json,
         'top_image_url': top_image_url,
         'sentiment_distribution': sentiment_distribution_json,
-        'sentiment_time_data': sentiment_time_data_json
+        'sentiment_time_data': sentiment_time_data_json,
+        'ai_reports': ai_reports,
+        'has_search_results': search_results is not None and search_results.exists(),
+        'ollama_settings': {
+            'available': True,  # 您可以實現檢測Ollama服務是否可用的邏輯
+            'model': settings.OLLAMA_SETTINGS.get('MODEL')
+        }
     }
 
     return render(request, 'scraper/job_search_analysis.html', context)
@@ -1279,3 +1292,111 @@ def analyze_single_article(request, job_id, article_id):
             'status': 'error',
             'message': f'處理請求時發生錯誤: {str(e)}'
         })
+
+
+
+@login_required
+def ai_report_view(request, job_id):
+    """AI報告頁面視圖"""
+    job = get_object_or_404(ScrapeJob, id=job_id, user=request.user)
+
+    # 獲取該任務的所有報告，按時間倒序排序
+    reports = AIReport.objects.filter(job=job).order_by('-generated_at')
+
+    context = {
+        'job': job,
+        'reports': reports,
+        'report_count': reports.count(),
+        'ollama_settings': {
+            'model': settings.OLLAMA_SETTINGS.get('MODEL'),
+            'max_tokens': settings.OLLAMA_SETTINGS.get('MAX_TOKENS')
+        }
+    }
+
+    return render(request, 'scraper/ai_report_list.html', context)
+
+
+@login_required
+def ai_report_detail(request, job_id, report_id):
+    """AI報告詳情頁面視圖"""
+    job = get_object_or_404(ScrapeJob, id=job_id, user=request.user)
+    report = get_object_or_404(AIReport, id=report_id, job=job)
+
+    # 獲取報告內容並進行Markdown渲染
+    import markdown
+
+    # 如果報告已完成並有內容，則渲染為HTML
+    rendered_content = ''
+    if report.status == 'completed' and report.content:
+        # 使用Python-Markdown進行渲染
+        rendered_content = markdown.markdown(
+            report.content,
+            extensions=['tables', 'fenced_code', 'nl2br', 'toc']
+        )
+
+    context = {
+        'job': job,
+        'report': report,
+        'rendered_content': rendered_content,
+        'is_completed': report.status == 'completed'
+    }
+
+    return render(request, 'scraper/ai_report_detail.html', context)
+
+
+@login_required
+def ai_report_download(request, job_id, report_id):
+    """下載AI報告文件"""
+    job = get_object_or_404(ScrapeJob, id=job_id, user=request.user)
+    report = get_object_or_404(AIReport, id=report_id, job=job)
+
+    # 只允許下載已完成的報告
+    if report.status != 'completed':
+        messages.error(request, '報告尚未生成完成，無法下載')
+        return redirect('ai_report_detail', job_id=job_id, report_id=report_id)
+
+    # 獲取報告內容
+    content = report.content
+
+    # 設置下載文件名
+    filename = f"AI_Report_{report_id}_{datetime.now().strftime('%Y%m%d_%H%M')}.md"
+
+    # 創建HTTP響應
+    response = HttpResponse(content, content_type='text/markdown')
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+
+    return response
+
+
+@login_required
+def regenerate_ai_report(request, job_id, report_id):
+    """重新生成AI報告"""
+    if request.method != 'POST':
+        return redirect('ai_report_detail', job_id=job_id, report_id=report_id)
+
+    job = get_object_or_404(ScrapeJob, id=job_id, user=request.user)
+    report = get_object_or_404(AIReport, id=report_id, job=job)
+
+    # 檢查報告是否可以重新生成（非處理中狀態）
+    if report.status == 'pending' or report.status == 'running':
+        messages.error(request, '報告正在生成中，無法重新生成')
+        return redirect('ai_report_detail', job_id=job_id, report_id=report_id)
+
+    # 重置報告狀態
+    report.status = 'pending'
+    report.error_message = None
+    report.save()
+
+    # 獲取原始搜索參數
+    search_params = report.search_params or {}
+
+    # 執行搜索獲取最新結果
+    search_service = SearchAnalysisService(job)
+    search_results = search_service.search(search_params)
+
+    # 啟動非同步任務重新生成報告
+    from .services.ai_service import generate_report_async
+    generate_report_async(report.id, search_params, search_results)
+
+    messages.success(request, '報告重新生成請求已提交，請稍後查看')
+    return redirect('ai_report_detail', job_id=job_id, report_id=report_id)

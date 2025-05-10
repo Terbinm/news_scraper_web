@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/4.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
-
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -157,3 +157,24 @@ CONN_MAX_AGE = 60  # 60秒後關閉數據庫連接
 # SIMPLEUI SETTING
 SIMPLEUI_HOME_INFO = False
 SIMPLEUI_ANALYSIS = False
+
+
+# Ollama AI 模型服務設置
+OLLAMA_SETTINGS = {
+    'BASE_URL': 'http://192.168.1.106:11434',
+    'MODEL': 'phi4:14b',
+    'MAX_TOKENS': 2000,  # 生成的最大令牌數
+    'TEMPERATURE': 0.7,  # 生成的隨機性 (0-1)
+    'TOP_P': 0.9,        # 核心採樣概率閾值
+    'TIMEOUT': 120,      # 請求超時時間(秒)
+}
+
+# AI 報告設置
+AI_REPORT_SETTINGS = {
+    'DEFAULT_LANGUAGE': 'zh-TW',  # 默認報告語言
+    'MAX_REPORT_LENGTH': 5000,    # 報告最大長度(字符)
+    'SAVE_PATH': os.path.join(MEDIA_ROOT, 'ai_reports'),  # 報告保存路徑
+}
+
+# 確保報告保存目錄存在
+os.makedirs(AI_REPORT_SETTINGS['SAVE_PATH'], exist_ok=True)
