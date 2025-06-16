@@ -14,7 +14,7 @@ from django.db import models
 
 from news_scraper_web import settings
 from .models import ScrapeJob, Article, KeywordAnalysis, NamedEntityAnalysis, SentimentAnalysis, \
-    CategorySentimentSummary, AIReport
+    CategorySentimentSummary, AIReport, ArticleSummary
 from .forms import LoginForm, ScrapeJobForm, KeywordFilterForm, AdvancedSearchForm
 from .services.search_service import SearchAnalysisService
 from .services.task_service import execute_scraper_task
@@ -29,6 +29,7 @@ logger = logging.getLogger(__name__)
 
 from collections import defaultdict
 from django.db.models import Count, Avg, F, Q
+from .services.summary_service import SummaryAnalysisService, analyze_job_summaries_async
 
 
 def login_view(request):
@@ -1427,3 +1428,305 @@ def delete_ai_report(request, job_id, report_id):
         messages.error(request, f'刪除報告失敗: {str(e)}')
 
     return redirect('ai_report_view', job_id=job_id)
+
+
+@login_required
+def job_summary_analysis(request, job_id):
+    """摘要分析視圖"""
+    job = get_object_or_404(ScrapeJob, id=job_id, user=request.user)
+
+    # 檢查是否需要執行摘要分析
+    analyze_now = request.GET.get('analyze', False)
+
+    if analyze_now:
+        # 啟動摘要分析
+        messages.info(request, '摘要分析已啟動，這可能需要一些時間...')
+        analyze_job_summaries_async(job_id)
+        return redirect('job_summary_analysis', job_id=job_id)
+
+    # 獲取摘要分析服務
+    summary_service = SummaryAnalysisService()
+
+    # 獲取摘要分析統計
+    stats = summary_service.get_summary_statistics(job_id)
+
+    # 獲取未分析的文章
+    unanalyzed_articles = None
+    if stats['pending_summaries'] > 0:
+        unanalyzed_articles = summary_service.get_unanalyzed_articles(job_id, limit=50)
+
+    # 獲取最近生成的摘要（正面示例）
+    recent_summaries = ArticleSummary.objects.filter(
+        job=job,
+        status='completed'
+    ).select_related('article').order_by('-generated_at')[:10]
+
+    # 獲取失敗的摘要
+    failed_summaries = ArticleSummary.objects.filter(
+        job=job,
+        status='failed'
+    ).select_related('article').order_by('-updated_at')[:5]
+
+    # 檢查是否所有文章都已分析
+    all_analyzed = stats['pending_summaries'] == 0 and stats['total_articles'] > 0
+
+    # 將分析結果添加到上下文
+    context = {
+        'job': job,
+        'stats': stats,
+        'recent_summaries': recent_summaries,
+        'failed_summaries': failed_summaries,
+        'all_analyzed': all_analyzed,
+        'unanalyzed_articles': unanalyzed_articles,
+    }
+
+    return render(request, 'scraper/job_summary_analysis.html', context)
+
+
+@login_required
+def start_summary_analysis(request, job_id):
+    """啟動摘要分析任務"""
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error', 'message': '僅支持POST請求'})
+
+    job = get_object_or_404(ScrapeJob, id=job_id, user=request.user)
+
+    # 檢查任務是否已完成
+    if job.status != 'completed':
+        return JsonResponse({
+            'status': 'error',
+            'message': '只能分析已完成的爬蟲任務'
+        })
+
+    # 獲取摘要分析統計
+    service = SummaryAnalysisService()
+    stats = service.get_summary_statistics(job_id)
+
+    # 檢查是否有正在進行的分析
+    pending_summaries = ArticleSummary.objects.filter(
+        job=job,
+        status__in=['pending', 'running']
+    ).count()
+
+    if pending_summaries > 0:
+        return JsonResponse({
+            'status': 'error',
+            'message': '摘要分析任務已在進行中，請稍後再試'
+        })
+
+    # 啟動摘要分析
+    thread = analyze_job_summaries_async(job_id)
+
+    return JsonResponse({
+        'status': 'success',
+        'message': '摘要分析任務已啟動',
+        'total_articles': stats['total_articles'],
+        'analyzed_summaries': stats['analyzed_summaries'],
+        'remaining': stats['pending_summaries']
+    })
+
+
+@login_required
+def generate_article_summary(request, article_id):
+    """生成單篇文章摘要"""
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error', 'message': '只接受POST請求'})
+
+    try:
+        article = get_object_or_404(Article, id=article_id, job__user=request.user)
+
+        # 解析請求數據
+        data = json.loads(request.body) if request.body else {}
+        force_regenerate = data.get('force_regenerate', False)
+
+        # 檢查是否已有摘要
+        existing_summary = ArticleSummary.objects.filter(article=article).first()
+
+        if existing_summary and existing_summary.status == 'completed' and not force_regenerate:
+            return JsonResponse({
+                'status': 'success',
+                'message': '該文章已有摘要',
+                'already_exists': True,
+                'summary_text': existing_summary.summary_text,
+                'generated_at': existing_summary.generated_at.isoformat()
+            })
+
+        # 生成摘要
+        service = SummaryAnalysisService()
+        success = service.regenerate_summary(article_id)
+
+        if success:
+            # 獲取新生成的摘要
+            summary = ArticleSummary.objects.get(article=article)
+            return JsonResponse({
+                'status': 'success',
+                'message': '摘要生成成功',
+                'already_exists': False,
+                'summary_text': summary.summary_text,
+                'generated_at': summary.generated_at.isoformat(),
+                'generation_time': summary.generation_time
+            })
+        else:
+            return JsonResponse({
+                'status': 'error',
+                'message': '摘要生成失敗'
+            })
+
+    except Exception as e:
+        logger.error(f"生成文章摘要時出錯: {e}", exc_info=True)
+        return JsonResponse({
+            'status': 'error',
+            'message': f'處理請求時發生錯誤: {str(e)}'
+        })
+
+
+@login_required
+def get_summary_stats(request, job_id):
+    """獲取摘要分析統計數據"""
+    try:
+        job = get_object_or_404(ScrapeJob, id=job_id, user=request.user)
+
+        # 建立摘要分析服務
+        summary_service = SummaryAnalysisService()
+
+        # 獲取統計數據
+        stats = summary_service.get_summary_statistics(job_id)
+
+        return JsonResponse({
+            'status': 'success',
+            **stats
+        })
+
+    except Exception as e:
+        logger.error(f"獲取摘要分析統計時出錯: {e}", exc_info=True)
+        return JsonResponse({
+            'status': 'error',
+            'message': f'處理請求時發生錯誤: {str(e)}'
+        })
+
+
+@login_required
+def regenerate_article_summary(request, article_id):
+    """重新生成文章摘要"""
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error', 'message': '只接受POST請求'})
+
+    try:
+        article = get_object_or_404(Article, id=article_id, job__user=request.user)
+
+        # 執行重新生成
+        service = SummaryAnalysisService()
+        success = service.regenerate_summary(article_id)
+
+        if success:
+            # 獲取更新後的摘要
+            summary = ArticleSummary.objects.get(article=article)
+
+            return JsonResponse({
+                'status': 'success',
+                'message': '摘要重新生成成功',
+                'summary_text': summary.summary_text,
+                'generated_at': summary.generated_at.isoformat(),
+                'generation_time': summary.generation_time
+            })
+        else:
+            return JsonResponse({
+                'status': 'error',
+                'message': '摘要重新生成失敗'
+            })
+
+    except Exception as e:
+        logger.error(f"重新生成摘要時出錯: {e}", exc_info=True)
+        return JsonResponse({
+            'status': 'error',
+            'message': f'處理請求時發生錯誤: {str(e)}'
+        })
+
+
+# 修改現有的 job_articles 視圖以包含摘要信息
+# 注意：這是對現有函數的建議修改，需要在原有的 job_articles 函數中加入摘要查詢
+
+def job_articles_with_summaries(request, job_id):
+    """文章列表視圖（包含摘要信息）- 這是對現有 job_articles 的增強版本"""
+    job = get_object_or_404(ScrapeJob, id=job_id, user=request.user)
+
+    # 獲取該任務的所有文章，並預載入摘要信息
+    articles_query = Article.objects.filter(job=job).select_related('summary')
+
+    # 從任務中獲取實際存在的類別
+    available_categories = {}
+    categories_used = articles_query.values_list('category', flat=True).distinct()
+
+    # 建立類別與顏色的對應關係
+    category_colors = get_category_colors()
+    for category in categories_used:
+        if category in category_colors:
+            available_categories[category] = category_colors[category]
+
+    # 處理搜尋關鍵字
+    search_keyword = request.GET.get('keyword', '')
+    content_only = 'content_only' in request.GET
+
+    if search_keyword:
+        if content_only:
+            # 僅搜尋內容
+            articles_query = articles_query.filter(content__icontains=search_keyword)
+        else:
+            # 搜尋標題、內容和作者
+            articles_query = articles_query.filter(
+                models.Q(title__icontains=search_keyword) |
+                models.Q(content__icontains=search_keyword) |
+                models.Q(author__icontains=search_keyword)
+            )
+
+    # 處理類別篩選
+    selected_categories = request.GET.getlist('categories', [])
+    if selected_categories:
+        articles_query = articles_query.filter(category__in=selected_categories)
+
+    # 處理排序
+    sort_by = request.GET.get('sort', 'date_desc')
+    if sort_by == 'date_desc':
+        articles_query = articles_query.order_by('-date')
+    elif sort_by == 'date_asc':
+        articles_query = articles_query.order_by('date')
+    elif sort_by == 'title':
+        articles_query = articles_query.order_by('title')
+    else:
+        articles_query = articles_query.order_by('-date')  # 默認排序
+
+    # 準備分頁
+    paginator = Paginator(articles_query, 12)  # 每頁顯示12篇文章
+    page = request.GET.get('page')
+
+    try:
+        articles = paginator.page(page)
+    except PageNotAnInteger:
+        articles = paginator.page(1)
+    except EmptyPage:
+        articles = paginator.page(paginator.num_pages)
+
+    # 獲取摘要統計
+    summary_service = SummaryAnalysisService()
+    summary_stats = summary_service.get_summary_statistics(job_id)
+
+    # 構建查詢參數字符串，用於分頁連結
+    search_params = request.GET.copy()
+    if 'page' in search_params:
+        search_params.pop('page')
+    search_params_str = search_params.urlencode()
+
+    context = {
+        'job': job,
+        'articles': articles,
+        'articles_len': articles_query.count(),
+        'available_categories': available_categories,
+        'selected_categories': selected_categories,
+        'search_keyword': search_keyword,
+        'content_only': content_only,
+        'sort_by': sort_by,
+        'search_params': search_params_str,
+        'summary_stats': summary_stats,  # 新增摘要統計信息
+    }
+
+    return render(request, 'scraper/job_articles.html', context)

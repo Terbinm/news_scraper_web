@@ -7,8 +7,9 @@ from django.conf import settings
 from django.utils.decorators import method_decorator
 from django.views import View
 
-from .models import ScrapeJob, Article, KeywordAnalysis, NamedEntityAnalysis, AIReport
+from .models import ScrapeJob, Article, KeywordAnalysis, NamedEntityAnalysis, AIReport, ArticleSummary
 from .utils.scraper_utils import CTTextProcessor
+from .services.summary_service import SummaryAnalysisService, analyze_job_summaries_async
 
 logger = logging.getLogger(__name__)
 
@@ -326,3 +327,246 @@ class AIReportAPIView(BaseAPIView):
         except Exception as e:
             logger.error(f"獲取AI報告時出錯: {e}", exc_info=True)
             return self.get_error_response(f"處理請求時發生錯誤: {str(e)}", status=500)
+
+
+@method_decorator(login_required, name='dispatch')
+class SummaryAnalysisAPIView(BaseAPIView):
+    """摘要分析API"""
+
+    def post(self, request, job_id):
+        """處理POST請求，啟動摘要分析任務"""
+        try:
+            # 檢查任務是否存在並屬於當前用戶
+            try:
+                job = ScrapeJob.objects.get(id=job_id, user=request.user)
+            except ScrapeJob.DoesNotExist:
+                return self.get_error_response('任務不存在或無權訪問', status=404)
+
+            # 解析請求數據
+            try:
+                data = json.loads(request.body)
+            except json.JSONDecodeError:
+                data = {}
+
+            # 獲取分析參數
+            batch_size = data.get('batch_size', 10)
+            max_workers = data.get('max_workers', 2)
+
+            # 檢查參數範圍
+            batch_size = max(1, min(50, batch_size))  # 限制在1-50之間
+            max_workers = max(1, min(4, max_workers))  # 限制在1-4之間
+
+            # 檢查是否已有文章
+            total_articles = Article.objects.filter(job=job).count()
+            if total_articles == 0:
+                return self.get_error_response('該任務沒有文章可分析')
+
+            # 檢查是否已經在分析中
+            pending_summaries = ArticleSummary.objects.filter(
+                job=job,
+                status__in=['pending', 'running']
+            ).count()
+
+            if pending_summaries > 0:
+                return self.get_error_response('摘要分析任務已在進行中，請稍後再試')
+
+            # 獲取當前統計
+            analyzed_summaries = ArticleSummary.objects.filter(job=job, status='completed').count()
+
+            # 啟動非同步摘要分析任務
+            thread = analyze_job_summaries_async(job_id, batch_size, max_workers)
+
+            return self.get_success_response({
+                'message': '摘要分析任務已啟動',
+                'job_id': job_id,
+                'total_articles': total_articles,
+                'analyzed_summaries': analyzed_summaries,
+                'remaining': total_articles - analyzed_summaries,
+                'batch_size': batch_size,
+                'max_workers': max_workers
+            })
+
+        except Exception as e:
+            logger.error(f"啟動摘要分析時出錯: {e}", exc_info=True)
+            return self.get_error_response(f"處理請求時發生錯誤: {str(e)}", status=500)
+
+    def get(self, request, job_id):
+        """獲取摘要分析統計信息"""
+        try:
+            # 檢查任務是否存在並屬於當前用戶
+            try:
+                job = ScrapeJob.objects.get(id=job_id, user=request.user)
+            except ScrapeJob.DoesNotExist:
+                return self.get_error_response('任務不存在或無權訪問', status=404)
+
+            # 獲取摘要統計
+            service = SummaryAnalysisService()
+            stats = service.get_summary_statistics(job_id)
+
+            return self.get_success_response(stats)
+
+        except Exception as e:
+            logger.error(f"獲取摘要統計時出錯: {e}", exc_info=True)
+            return self.get_error_response(f"處理請求時發生錯誤: {str(e)}", status=500)
+
+
+@method_decorator(login_required, name='dispatch')
+class ArticleSummaryAPIView(BaseAPIView):
+    """單篇文章摘要API"""
+
+    def post(self, request, article_id):
+        """為單篇文章生成摘要"""
+        try:
+            # 檢查文章是否存在並屬於當前用戶
+            try:
+                article = Article.objects.get(id=article_id, job__user=request.user)
+            except Article.DoesNotExist:
+                return self.get_error_response('文章不存在或無權訪問', status=404)
+
+            # 檢查是否已有摘要
+            existing_summary = ArticleSummary.objects.filter(article=article).first()
+
+            # 解析請求數據
+            try:
+                data = json.loads(request.body)
+            except json.JSONDecodeError:
+                data = {}
+
+            force_regenerate = data.get('force_regenerate', False)
+
+            if existing_summary and existing_summary.status == 'completed' and not force_regenerate:
+                return self.get_success_response({
+                    'message': '該文章已有摘要',
+                    'already_exists': True,
+                    'summary': {
+                        'text': existing_summary.summary_text,
+                        'generated_at': existing_summary.generated_at.isoformat(),
+                        'model_used': existing_summary.model_used,
+                        'generation_time': existing_summary.generation_time
+                    }
+                })
+
+            # 生成摘要
+            service = SummaryAnalysisService()
+            success = service.regenerate_summary(article_id)
+
+            if success:
+                # 獲取新生成的摘要
+                summary = ArticleSummary.objects.get(article=article)
+                return self.get_success_response({
+                    'message': '摘要生成成功',
+                    'already_exists': False,
+                    'summary': {
+                        'text': summary.summary_text,
+                        'generated_at': summary.generated_at.isoformat(),
+                        'model_used': summary.model_used,
+                        'generation_time': summary.generation_time
+                    }
+                })
+            else:
+                return self.get_error_response('摘要生成失敗')
+
+        except Exception as e:
+            logger.error(f"生成文章摘要時出錯: {e}", exc_info=True)
+            return self.get_error_response(f"處理請求時發生錯誤: {str(e)}", status=500)
+
+    def get(self, request, article_id):
+        """獲取單篇文章的摘要"""
+        try:
+            # 檢查文章是否存在並屬於當前用戶
+            try:
+                article = Article.objects.get(id=article_id, job__user=request.user)
+            except Article.DoesNotExist:
+                return self.get_error_response('文章不存在或無權訪問', status=404)
+
+            # 獲取摘要
+            try:
+                summary = ArticleSummary.objects.get(article=article)
+                return self.get_success_response({
+                    'has_summary': True,
+                    'summary': {
+                        'text': summary.summary_text,
+                        'status': summary.status,
+                        'generated_at': summary.generated_at.isoformat(),
+                        'model_used': summary.model_used,
+                        'generation_time': summary.generation_time,
+                        'error_message': summary.error_message
+                    }
+                })
+            except ArticleSummary.DoesNotExist:
+                return self.get_success_response({
+                    'has_summary': False,
+                    'message': '該文章尚未生成摘要'
+                })
+
+        except Exception as e:
+            logger.error(f"獲取文章摘要時出錯: {e}", exc_info=True)
+            return self.get_error_response(f"處理請求時發生錯誤: {str(e)}", status=500)
+
+
+# 簡易函數式API視圖，用於快速摘要生成
+@login_required
+@require_http_methods(["POST"])
+def generate_article_summary_api(request, article_id):
+    """API函數：為單篇文章生成摘要"""
+    try:
+        # 檢查文章是否存在並屬於當前用戶
+        article = Article.objects.get(id=article_id, job__user=request.user)
+
+        # 解析請求數據
+        data = json.loads(request.body) if request.body else {}
+        force_regenerate = data.get('force_regenerate', False)
+
+        # 檢查是否已有摘要
+        existing_summary = ArticleSummary.objects.filter(article=article).first()
+
+        if existing_summary and existing_summary.status == 'completed' and not force_regenerate:
+            return JsonResponse({
+                'status': 'success',
+                'message': '該文章已有摘要',
+                'already_exists': True,
+                'summary_text': existing_summary.summary_text
+            })
+
+        # 生成摘要
+        service = SummaryAnalysisService()
+        result = service.analyze_article(article)
+
+        if result and result.get('status') == 'completed':
+            # 保存摘要
+            summary, created = ArticleSummary.objects.update_or_create(
+                article=article,
+                job=article.job,
+                defaults={
+                    'summary_text': result['summary_text'],
+                    'model_used': result.get('model_used', ''),
+                    'generation_time': result.get('generation_time', 0),
+                    'status': result['status']
+                }
+            )
+
+            return JsonResponse({
+                'status': 'success',
+                'message': '摘要生成成功',
+                'already_exists': False,
+                'summary_text': summary.summary_text,
+                'generation_time': summary.generation_time
+            })
+        else:
+            return JsonResponse({
+                'status': 'error',
+                'message': '摘要生成失敗',
+                'error': result.get('error_message', '未知錯誤')
+            })
+
+    except Article.DoesNotExist:
+        return JsonResponse({
+            'status': 'error',
+            'message': '文章不存在或無權訪問'
+        }, status=404)
+    except Exception as e:
+        logger.error(f"生成文章摘要時出錯: {e}", exc_info=True)
+        return JsonResponse({
+            'status': 'error',
+            'message': str(e)
+        }, status=500)

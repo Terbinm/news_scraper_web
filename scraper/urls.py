@@ -28,6 +28,7 @@ urlpatterns = [
 
     path('api/analyze_search_terms/', views.analyze_search_terms, name='analyze_search_terms'),
 
+    # 情感分析相關路由
     path('jobs/<int:job_id>/sentiment/', views.job_sentiment_analysis, name='job_sentiment_analysis'),
     path('articles/<int:article_id>/analyze-sentiment/', views.analyze_article_sentiment,
          name='analyze_article_sentiment'),
@@ -36,7 +37,16 @@ urlpatterns = [
     path('jobs/<int:job_id>/regenerate-sentiment-summary/', views.regenerate_sentiment_summary,
          name='regenerate_sentiment_summary'),
 
+    # 摘要分析相關路由（新增）
+    path('jobs/<int:job_id>/summary/', views.job_summary_analysis, name='job_summary_analysis'),
+    path('jobs/<int:job_id>/start-summary-analysis/', views.start_summary_analysis, name='start_summary_analysis'),
+    path('jobs/<int:job_id>/summary-stats/', views.get_summary_stats, name='get_summary_stats'),
 
+    # 單篇文章摘要相關路由（新增）
+    path('articles/<int:article_id>/generate-summary/', views.generate_article_summary,
+         name='generate_article_summary'),
+    path('articles/<int:article_id>/regenerate-summary/', views.regenerate_article_summary,
+         name='regenerate_article_summary'),
 
     # AI 報告相關路由
     path('jobs/<int:job_id>/ai-report/', views.ai_report_view, name='ai_report_view'),
@@ -51,4 +61,9 @@ urlpatterns = [
          name='api_ai_report_detail'),
     path('jobs/<int:job_id>/ai-report/<int:report_id>/delete/', views.delete_ai_report, name='delete_ai_report'),
 
+    # 摘要API路由（新增）
+    path('api/jobs/<int:job_id>/summary-analysis/', api.SummaryAnalysisAPIView.as_view(), name='api_summary_analysis'),
+    path('api/articles/<int:article_id>/summary/', api.ArticleSummaryAPIView.as_view(), name='api_article_summary'),
+    path('api/articles/<int:article_id>/generate-summary/', api.generate_article_summary_api,
+         name='api_generate_article_summary'),
 ]

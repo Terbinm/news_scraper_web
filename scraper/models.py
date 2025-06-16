@@ -212,3 +212,78 @@ class AIReport(models.Model):
         except Exception as e:
             logger.error(f"保存報告文件時出錯: {e}")
             return False
+
+class ArticleSummary(models.Model):
+    """文章摘要模型"""
+
+    STATUS_CHOICES = [
+        ('pending', '等待中'),
+        ('running', '處理中'),
+        ('completed', '已完成'),
+        ('failed', '失敗')
+    ]
+
+    article = models.OneToOneField(
+        Article,
+        on_delete=models.CASCADE,
+        related_name='summary',
+        verbose_name='文章'
+    )
+    job = models.ForeignKey(
+        ScrapeJob,
+        on_delete=models.CASCADE,
+        related_name='summaries',
+        verbose_name='爬蟲任務'
+    )
+    summary_text = models.TextField(verbose_name='摘要內容')
+    generated_at = models.DateTimeField(auto_now_add=True, verbose_name='生成時間')
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='更新時間')
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='completed',
+        verbose_name='狀態'
+    )
+    error_message = models.TextField(
+        blank=True,
+        null=True,
+        verbose_name='錯誤訊息'
+    )
+
+    # LLM相關參數記錄
+    model_used = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+        verbose_name='使用的模型'
+    )
+    generation_time = models.FloatField(
+        blank=True,
+        null=True,
+        verbose_name='生成耗時(秒)'
+    )
+
+    class Meta:
+        verbose_name = '文章摘要'
+        verbose_name_plural = '文章摘要'
+        ordering = ['-generated_at']
+        indexes = [
+            models.Index(fields=['job', 'status']),
+            models.Index(fields=['job', 'generated_at']),
+        ]
+
+    def __str__(self):
+        return f"{self.article.title} - 摘要"
+
+    def get_short_summary(self, max_length=50):
+        """獲取截斷的摘要文本"""
+        if not self.summary_text:
+            return "無摘要"
+
+        if len(self.summary_text) <= max_length:
+            return self.summary_text
+        return self.summary_text[:max_length] + "..."
+
+    def is_available(self):
+        """檢查摘要是否可用"""
+        return self.status == 'completed' and self.summary_text

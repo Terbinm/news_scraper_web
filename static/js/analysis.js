@@ -576,3 +576,284 @@ function initArticleFilter() {
     // 初始篩選（如果有篩選參數）
     filterArticles();
 }
+
+// ================================
+// 摘要分析專用功能（分析頁面）
+// ================================
+
+/**
+ * 增強版文章預覽模態框 - 包含摘要功能
+ * @param {Object} articleData - 文章數據
+ */
+function showArticlePreviewWithSummary(articleData) {
+    const modalId = 'articlePreviewModal';
+
+    // 確保模態框存在，如果不存在則創建
+    if (!document.getElementById(modalId)) {
+        createArticlePreviewModal();
+    }
+
+    // 填充基本文章信息
+    document.getElementById('previewArticleTitle').textContent = articleData.title;
+    document.getElementById('previewArticleCategory').textContent = articleData.category;
+    document.getElementById('previewArticleDate').textContent = articleData.date;
+    document.getElementById('previewArticleAuthor').textContent = articleData.author;
+    document.getElementById('previewArticleContent').innerHTML = articleData.content.replace(/\n/g, '<br>');
+    document.getElementById('previewArticleLink').href = articleData.link;
+
+    // 處理摘要顯示
+    const summaryContainer = document.getElementById('previewArticleSummary');
+    const summaryLoadingContainer = document.getElementById('previewSummaryLoading');
+    const generateSummaryBtn = document.getElementById('previewGenerateSummaryBtn');
+
+    // 重置摘要區域
+    summaryContainer.style.display = 'none';
+    summaryLoadingContainer.style.display = 'none';
+    generateSummaryBtn.style.display = 'inline-block';
+
+    // 檢查是否已有摘要
+    checkExistingSummary(articleData.id);
+
+    // 綁定生成摘要按鈕事件
+    generateSummaryBtn.onclick = function() {
+        generateSummaryInModal(articleData.id);
+    };
+
+    // 顯示模態框
+    const modal = new bootstrap.Modal(document.getElementById(modalId));
+    modal.show();
+}
+
+/**
+ * 創建文章預覽模態框
+ */
+function createArticlePreviewModal() {
+    const modalHtml = `
+        <div class="modal fade" id="articlePreviewModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-scrollable">
+                <div class="modal-content bg-dark text-white">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="previewArticleTitle"></h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <!-- 文章基本信息 -->
+                        <div class="mb-3">
+                            <span class="badge bg-info me-2" id="previewArticleCategory"></span>
+                            <small class="text-white" id="previewArticleDate"></small>
+                            <small class="text-white ms-2" id="previewArticleAuthor"></small>
+                        </div>
+                        
+                        <!-- 摘要區域 -->
+                        <div class="mb-4 p-3 bg-secondary bg-opacity-25 rounded">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h6 class="text-info mb-0">
+                                    <i class="bi bi-cpu me-2"></i>AI 生成摘要
+                                </h6>
+                                <button type="button" class="btn btn-sm btn-outline-warning" id="previewGenerateSummaryBtn">
+                                    <i class="bi bi-cpu me-1"></i>生成摘要
+                                </button>
+                            </div>
+                            
+                            <!-- 摘要內容 -->
+                            <div id="previewArticleSummary" style="display: none;">
+                                <p class="text-info mb-0" id="previewSummaryContent"></p>
+                                <small class="text-muted" id="previewSummaryTime"></small>
+                            </div>
+                            
+                            <!-- 加載狀態 -->
+                            <div id="previewSummaryLoading" class="text-center" style="display: none;">
+                                <div class="spinner-border spinner-border-sm text-info me-2"></div>
+                                <span>正在生成摘要...</span>
+                            </div>
+                        </div>
+                        
+                        <!-- 文章內容 -->
+                        <div class="article-content" id="previewArticleContent"></div>
+                    </div>
+                    <div class="modal-footer">
+                        <a href="#" class="btn btn-outline-info" id="previewArticleLink" target="_blank">
+                            <i class="bi bi-box-arrow-up-right me-1"></i>原始文章
+                        </a>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">關閉</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+}
+
+/**
+ * 檢查文章是否已有摘要
+ * @param {number} articleId - 文章ID
+ */
+function checkExistingSummary(articleId) {
+    fetch(`/api/articles/${articleId}/summary/`)
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success' && data.has_summary) {
+            displaySummaryInModal(data.summary);
+        }
+    })
+    .catch(error => {
+        console.log('檢查摘要時出錯:', error);
+    });
+}
+
+/**
+ * 在模態框中生成摘要
+ * @param {number} articleId - 文章ID
+ */
+function generateSummaryInModal(articleId) {
+    const summaryContainer = document.getElementById('previewArticleSummary');
+    const summaryLoadingContainer = document.getElementById('previewSummaryLoading');
+    const generateSummaryBtn = document.getElementById('previewGenerateSummaryBtn');
+
+    // 顯示加載狀態
+    summaryContainer.style.display = 'none';
+    summaryLoadingContainer.style.display = 'block';
+    generateSummaryBtn.style.display = 'none';
+
+    // 調用API生成摘要
+    fetch(`/api/articles/${articleId}/generate-summary/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCsrfToken()
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            displaySummaryInModal(data.result);
+            showNotification('成功', '摘要生成完成', 'success');
+        } else {
+            throw new Error(data.message || '摘要生成失敗');
+        }
+    })
+    .catch(error => {
+        console.error('生成摘要時出錯:', error);
+        showNotification('錯誤', error.message || '摘要生成失敗', 'error');
+
+        // 恢復按鈕
+        summaryLoadingContainer.style.display = 'none';
+        generateSummaryBtn.style.display = 'inline-block';
+    });
+}
+
+/**
+ * 在模態框中顯示摘要
+ * @param {Object} summaryData - 摘要數據
+ */
+function displaySummaryInModal(summaryData) {
+    const summaryContainer = document.getElementById('previewArticleSummary');
+    const summaryLoadingContainer = document.getElementById('previewSummaryLoading');
+    const generateSummaryBtn = document.getElementById('previewGenerateSummaryBtn');
+
+    // 填充摘要內容
+    document.getElementById('previewSummaryContent').textContent = summaryData.summary_content || summaryData.content;
+
+    // 格式化時間
+    if (summaryData.generated_at) {
+        const time = new Date(summaryData.generated_at).toLocaleString('zh-TW');
+        document.getElementById('previewSummaryTime').textContent = `生成時間: ${time}`;
+    }
+
+    // 顯示摘要，隱藏加載狀態
+    summaryLoadingContainer.style.display = 'none';
+    summaryContainer.style.display = 'block';
+
+    // 更改按鈕為重新生成
+    generateSummaryBtn.innerHTML = '<i class="bi bi-arrow-clockwise me-1"></i>重新生成';
+    generateSummaryBtn.style.display = 'inline-block';
+}
+
+/**
+ * 更新文章卡片的摘要顯示
+ * @param {number} articleId - 文章ID
+ * @param {Object} summaryData - 摘要數據
+ */
+function updateArticleCardSummary(articleId, summaryData) {
+    // 查找對應的文章卡片
+    const articleCard = document.querySelector(`[data-article-id="${articleId}"]`);
+    if (!articleCard) return;
+
+    // 查找摘要顯示區域
+    const summaryElement = articleCard.querySelector('.article-summary');
+    const summaryBadge = articleCard.querySelector('.summary-badge');
+    const generateButton = articleCard.querySelector('.generate-summary-btn');
+
+    if (summaryElement) {
+        summaryElement.textContent = summaryData.summary_content || summaryData.content;
+        summaryElement.classList.remove('text-muted');
+        summaryElement.classList.add('text-info');
+    }
+
+    if (summaryBadge) {
+        summaryBadge.textContent = '已分析';
+        summaryBadge.className = 'badge bg-success summary-badge';
+    }
+
+    if (generateButton) {
+        generateButton.innerHTML = '<i class="bi bi-check-circle me-1"></i>已分析';
+        generateButton.classList.remove('btn-outline-warning');
+        generateButton.classList.add('btn-outline-success');
+    }
+}
+
+/**
+ * 批量更新摘要按鈕狀態
+ * @param {number} jobId - 任務ID
+ */
+function refreshSummaryButtonsStatus(jobId) {
+    // 獲取當前頁面所有文章的摘要狀態
+    const articleCards = document.querySelectorAll('[data-article-id]');
+
+    articleCards.forEach(card => {
+        const articleId = card.getAttribute('data-article-id');
+        if (articleId) {
+            checkAndUpdateSummaryStatus(articleId);
+        }
+    });
+}
+
+/**
+ * 檢查並更新單個文章的摘要狀態
+ * @param {number} articleId - 文章ID
+ */
+function checkAndUpdateSummaryStatus(articleId) {
+    fetch(`/api/articles/${articleId}/summary/`)
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success' && data.has_summary) {
+            updateArticleCardSummary(articleId, data.summary);
+        }
+    })
+    .catch(error => {
+        console.log('檢查摘要狀態時出錯:', error);
+    });
+}
+
+/**
+ * 獲取CSRF Token - 用於摘要分析
+ * @returns {string} CSRF Token
+ */
+function getCsrfToken() {
+    const token = document.querySelector('[name=csrfmiddlewaretoken]');
+    if (token) {
+        return token.value;
+    }
+
+    // 從Cookie中獲取CSRF Token
+    const cookies = document.cookie.split(';');
+    for (let cookie of cookies) {
+        const [name, value] = cookie.trim().split('=');
+        if (name === 'csrftoken') {
+            return value;
+        }
+    }
+
+    return '';
+}
