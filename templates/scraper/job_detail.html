@@ -1,325 +1,538 @@
 {% extends 'base.html' %}
+{% load custom_filters %}
 
-{% block title %}爬蟲任務概覽 | 新聞爬蟲系統{% endblock %}
+{% block title %}任務概覽 | 新聞爬蟲系統{% endblock %}
 
 {% block extra_css %}
 <style>
-    .overview-card {
-        border: none;
-        border-radius: 10px;
-        background: linear-gradient(145deg, #2a2d3a, #212330);
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    .stat-card {
         transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border: none;
+        border-radius: 15px;
+        background: linear-gradient(135deg, rgba(23, 162, 184, 0.1), rgba(23, 162, 184, 0.05));
+        backdrop-filter: blur(10px);
+        position: relative;
+        overflow: hidden;
     }
 
-    .overview-card:hover {
+    .stat-card:hover {
         transform: translateY(-5px);
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+        box-shadow: 0 15px 30px rgba(23, 162, 184, 0.2);
     }
 
-    .stat-icon {
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #17a2b8, #4e73df);
+    }
+
+    .stat-number {
         font-size: 2.5rem;
-        margin-bottom: 10px;
-        display: inline-block;
-    }
-
-    .stat-value {
-        font-size: 1.8rem;
-        font-weight: bold;
+        font-weight: 700;
+        background: linear-gradient(135deg, #17a2b8, #4e73df);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
     }
 
     .stat-label {
-        font-size: 1rem;
-        color: rgba(255, 255, 255, 0.7);
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 0.9rem;
+        font-weight: 500;
     }
 
-    .action-link {
-        color: var(--primary-color);
-        text-decoration: none;
-        display: inline-flex;
-        align-items: center;
-        margin-top: 10px;
+    .recent-article-item {
         transition: all 0.3s ease;
+        border-radius: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(0, 0, 0, 0.2);
+        margin-bottom: 1rem;
+        overflow: hidden;
     }
 
-    .action-link:hover {
-        transform: translateX(3px);
+    .recent-article-item:hover {
+        transform: translateX(5px);
+        border-color: rgba(23, 162, 184, 0.5);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
     }
 
-    .action-icon {
-        margin-left: 5px;
+    .article-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #fff;
+        margin-bottom: 0.5rem;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        line-height: 1.4;
+    }
+
+    .article-subtitle {
+        font-size: 0.9rem;
+        color: rgba(255, 255, 255, 0.7);
+        font-style: italic;
+        margin-bottom: 0.75rem;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        line-height: 1.3;
+        min-height: 34px;
+    }
+
+    .article-subtitle.loading {
+        color: rgba(255, 255, 255, 0.5);
+        background: linear-gradient(90deg, rgba(255,255,255,0.1) 25%, rgba(255,255,255,0.2) 50%, rgba(255,255,255,0.1) 75%);
+        background-size: 200% 100%;
+        animation: shimmer 1.5s infinite;
+        border-radius: 4px;
+    }
+
+    .article-subtitle.no-summary {
+        color: rgba(255, 255, 255, 0.4);
+        font-style: normal;
+        font-size: 0.8rem;
+    }
+
+    .article-subtitle.error {
+        color: rgba(220, 53, 69, 0.7);
+        font-style: normal;
+        font-size: 0.8rem;
+    }
+
+    @keyframes shimmer {
+        0% { background-position: -200% 0; }
+        100% { background-position: 200% 0; }
+    }
+
+    .article-meta {
+        font-size: 0.8rem;
+        color: rgba(255, 255, 255, 0.6);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
     }
 
     .category-badge {
         padding: 0.25rem 0.5rem;
-        border-radius: 0.25rem;
-        margin-right: 0.25rem;
-        margin-bottom: 0.25rem;
+        border-radius: 12px;
+        font-size: 0.7rem;
+        font-weight: 500;
+        color: white;
+    }
+
+    .summary-status-indicator {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
         display: inline-block;
+        margin-left: 0.5rem;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .summary-status-indicator.completed {
+        background-color: #28a745;
+        box-shadow: 0 0 4px rgba(40, 167, 69, 0.6);
+    }
+
+    .summary-status-indicator.pending {
+        background-color: #ffc107;
+        animation: pulse 2s infinite;
+    }
+
+    .summary-status-indicator.failed {
+        background-color: #dc3545;
+    }
+
+    .summary-status-indicator.none {
+        background-color: #6c757d;
+    }
+
+    @keyframes pulse {
+        0% { opacity: 1; }
+        50% { opacity: 0.5; }
+        100% { opacity: 1; }
+    }
+
+    .progress-wrapper {
+        position: relative;
+        background: rgba(0, 0, 0, 0.3);
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+    .progress-bar {
+        transition: width 0.6s ease;
+    }
+
+    .action-btn {
+        border-radius: 8px;
+        padding: 0.5rem 1rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .action-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .navigation-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-top: 2rem;
+    }
+
+    .nav-card {
+        background: linear-gradient(135deg, rgba(23, 162, 184, 0.1), rgba(23, 162, 184, 0.05));
+        border: 1px solid rgba(23, 162, 184, 0.2);
+        border-radius: 15px;
+        padding: 1.5rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        color: inherit;
+    }
+
+    .nav-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(23, 162, 184, 0.2);
+        border-color: rgba(23, 162, 184, 0.4);
+        color: inherit;
+    }
+
+    .nav-icon {
+        font-size: 3rem;
+        color: #17a2b8;
+        margin-bottom: 1rem;
+        display: block;
+    }
+
+    .nav-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: #fff;
+    }
+
+    .nav-description {
+        font-size: 0.9rem;
+        color: rgba(255, 255, 255, 0.7);
+        line-height: 1.4;
+    }
+
+    /* 響應式調整 */
+    @media (max-width: 767.98px) {
+        .stat-number {
+            font-size: 2rem;
+        }
+
+        .navigation-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .article-title {
+            font-size: 1rem;
+        }
+
+        .article-subtitle {
+            font-size: 0.85rem;
+        }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="row mb-4">
-    <div class="col-md-8">
-        <h1 class="display-6 fw-bold text-info">
-            <i class="bi bi-search me-2"></i>爬蟲任務概覽 #{{ job.id }}
-        </h1>
-        <p class="text-light">查看爬蟲任務結果摘要</p>
-    </div>
-    <div class="col-md-4 text-md-end">
-        <a href="{% url 'job_list' %}" class="btn btn-outline-secondary">
-            <i class="bi bi-arrow-left me-1"></i>返回列表
-        </a>
-    </div>
-</div>
-
-<!-- 任務資訊卡片 -->
-<div class="row mb-4">
-    <div class="col-12">
-        <div class="card" data-aos="fade-up">
-            <div class="card-body p-4">
-                <div class="row">
-                    <div class="col-md-2">
-                        <div class="d-flex align-items-center mb-3 mb-md-0">
-                            <div class="rounded-circle bg-dark d-flex align-items-center justify-content-center me-3" style="width: 60px; height: 60px;">
-                                {% if job.status == 'pending' %}
-                                    <i class="bi bi-hourglass-split text-warning fs-2"></i>
-                                {% elif job.status == 'running' %}
-                                    <i class="bi bi-arrow-repeat text-info fs-2"></i>
-                                {% elif job.status == 'completed' %}
-                                    <i class="bi bi-check-circle text-success fs-2"></i>
-                                {% elif job.status == 'failed' %}
-                                    <i class="bi bi-exclamation-triangle text-danger fs-2"></i>
-                                {% endif %}
-                            </div>
-                            <div>
-                                <h6 class="text-white mb-0">狀態</h6>
-                                <h5 class="mb-0">
-                                    {% if job.status == 'pending' %}
-                                        <span class="text-warning">等待中</span>
-                                    {% elif job.status == 'running' %}
-                                        <span class="text-info">執行中</span>
-                                    {% elif job.status == 'completed' %}
-                                        <span class="text-success">已完成</span>
-                                    {% elif job.status == 'failed' %}
-                                        <span class="text-danger">失敗</span>
-                                    {% endif %}
-                                </h5>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-5">
-                        <div class="mb-3 mb-md-0">
-                            <h6 class="text-white mb-0">爬取類別</h6>
-                            <h5 class="mb-0">{{ job.categories }}</h5>
-                        </div>
-                    </div>
-                    <div class="col-md-2">
-                        <div class="mb-3 mb-md-0">
-                            <h6 class="text-white mb-0">文章數</h6>
-                            <h5 class="mb-0">每類{{ job.limit_per_category }}篇，共{{ articles_count }}篇</h5>
-                        </div>
-                    </div>
-                    <div class="col-md-2">
-                        <div>
-                            <h6 class="text-white mb-0">創建時間</h6>
-                            <h5 class="mb-0">{{ job.created_at|date:"Y-m-d H:i" }}</h5>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- 數據概覽卡片 -->
-<div class="row mb-4">
-    <!-- 文章數量統計 -->
-    <div class="col-md-3 mb-4" data-aos="fade-up" data-aos-delay="100">
-        <div class="card overview-card">
-            <div class="card-body p-4 text-center">
-                <i class="bi bi-newspaper stat-icon text-info"></i>
-                <h3 class="stat-value">{{ articles_count }}</h3>
-                <p class="stat-label">爬取的文章數量</p>
-                <a href="{% url 'job_articles' job.id %}" class="action-link">
-                    查看所有文章 <i class="bi bi-arrow-right action-icon"></i>
-                </a>
-            </div>
-        </div>
-    </div>
-
-    <!-- 關鍵詞統計 -->
-    <div class="col-md-3 mb-4" data-aos="fade-up" data-aos-delay="200">
-        <div class="card overview-card">
-            <div class="card-body p-4 text-center">
-                <i class="bi bi-key stat-icon text-success"></i>
-                <h3 class="stat-value">{{ keywords_count }}</h3>
-                <p class="stat-label">識別的關鍵詞數量</p>
-                <a href="{% url 'job_keywords' job.id %}" class="action-link">
-                    查看關鍵詞分析 <i class="bi bi-arrow-right action-icon"></i>
-                </a>
-            </div>
-        </div>
-    </div>
-
-    <!-- 命名實體統計 -->
-    <div class="col-md-3 mb-4" data-aos="fade-up" data-aos-delay="300">
-        <div class="card overview-card">
-            <div class="card-body p-4 text-center">
-                <i class="bi bi-people stat-icon text-warning"></i>
-                <h3 class="stat-value">{{ entities_count }}</h3>
-                <p class="stat-label">識別的命名實體數量</p>
-                <a href="{% url 'job_entities' job.id %}" class="action-link">
-                    查看命名實體分析 <i class="bi bi-arrow-right action-icon"></i>
-                </a>
-            </div>
-        </div>
-    </div>
-
-    <!-- 摘要分析統計 -->
-    <div class="col-md-3 mb-4" data-aos="fade-up" data-aos-delay="400">
-        <div class="card overview-card">
-            <div class="card-body p-4 text-center">
-                <i class="bi bi-chat-dots stat-icon text-primary"></i>
-                <h3 class="stat-value" id="summaryCount">0</h3>
-                <p class="stat-label">文章摘要分析數</p>
-
-                <div class="progress mb-2 mt-2" style="height: 10px;" id="summaryProgress">
-                    <div class="progress-bar bg-primary" role="progressbar" style="width: 0%;"
-                         aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
-                        0%
-                    </div>
-                </div>
-
-                <a href="{% url 'job_summary_analysis' job.id %}" class="action-link">
-                    查看摘要分析 <i class="bi bi-arrow-right action-icon"></i>
-                </a>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- 快速分析按鈕區塊 -->
-<div class="row mb-4">
-    <div class="col-12" data-aos="fade-up" data-aos-delay="100">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0">
-                    <i class="bi bi-lightning-fill me-2"></i>快速分析工具
-                </h5>
-            </div>
-            <div class="card-body">
-                <div class="row g-2">
-                    <div class="col-md-2">
-                        <a href="{% url 'key_person_selection' job.id %}" class="btn btn-sm btn-outline-info w-100">
-                            <i class="bi bi-person-badge me-1"></i>關鍵人物分析
-                        </a>
-                    </div>
-                    <div class="col-md-2">
-                        <a href="{% url 'job_search_analysis' job.id %}" class="btn btn-sm btn-outline-success w-100">
-                            <i class="bi bi-graph-up me-1"></i>搜尋與數據分析
-                        </a>
-                    </div>
-                    <div class="col-md-2">
-                        <a href="{% url 'ai_report_view' job.id %}" class="btn btn-sm btn-outline-warning w-100">
-                            <i class="bi bi-file-text me-1"></i>AI 生成報告
-                        </a>
-                    </div>
-                    <div class="col-md-2">
-                        <a href="{% url 'job_summary_analysis' job.id %}" class="btn btn-sm btn-outline-primary w-100">
-                            <i class="bi bi-chat-dots me-1"></i>摘要分析
-                        </a>
-                    </div>
-                    <div class="col-md-2">
-                        <a href="{% url 'job_sentiment_analysis' job.id %}" class="btn btn-sm btn-outline-danger w-100">
-                            <i class="bi bi-emoji-smile me-1"></i>情感分析
-                        </a>
-                    </div>
-                    <div class="col-md-2">
-                        <a href="{% url 'job_list' %}" class="btn btn-sm btn-primary w-100">
-                            <i class="bi bi-house-door me-1"></i>回首頁
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- 類別分布卡片 -->
-<div class="row">
-    <div class="col-md-6 mb-4" data-aos="fade-up" data-aos-delay="400">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0">
-                    <i class="bi bi-pie-chart-fill me-2"></i>類別分布
-                </h5>
-            </div>
-            <div class="card-body">
-                {% if category_stats %}
-                <div class="chart-container">
-                    <canvas id="categoryChart" height="250"></canvas>
-                </div>
-                <div class="mt-3">
-                    {% for stat in category_stats %}
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <span class="category-badge" style="background-color: rgba({{ forloop.counter0|add:30 }}, {{ forloop.counter|add:100 }}, {{ forloop.counter0|add:150 }}, 0.7);">
-                            {{ stat.category }}
+<div class="container-fluid">
+    <!-- 任務標題與基本信息 -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-start flex-wrap">
+                <div>
+                    <h1 class="display-5 fw-bold text-info mb-2" data-aos="fade-right">
+                        <i class="bi bi-clipboard-data me-3"></i>任務概覽
+                    </h1>
+                    <p class="lead text-light mb-0" data-aos="fade-right" data-aos-delay="100">
+                        任務 #{{ job.id }} -
+                        <span class="badge bg-info">{{ job.get_status_display }}</span>
+                    </p>
+                    <p class="text-muted mt-2" data-aos="fade-right" data-aos-delay="200">
+                        <i class="bi bi-calendar me-1"></i>創建於: {{ job.created_at|date:"Y-m-d H:i" }}
+                        <span class="ms-3">
+                            <i class="bi bi-tags me-1"></i>類別: {{ job.categories }}
                         </span>
-                        <span class="badge bg-dark">{{ stat.count }}</span>
-                    </div>
-                    {% endfor %}
+                    </p>
                 </div>
-                {% else %}
-                <div class="alert alert-info">
-                    <i class="bi bi-info-circle me-2"></i>尚無類別統計數據
+                <div class="text-end" data-aos="fade-left">
+                    <a href="{% url 'job_list' %}" class="btn btn-outline-secondary action-btn me-2">
+                        <i class="bi bi-arrow-left me-1"></i>返回列表
+                    </a>
+                    {% if job.status == 'completed' %}
+                    <a href="{% url 'job_create' %}" class="btn btn-info action-btn">
+                        <i class="bi bi-plus-circle me-1"></i>新建任務
+                    </a>
+                    {% endif %}
                 </div>
-                {% endif %}
             </div>
         </div>
     </div>
 
-    <!-- 最新文章卡片 -->
-    <div class="col-md-6 mb-4" data-aos="fade-up" data-aos-delay="500">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0">
-                    <i class="bi bi-clock-history me-2"></i>最新文章
-                </h5>
+    <!-- 統計卡片 -->
+    <div class="row mb-5">
+        <div class="col-md-3 mb-3">
+            <div class="card stat-card h-100" data-aos="fade-up" data-aos-delay="100">
+                <div class="card-body text-center">
+                    <div class="stat-number">{{ articles_count }}</div>
+                    <div class="stat-label">篇文章</div>
+                    <small class="text-muted d-block mt-2">
+                        <i class="bi bi-newspaper me-1"></i>已抓取文章數量
+                    </small>
+                </div>
             </div>
-            <div class="card-body p-0">
-                {% if recent_articles %}
-                <div class="list-group list-group-flush">
-                    {% for article in recent_articles %}
-                    <a href="{% url 'article_detail' article.id %}" class="list-group-item list-group-item-action bg-transparent text-white border-bottom border-secondary">
-                        <div class="d-flex w-100 justify-content-between align-items-center">
-                            <h6 class="mb-1 text-truncate" style="max-width: 80%;">{{ article.title }}</h6>
-                            <small class="text-info">{{ article.date|date:"m-d H:i" }}</small>
-                        </div>
-                        <div class="d-flex justify-content-between align-items-center">
-                            <small class="badge" style="background-color: rgba(100, 100, 200, 0.7);">{{ article.category }}</small>
-                            <small class="text-muted">{{ article.author }}</small>
-                        </div>
-                        <div class="mt-2" id="summary-status-{{ article.id }}">
-                            <small class="text-muted">
-                                <i class="bi bi-hourglass-split me-1"></i>載入摘要狀態...
-                            </small>
-                        </div>
-                    </a>
-                    {% endfor %}
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card stat-card h-100" data-aos="fade-up" data-aos-delay="200">
+                <div class="card-body text-center">
+                    <div class="stat-number">{{ keywords_count }}</div>
+                    <div class="stat-label">個關鍵詞</div>
+                    <small class="text-muted d-block mt-2">
+                        <i class="bi bi-key me-1"></i>已分析關鍵詞
+                    </small>
                 </div>
-                <div class="text-center py-3">
-                    <a href="{% url 'job_articles' job.id %}" class="btn btn-sm btn-outline-info">
-                        <i class="bi bi-list-ul me-1"></i>查看所有文章
-                    </a>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card stat-card h-100" data-aos="fade-up" data-aos-delay="300">
+                <div class="card-body text-center">
+                    <div class="stat-number">{{ entities_count }}</div>
+                    <div class="stat-label">個實體</div>
+                    <small class="text-muted d-block mt-2">
+                        <i class="bi bi-person-badge me-1"></i>命名實體識別
+                    </small>
                 </div>
-                {% else %}
-                <div class="alert alert-info m-3">
-                    <i class="bi bi-info-circle me-2"></i>尚無爬取的文章
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card stat-card h-100" data-aos="fade-up" data-aos-delay="400">
+                <div class="card-body text-center">
+                    <div class="stat-number">{{ sentiment_count }}</div>
+                    <div class="stat-label">篇已分析</div>
+                    <small class="text-muted d-block mt-2">
+                        <i class="bi bi-emoji-smile me-1"></i>情感分析完成
+                    </small>
+                    <div class="progress-wrapper mt-2">
+                        <div class="progress" style="height: 4px;">
+                            <div class="progress-bar bg-info"
+                                 style="width: {{ sentiment_progress }}%"
+                                 aria-valuenow="{{ sentiment_progress }}"
+                                 aria-valuemin="0"
+                                 aria-valuemax="100"></div>
+                        </div>
+                    </div>
+                    <small class="text-info">{{ sentiment_progress }}% 完成</small>
                 </div>
-                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- 左側：類別分布與最新文章 -->
+        <div class="col-lg-8">
+            <!-- 類別分布 -->
+            <div class="card mb-4" data-aos="fade-up">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="bi bi-pie-chart me-2 text-info"></i>類別文章分布
+                    </h5>
+                    <span class="badge bg-info">{{ category_stats|length }} 個類別</span>
+                </div>
+                <div class="card-body">
+                    {% if category_stats %}
+                    <div class="row">
+                        {% for stat in category_stats %}
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="d-flex align-items-center">
+                                <div class="category-badge me-2"
+                                     style="background-color:
+                                     {% if stat.category == '財經' %}rgba(54, 162, 235, 0.8)
+                                     {% elif stat.category == '政治' %}rgba(255, 99, 132, 0.8)
+                                     {% elif stat.category == '社會' %}rgba(255, 159, 64, 0.8)
+                                     {% elif stat.category == '科技' %}rgba(75, 192, 192, 0.8)
+                                     {% elif stat.category == '國際' %}rgba(153, 102, 255, 0.8)
+                                     {% elif stat.category == '娛樂' %}rgba(255, 205, 86, 0.8)
+                                     {% elif stat.category == '生活' %}rgba(201, 203, 207, 0.8)
+                                     {% elif stat.category == '言論' %}rgba(0, 204, 150, 0.8)
+                                     {% elif stat.category == '軍事' %}rgba(255, 0, 110, 0.8)
+                                     {% else %}rgba(100, 100, 100, 0.8){% endif %}">
+                                    {{ stat.category }}
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="text-light">{{ stat.count }} 篇</span>
+                                        <small class="text-muted">
+                                            {{ stat.count|divisor:articles_count|floatformat:1 }}%
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center text-muted py-4">
+                        <i class="bi bi-info-circle me-2"></i>暫無類別統計數據
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- 最新文章列表 -->
+            <div class="card" data-aos="fade-up" data-aos-delay="200">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="bi bi-clock-history me-2 text-info"></i>最新文章
+                    </h5>
+                    <div class="d-flex align-items-center">
+                        <button id="refreshSummaries" class="btn btn-sm btn-outline-info me-2" title="刷新摘要狀態">
+                            <i class="bi bi-arrow-clockwise"></i>
+                        </button>
+                        <a href="{% url 'job_articles' job.id %}" class="btn btn-sm btn-info">
+                            <i class="bi bi-list me-1"></i>查看全部
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if recent_articles %}
+                    <div id="recentArticlesList">
+                        {% for article in recent_articles %}
+                        <div class="recent-article-item p-3"
+                             data-article-id="{{ article.id }}"
+                             data-aos="fade-left"
+                             data-aos-delay="{{ forloop.counter }}">
+                            <div class="article-title">
+                                <a href="{% url 'article_detail' article.id %}"
+                                   class="text-decoration-none text-white">
+                                    {{ article.title }}
+                                </a>
+                            </div>
+
+                            <!-- 文章摘要副標題 -->
+                            <div class="article-subtitle loading"
+                                 data-article-id="{{ article.id }}"
+                                 id="subtitle-{{ article.id }}">
+                                正在載入摘要...
+                            </div>
+
+                            <div class="article-meta">
+                                <div class="d-flex align-items-center flex-wrap">
+                                    <span class="category-badge me-2"
+                                          style="background-color:
+                                          {% if article.category == '財經' %}rgba(54, 162, 235, 0.8)
+                                          {% elif article.category == '政治' %}rgba(255, 99, 132, 0.8)
+                                          {% elif article.category == '社會' %}rgba(255, 159, 64, 0.8)
+                                          {% elif article.category == '科技' %}rgba(75, 192, 192, 0.8)
+                                          {% elif article.category == '國際' %}rgba(153, 102, 255, 0.8)
+                                          {% elif article.category == '娛樂' %}rgba(255, 205, 86, 0.8)
+                                          {% elif article.category == '生活' %}rgba(201, 203, 207, 0.8)
+                                          {% elif article.category == '言論' %}rgba(0, 204, 150, 0.8)
+                                          {% elif article.category == '軍事' %}rgba(255, 0, 110, 0.8)
+                                          {% else %}rgba(100, 100, 100, 0.8){% endif %}">
+                                        {{ article.category }}
+                                    </span>
+                                    <span class="me-2">
+                                        <i class="bi bi-person-circle me-1"></i>{{ article.author }}
+                                    </span>
+                                    <span>
+                                        <i class="bi bi-calendar me-1"></i>{{ article.date|date:"m-d H:i" }}
+                                    </span>
+                                </div>
+                                <div class="d-flex align-items-center">
+                                    <span class="text-muted me-2" style="font-size: 0.7rem;">摘要狀態</span>
+                                    <div class="summary-status-indicator none"
+                                         data-article-id="{{ article.id }}"
+                                         title="摘要狀態"></div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center text-muted py-4">
+                        <i class="bi bi-info-circle me-2"></i>暫無最新文章
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- 右側：功能導航 -->
+        <div class="col-lg-4">
+            <div class="card" data-aos="fade-up" data-aos-delay="300">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-grid me-2 text-info"></i>功能導航
+                    </h5>
+                </div>
+                <div class="card-body p-2">
+                    <div class="navigation-grid">
+                        <a href="{% url 'job_articles' job.id %}" class="nav-card">
+                            <i class="bi bi-newspaper nav-icon"></i>
+                            <div class="nav-title">文章列表</div>
+                            <div class="nav-description">瀏覽所有抓取的文章內容</div>
+                        </a>
+
+                        <a href="{% url 'job_keywords' job.id %}" class="nav-card">
+                            <i class="bi bi-key nav-icon"></i>
+                            <div class="nav-title">關鍵詞分析</div>
+                            <div class="nav-description">查看文章關鍵詞統計分析</div>
+                        </a>
+
+                        <a href="{% url 'job_entities' job.id %}" class="nav-card">
+                            <i class="bi bi-person-badge nav-icon"></i>
+                            <div class="nav-title">實體分析</div>
+                            <div class="nav-description">探索命名實體識別結果</div>
+                        </a>
+
+                        <a href="{% url 'job_sentiment_analysis' job.id %}" class="nav-card">
+                            <i class="bi bi-emoji-smile nav-icon"></i>
+                            <div class="nav-title">情感分析</div>
+                            <div class="nav-description">文章情感傾向分析結果</div>
+                        </a>
+
+                        <a href="{% url 'job_summary_analysis' job.id %}" class="nav-card">
+                            <i class="bi bi-file-text nav-icon"></i>
+                            <div class="nav-title">摘要分析</div>
+                            <div class="nav-description">AI 生成的文章摘要</div>
+                        </a>
+
+                        <a href="{% url 'job_search_analysis' job.id %}" class="nav-card">
+                            <i class="bi bi-search nav-icon"></i>
+                            <div class="nav-title">進階搜尋</div>
+                            <div class="nav-description">深度搜尋與關聯分析</div>
+                        </a>
+
+                        <a href="{% url 'key_person_selection' job.id %}" class="nav-card">
+                            <i class="bi bi-people nav-icon"></i>
+                            <div class="nav-title">領導人分析</div>
+                            <div class="nav-description">特定人物提及度分析</div>
+                        </a>
+
+                        <a href="{% url 'ai_report_view' job.id %}" class="nav-card">
+                            <i class="bi bi-robot nav-icon"></i>
+                            <div class="nav-title">AI 報告</div>
+                            <div class="nav-description">AI 生成的深度分析報告</div>
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -328,134 +541,129 @@
 
 {% block extra_js %}
 <script>
-    $(document).ready(function() {
-        // 載入摘要統計
-        loadSummaryStats();
+$(document).ready(function() {
+    // 載入最新文章的摘要狀態
+    loadRecentArticlesSummaries();
 
-        // 載入最新文章摘要狀態
-        loadRecentArticlesSummaryStatus();
+    // 刷新摘要按鈕事件
+    $('#refreshSummaries').click(function() {
+        const btn = $(this);
+        const originalHtml = btn.html();
 
-        // 繪製類別分布圖表
-        {% if category_stats %}
-        const categoryCtx = document.getElementById('categoryChart').getContext('2d');
-        const categoryData = {
-            labels: [{% for stat in category_stats %}"{{ stat.category }}",{% endfor %}],
-            datasets: [{
-                data: [{% for stat in category_stats %}{{ stat.count }},{% endfor %}],
-                backgroundColor: [
-                    'rgba(54, 162, 235, 0.7)',
-                    'rgba(255, 99, 132, 0.7)',
-                    'rgba(255, 206, 86, 0.7)',
-                    'rgba(75, 192, 192, 0.7)',
-                    'rgba(153, 102, 255, 0.7)',
-                    'rgba(255, 159, 64, 0.7)',
-                    'rgba(201, 203, 207, 0.7)',
-                    'rgba(0, 204, 150, 0.7)',
-                    'rgba(255, 0, 110, 0.7)'
-                ],
-                borderColor: [
-                    'rgba(54, 162, 235, 1)',
-                    'rgba(255, 99, 132, 1)',
-                    'rgba(255, 206, 86, 1)',
-                    'rgba(75, 192, 192, 1)',
-                    'rgba(153, 102, 255, 1)',
-                    'rgba(255, 159, 64, 1)',
-                    'rgba(201, 203, 207, 1)',
-                    'rgba(0, 204, 150, 1)',
-                    'rgba(255, 0, 110, 1)'
-                ],
-                borderWidth: 1
-            }]
-        };
+        btn.html('<i class="bi bi-arrow-repeat"></i>').prop('disabled', true);
 
-        const categoryChart = new Chart(categoryCtx, {
-            type: 'doughnut',
-            data: categoryData,
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: {
-                        position: 'bottom',
-                        labels: {
-                            color: 'rgba(255, 255, 255, 0.7)'
-                        }
-                    }
-                }
-            }
-        });
-        {% endif %}
+        // 重新載入所有文章摘要
+        loadRecentArticlesSummaries();
 
-        // 如果任務仍在執行中，每5秒自動刷新頁面
-        {% if job.status == 'running' or job.status == 'pending' %}
-        setTimeout(function() {
-            location.reload();
-        }, 5000);
-        {% endif %}
+        setTimeout(() => {
+            btn.html(originalHtml).prop('disabled', false);
+        }, 2000);
+    });
 
-        /**
-         * 載入摘要統計
-         */
-        function loadSummaryStats() {
-            $.ajax({
-                url: `/api/jobs/{{ job.id }}/summary-analysis/`,
-                type: 'GET',
-                success: function(response) {
-                    if (response.status === 'success') {
-                        $('#summaryCount').text(response.analyzed_summaries || 0);
+    // 如果任務仍在執行中，每30秒自動刷新頁面
+    {% if job.status == 'running' or job.status == 'pending' %}
+    setInterval(function() {
+        location.reload();
+    }, 30000);
+    {% endif %}
+});
 
-                        const progress = response.analysis_progress || 0;
-                        const progressBar = $('#summaryProgress .progress-bar');
-                        progressBar.css('width', progress + '%').text(progress + '%');
+// 載入最新文章的摘要狀態
+function loadRecentArticlesSummaries() {
+    $('.recent-article-item').each(function() {
+        const articleId = $(this).data('article-id');
+        loadArticleSummary(articleId);
+    });
+}
 
-                        if (progress === 100) {
-                            progressBar.removeClass('bg-primary').addClass('bg-success');
-                        } else if (progress > 0) {
-                            progressBar.removeClass('bg-primary').addClass('bg-warning');
-                        }
-                    }
-                },
-                error: function() {
-                    $('#summaryCount').text('--');
-                }
+// 載入單篇文章摘要
+function loadArticleSummary(articleId) {
+    $.ajax({
+        url: `/api/articles/${articleId}/summary/`,
+        method: 'GET',
+        success: function(response) {
+            updateArticleSummaryDisplay(articleId, response);
+        },
+        error: function(xhr, status, error) {
+            console.error(`載入文章 ${articleId} 摘要失敗:`, error);
+            updateArticleSummaryDisplay(articleId, {
+                has_summary: false,
+                error: true
             });
         }
-
-        /**
-         * 載入最新文章摘要狀態
-         */
-        function loadRecentArticlesSummaryStatus() {
-            {% for article in recent_articles %}
-            (function(articleId) {
-                $.ajax({
-                    url: `/api/articles/${articleId}/summary/`,
-                    type: 'GET',
-                    success: function(response) {
-                        const statusElement = $(`#summary-status-${articleId}`);
-                        if (response.status === 'success' && response.has_summary) {
-                            statusElement.html(`
-                                <small class="text-success">
-                                    <i class="bi bi-check-circle me-1"></i>已有摘要
-                                </small>
-                            `);
-                        } else {
-                            statusElement.html(`
-                                <small class="text-muted">
-                                    <i class="bi bi-dash-circle me-1"></i>未分析
-                                </small>
-                            `);
-                        }
-                    },
-                    error: function() {
-                        $(`#summary-status-${articleId}`).html(`
-                            <small class="text-muted">
-                                <i class="bi bi-dash-circle me-1"></i>未分析
-                            </small>
-                        `);
-                    }
-                });
-            })({{ article.id }});
-            {% endfor %}
-        }
     });
+}
+
+// 更新文章摘要顯示
+function updateArticleSummaryDisplay(articleId, data) {
+    const subtitleElement = $(`#subtitle-${articleId}`);
+    const statusIndicator = $(`.summary-status-indicator[data-article-id="${articleId}"]`);
+
+    if (data.has_summary && data.summary && data.summary.status === 'completed') {
+        // 有完成的摘要
+        subtitleElement
+            .removeClass('loading no-summary error')
+            .text(data.summary.text || '摘要載入中...');
+
+        statusIndicator
+            .removeClass('none pending failed')
+            .addClass('completed')
+            .attr('title', `摘要已完成 (${data.summary.generated_at})`);
+
+    } else if (data.has_summary && data.summary && data.summary.status === 'pending') {
+        // 摘要正在生成中
+        subtitleElement
+            .removeClass('loading error')
+            .addClass('no-summary')
+            .text('正在生成摘要...');
+
+        statusIndicator
+            .removeClass('none completed failed')
+            .addClass('pending')
+            .attr('title', '摘要生成中...');
+
+    } else if (data.has_summary && data.summary && data.summary.status === 'failed') {
+        // 摘要生成失敗
+        subtitleElement
+            .removeClass('loading no-summary')
+            .addClass('error')
+            .text('摘要生成失敗');
+
+        statusIndicator
+            .removeClass('none completed pending')
+            .addClass('failed')
+            .attr('title', `摘要生成失敗: ${data.summary.error_message || '未知錯誤'}`);
+
+    } else {
+        // 無摘要
+        subtitleElement
+            .removeClass('loading error')
+            .addClass('no-summary')
+            .text('尚未生成摘要');
+
+        statusIndicator
+            .removeClass('completed pending failed')
+            .addClass('none')
+            .attr('title', '尚未生成摘要');
+    }
+}
+
+// 顯示通知功能
+function showNotification(title, message, type) {
+    if (typeof Swal !== 'undefined') {
+        Swal.fire({
+            title: title,
+            text: message,
+            icon: type,
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true
+        });
+    } else {
+        alert(`${title}: ${message}`);
+    }
+}
 </script>
 {% endblock %}

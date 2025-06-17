@@ -17,6 +17,44 @@
         height: 48px;
     }
 
+    .article-subtitle {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        font-size: 0.9rem;
+        color: rgba(255, 255, 255, 0.8);
+        font-style: italic;
+        margin-bottom: 0.5rem;
+        min-height: 40px;
+        line-height: 1.4;
+    }
+
+    .article-subtitle.loading {
+        color: rgba(255, 255, 255, 0.5);
+        background: linear-gradient(90deg, rgba(255,255,255,0.1) 25%, rgba(255,255,255,0.2) 50%, rgba(255,255,255,0.1) 75%);
+        background-size: 200% 100%;
+        animation: shimmer 1.5s infinite;
+    }
+
+    .article-subtitle.no-summary {
+        color: rgba(255, 255, 255, 0.4);
+        font-style: normal;
+        font-size: 0.8rem;
+    }
+
+    .article-subtitle.error {
+        color: rgba(220, 53, 69, 0.7);
+        font-style: normal;
+        font-size: 0.8rem;
+    }
+
+    @keyframes shimmer {
+        0% { background-position: -200% 0; }
+        100% { background-position: 200% 0; }
+    }
+
     .article-meta {
         font-size: 0.85rem;
         color: rgba(255, 255, 255, 0.7);
@@ -93,6 +131,46 @@
 
     .filter-tag input[type="checkbox"] {
         display: none;
+    }
+
+    /* 摘要狀態指示器 */
+    .summary-status-indicator {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .summary-status-indicator.completed {
+        background-color: #28a745;
+        box-shadow: 0 0 6px rgba(40, 167, 69, 0.6);
+    }
+
+    .summary-status-indicator.pending {
+        background-color: #ffc107;
+        animation: pulse 2s infinite;
+    }
+
+    .summary-status-indicator.failed {
+        background-color: #dc3545;
+    }
+
+    .summary-status-indicator.none {
+        background-color: #6c757d;
+    }
+
+    @keyframes pulse {
+        0% { opacity: 1; }
+        50% { opacity: 0.5; }
+        100% { opacity: 1; }
+    }
+
+    /* 為文章卡片添加相對定位 */
+    .article-card .card-body {
+        position: relative;
     }
 </style>
 {% endblock %}
@@ -235,14 +313,20 @@
                 <span class="text-light">{{ article.date|date:"Y-m-d" }}</span>
             </div>
             <div class="card-body">
+                <!-- 摘要狀態指示器 -->
+                <div class="summary-status-indicator none"
+                     data-article-id="{{ article.id }}"
+                     title="摘要狀態"></div>
+
                 <h5 class="card-title article-title">{{ article.title }}</h5>
-                <div class="article-summary" data-article-id="{{ article.id }}">
-                    <div class="summary-placeholder text-center py-2">
-                        <small class="text-muted">
-                            <i class="bi bi-hourglass-split me-1"></i>載入摘要狀態...
-                        </small>
-                    </div>
+
+                <!-- 文章摘要副標題區域 -->
+                <div class="article-subtitle loading"
+                     data-article-id="{{ article.id }}"
+                     id="subtitle-{{ article.id }}">
+                    正在載入摘要...
                 </div>
+
                 <p class="article-meta mb-3">
                     <i class="bi bi-person-circle me-1"></i>{{ article.author }}
                     <i class="bi bi-clock ms-2 me-1"></i>{{ article.date|date:"H:i" }}
@@ -365,6 +449,11 @@
                     <small class="text-white" id="articleDate"></small>
                     <small class="text-white ms-2" id="articleAuthor"></small>
                 </div>
+                <!-- 在模態框中也顯示摘要 -->
+                <div class="mb-3" id="modalSummaryContainer" style="display: none;">
+                    <h6 class="text-info">文章摘要</h6>
+                    <p class="text-light" id="modalSummaryText" style="font-style: italic; background-color: rgba(23, 162, 184, 0.1); padding: 10px; border-radius: 5px;"></p>
+                </div>
                 <div class="article-content" id="articleContent"></div>
             </div>
             <div class="modal-footer">
@@ -380,6 +469,7 @@
     </div>
 </div>
 {% endblock %}
+
 {% block extra_js %}
 <!-- 引入共用腳本 -->
 <script src="/static/js/analysis.js"></script>
@@ -388,6 +478,9 @@
     $(document).ready(function() {
         // 初始化摘要進度監控組件
         createSummaryProgressMonitor({{ job.id }}, 'summaryProgressContainer');
+
+        // 載入所有文章的摘要狀態
+        loadAllArticleSummaries();
 
         // 類別標籤點擊事件
         $('.filter-tag').click(function() {
@@ -411,8 +504,6 @@
         const keyword = '{{ search_keyword|escapejs }}';
         if (keyword) {
             highlightKeyword(keyword);
-
-            // 顯示活動篩選標籤
             updateActiveFilters();
         }
 
@@ -423,33 +514,18 @@
 
         // 清除所有篩選
         $('#clearFilters').click(function() {
-            // 清除搜尋框
             $('#keyword').val('');
-
-            // 清除類別篩選
             $('.category-checkbox').prop('checked', false);
             $('.filter-tag').removeClass('active');
-
-            // 重置排序為默認
             $('#sortDateDesc').prop('checked', true);
-
-            // 清除僅內容搜尋
             $('#searchContentOnly').prop('checked', false);
-
-            // 重置所有文章顯示狀態
             $('.article-item').show();
-
-            // 更新計數
             updateArticleCount();
-
-            // 隱藏無結果提示
             $('#noResultsAlert').hide();
-
-            // 清除URL參數並重新載入頁面
             window.location.href = "{% url 'job_articles' job.id %}";
         });
 
-        // 增強的文章預覽功能（包含摘要）
+        // 增強的文章預覽功能
         $('.view-article').click(function() {
             const articleData = {
                 id: $(this).data('id'),
@@ -461,7 +537,6 @@
                 link: $(this).data('link')
             };
 
-            // 使用增強的預覽功能
             showArticlePreviewWithSummary(articleData);
         });
 
@@ -479,140 +554,364 @@
             return false;
         });
 
-        // 客戶端篩選文章功能
-        function filterArticles() {
-            const selectedCategories = [];
+        // 初始篩選
+        filterArticles();
+    });
 
-            // 獲取所有選中的類別
-            $('.category-checkbox:checked').each(function() {
-                selectedCategories.push($(this).val());
-            });
+    // 載入所有文章的摘要狀態
+    function loadAllArticleSummaries() {
+        $('.article-item').each(function() {
+            const articleId = $(this).data('article-id');
+            loadArticleSummary(articleId);
+        });
+    }
 
-            // 如果沒有選擇任何類別，顯示所有文章
-            if (selectedCategories.length === 0) {
-                $('.article-item').show();
-                updateArticleCount();
-                $('#noResultsAlert').hide();
-                return;
-            }
-
-            // 根據選擇的類別顯示/隱藏文章
-            let visibleCount = 0;
-            $('.article-item').each(function() {
-                const category = $(this).data('category');
-                if (selectedCategories.includes(category)) {
-                    $(this).show();
-                    visibleCount++;
-                } else {
-                    $(this).hide();
-                }
-            });
-
-            // 更新文章計數
-            updateArticleCount(visibleCount);
-
-            // 顯示/隱藏無結果提示
-            if (visibleCount === 0) {
-                $('#noResultsAlert').show();
-                $('#pagination').hide();
-            } else {
-                $('#noResultsAlert').hide();
-                $('#pagination').show();
-            }
-
-            // 更新活動篩選標籤
-            updateActiveFilters();
-        }
-
-        // 高亮搜尋關鍵字
-        function highlightKeyword(keyword) {
-            if (!keyword) return;
-
-            const regex = new RegExp(keyword, 'gi');
-
-            // 高亮文章標題
-            $('.article-title').each(function() {
-                const title = $(this).text();
-                if (regex.test(title)) {
-                    $(this).html(title.replace(regex, match => `<mark class="highlight">${match}</mark>`));
-                }
-            });
-
-            // 高亮作者名稱
-            $('.article-meta').each(function() {
-                const text = $(this).html();
-                if (regex.test(text)) {
-                    $(this).html(text.replace(regex, match => `<mark class="highlight">${match}</mark>`));
-                }
-            });
-        }
-
-        // 更新文章計數
-        function updateArticleCount(count) {
-            const totalVisible = count !== undefined ? count : $('.article-item:visible').length;
-            $('#article-count').text(totalVisible);
-        }
-
-        // 更新活動篩選標籤顯示
-        function updateActiveFilters() {
-            const keyword = $('#keyword').val();
-            const selectedCategories = [];
-            const isContentOnly = $('#searchContentOnly').prop('checked');
-            let hasActiveFilters = false;
-
-            // 收集選中的類別
-            $('.category-checkbox:checked').each(function() {
-                selectedCategories.push($(this).val());
-            });
-
-            // 清空現有標籤
-            $('#activeFilterTags').empty();
-
-            // 添加關鍵字標籤
-            if (keyword) {
-                hasActiveFilters = true;
-                const searchType = isContentOnly ? '內容' : '全文';
-                $('#activeFilterTags').append(
-                    `<span class="badge bg-info me-2 mb-1">
-                        ${searchType}搜尋: ${keyword}
-                    </span>`
-                );
-            }
-
-            // 添加類別標籤
-            if (selectedCategories.length > 0) {
-                hasActiveFilters = true;
-                selectedCategories.forEach(category => {
-                    $('#activeFilterTags').append(
-                        `<span class="badge bg-secondary me-2 mb-1">
-                            類別: ${category}
-                        </span>`
-                    );
+    // 載入單篇文章摘要
+    function loadArticleSummary(articleId) {
+        $.ajax({
+            url: `/api/articles/${articleId}/summary/`,
+            method: 'GET',
+            success: function(response) {
+                updateArticleSummaryDisplay(articleId, response);
+            },
+            error: function(xhr, status, error) {
+                console.error(`載入文章 ${articleId} 摘要失敗:`, error);
+                updateArticleSummaryDisplay(articleId, {
+                    has_summary: false,
+                    error: true
                 });
             }
+        });
+    }
 
-            // 顯示或隱藏活動篩選區域
-            if (hasActiveFilters) {
-                $('#activeFilters').show();
-            } else {
-                $('#activeFilters').hide();
+    // 更新文章摘要顯示
+    function updateArticleSummaryDisplay(articleId, data) {
+        const subtitleElement = $(`#subtitle-${articleId}`);
+        const statusIndicator = $(`.summary-status-indicator[data-article-id="${articleId}"]`);
+
+        if (data.has_summary && data.summary && data.summary.status === 'completed') {
+            // 有完成的摘要
+            subtitleElement
+                .removeClass('loading no-summary error')
+                .text(data.summary.text || '摘要載入中...');
+
+            statusIndicator
+                .removeClass('none pending failed')
+                .addClass('completed')
+                .attr('title', `摘要已完成 (${data.summary.generated_at})`);
+
+        } else if (data.has_summary && data.summary && data.summary.status === 'pending') {
+            // 摘要正在生成中
+            subtitleElement
+                .removeClass('loading error')
+                .addClass('no-summary')
+                .text('正在生成摘要...');
+
+            statusIndicator
+                .removeClass('none completed failed')
+                .addClass('pending')
+                .attr('title', '摘要生成中...');
+
+        } else if (data.has_summary && data.summary && data.summary.status === 'failed') {
+            // 摘要生成失敗
+            subtitleElement
+                .removeClass('loading no-summary')
+                .addClass('error')
+                .text('摘要生成失敗');
+
+            statusIndicator
+                .removeClass('none completed pending')
+                .addClass('failed')
+                .attr('title', `摘要生成失敗: ${data.summary.error_message || '未知錯誤'}`);
+
+        } else {
+            // 無摘要
+            subtitleElement
+                .removeClass('loading error')
+                .addClass('no-summary')
+                .text('尚未生成摘要');
+
+            statusIndicator
+                .removeClass('completed pending failed')
+                .addClass('none')
+                .attr('title', '尚未生成摘要');
+        }
+    }
+
+    // 增強的文章預覽功能，包含摘要
+    function showArticlePreviewWithSummary(articleData) {
+        // 設定基本資訊
+        $('#articleTitle').text(articleData.title);
+        $('#articleCategory').text(articleData.category);
+        $('#articleDate').text(articleData.date);
+        $('#articleAuthor').text('作者: ' + articleData.author);
+        $('#articleContent').text(articleData.content);
+        $('#articleLink').attr('href', articleData.link);
+        $('#articleDetailLink').attr('href', `/articles/${articleData.id}/`);
+
+        // 載入並顯示摘要
+        $.ajax({
+            url: `/api/articles/${articleData.id}/summary/`,
+            method: 'GET',
+            success: function(response) {
+                if (response.has_summary && response.summary && response.summary.status === 'completed') {
+                    $('#modalSummaryText').text(response.summary.text);
+                    $('#modalSummaryContainer').show();
+                } else {
+                    $('#modalSummaryContainer').hide();
+                }
+            },
+            error: function() {
+                $('#modalSummaryContainer').hide();
             }
+        });
+
+        // 顯示模態框
+        const modal = new bootstrap.Modal(document.getElementById('articleModal'));
+        modal.show();
+    }
+
+    // 客戶端篩選文章功能
+    function filterArticles() {
+        const selectedCategories = [];
+
+        $('.category-checkbox:checked').each(function() {
+            selectedCategories.push($(this).val());
+        });
+
+        if (selectedCategories.length === 0) {
+            $('.article-item').show();
+            updateArticleCount();
+            $('#noResultsAlert').hide();
+            return;
         }
 
-        // 如果任務仍在執行中，每5秒自動刷新頁面
-        {% if job.status == 'running' or job.status == 'pending' %}
-        setTimeout(function() {
-            location.reload();
-        }, 5000);
-        {% endif %}
+        let visibleCount = 0;
+        $('.article-item').each(function() {
+            const category = $(this).data('category');
+            if (selectedCategories.includes(category)) {
+                $(this).show();
+                visibleCount++;
+            } else {
+                $(this).hide();
+            }
+        });
 
-        // 初始篩選（如果有篩選參數）
-        filterArticles();
+        updateArticleCount(visibleCount);
 
-        // 延遲初始化摘要狀態，避免阻塞頁面載入
-        setTimeout(function() {
-            initializeExistingSummaryStatus();
-        }, 1000);
-    });
+        if (visibleCount === 0) {
+            $('#noResultsAlert').show();
+            $('#pagination').hide();
+        } else {
+            $('#noResultsAlert').hide();
+            $('#pagination').show();
+        }
+
+        updateActiveFilters();
+    }
+
+    // 高亮搜尋關鍵字
+    function highlightKeyword(keyword) {
+        if (!keyword) return;
+
+        const regex = new RegExp(keyword, 'gi');
+
+        $('.article-title').each(function() {
+            const title = $(this).text();
+            if (regex.test(title)) {
+                $(this).html(title.replace(regex, match => `<mark class="highlight">${match}</mark>`));
+            }
+        });
+
+        // 高亮作者名稱
+        $('.article-meta').each(function() {
+            const text = $(this).html();
+            if (regex.test(text)) {
+                $(this).html(text.replace(regex, match => `<mark class="highlight">${match}</mark>`));
+            }
+        });
+    }
+
+    // 更新文章計數
+    function updateArticleCount(count) {
+        const totalVisible = count !== undefined ? count : $('.article-item:visible').length;
+        $('#article-count').text(totalVisible);
+    }
+
+    // 更新活動篩選標籤顯示
+    function updateActiveFilters() {
+        const keyword = $('#keyword').val();
+        const selectedCategories = [];
+        const isContentOnly = $('#searchContentOnly').prop('checked');
+        let hasActiveFilters = false;
+
+        // 收集選中的類別
+        $('.category-checkbox:checked').each(function() {
+            selectedCategories.push($(this).val());
+        });
+
+        // 清空現有標籤
+        $('#activeFilterTags').empty();
+
+        // 添加關鍵字標籤
+        if (keyword) {
+            hasActiveFilters = true;
+            const searchType = isContentOnly ? '內容' : '全文';
+            $('#activeFilterTags').append(
+                `<span class="badge bg-info me-2 mb-1">
+                    ${searchType}搜尋: ${keyword}
+                </span>`
+            );
+        }
+
+        // 添加類別標籤
+        if (selectedCategories.length > 0) {
+            hasActiveFilters = true;
+            selectedCategories.forEach(category => {
+                $('#activeFilterTags').append(
+                    `<span class="badge bg-secondary me-2 mb-1">
+                        類別: ${category}
+                    </span>`
+                );
+            });
+        }
+
+        // 顯示或隱藏活動篩選區域
+        if (hasActiveFilters) {
+            $('#activeFilters').show();
+        } else {
+            $('#activeFilters').hide();
+        }
+    }
+
+    // 創建摘要進度監控組件
+    function createSummaryProgressMonitor(jobId, containerId) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+
+        // 創建進度監控界面
+        container.innerHTML = `
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <div class="d-flex align-items-center">
+                        <div class="me-3">
+                            <span class="text-light">摘要分析進度:</span>
+                            <span id="summaryProgressText" class="text-info fw-bold">載入中...</span>
+                        </div>
+                        <div class="progress flex-grow-1" style="height: 8px;">
+                            <div id="summaryProgressBar" class="progress-bar bg-info" role="progressbar"
+                                 style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <button id="startSummaryAnalysis" class="btn btn-sm btn-outline-info me-2">
+                        <i class="bi bi-play-circle me-1"></i>開始摘要分析
+                    </button>
+                    <button id="refreshSummaryStatus" class="btn btn-sm btn-outline-secondary">
+                        <i class="bi bi-arrow-clockwise me-1"></i>刷新狀態
+                    </button>
+                </div>
+            </div>
+        `;
+
+        // 綁定事件
+        document.getElementById('startSummaryAnalysis').addEventListener('click', function() {
+            startSummaryAnalysis(jobId);
+        });
+
+        document.getElementById('refreshSummaryStatus').addEventListener('click', function() {
+            updateSummaryProgress(jobId);
+            loadAllArticleSummaries(); // 同時刷新所有文章的摘要狀態
+        });
+
+        // 初始更新進度
+        updateSummaryProgress(jobId);
+
+        // 設定定時更新
+        setInterval(() => updateSummaryProgress(jobId), 10000); // 每10秒更新一次
+    }
+
+    // 更新摘要分析進度
+    function updateSummaryProgress(jobId) {
+        $.ajax({
+            url: `/jobs/${jobId}/summary-stats/`,
+            method: 'GET',
+            success: function(response) {
+                if (response.status === 'success') {
+                    const progress = response.analysis_progress || 0;
+                    const progressText = `${response.analyzed_summaries}/${response.total_articles} (${progress}%)`;
+
+                    $('#summaryProgressText').text(progressText);
+                    $('#summaryProgressBar')
+                        .css('width', progress + '%')
+                        .attr('aria-valuenow', progress);
+
+                    // 根據進度狀態調整按鈕
+                    const startBtn = $('#startSummaryAnalysis');
+                    if (response.pending_summaries === 0) {
+                        startBtn.prop('disabled', true).html('<i class="bi bi-check-circle me-1"></i>已完成');
+                    } else {
+                        startBtn.prop('disabled', false).html('<i class="bi bi-play-circle me-1"></i>開始摘要分析');
+                    }
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('更新摘要進度失敗:', error);
+                $('#summaryProgressText').text('載入失敗');
+            }
+        });
+    }
+
+    // 開始摘要分析
+    function startSummaryAnalysis(jobId) {
+        const startBtn = $('#startSummaryAnalysis');
+        const originalText = startBtn.html();
+
+        startBtn.prop('disabled', true).html('<i class="bi bi-hourglass-split me-1"></i>啟動中...');
+
+        $.ajax({
+            url: `/jobs/${jobId}/start-summary-analysis/`,
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': $('[name=csrf-token]').attr('content')
+            },
+            success: function(response) {
+                if (response.status === 'success') {
+                    showNotification('成功', '摘要分析任務已啟動', 'success');
+                    setTimeout(() => {
+                        updateSummaryProgress(jobId);
+                        loadAllArticleSummaries();
+                    }, 2000);
+                } else {
+                    showNotification('錯誤', response.message || '啟動失敗', 'error');
+                    startBtn.prop('disabled', false).html(originalText);
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('啟動摘要分析失敗:', error);
+                showNotification('錯誤', '啟動摘要分析失敗', 'error');
+                startBtn.prop('disabled', false).html(originalText);
+            }
+        });
+    }
+
+    // 顯示通知功能（如果沒有 SweetAlert2 的話使用簡單 alert）
+    function showNotification(title, message, type) {
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                title: title,
+                text: message,
+                icon: type,
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true
+            });
+        } else {
+            alert(`${title}: ${message}`);
+        }
+    }
 </script>
 {% endblock %}

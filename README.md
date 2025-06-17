@@ -117,12 +117,12 @@
 ```mermaid
 flowchart TD
     %% User Interface Layer
-    subgraph "User Interface"
+    subgraph "User Interface" 
         Browser["User Browser"]:::external
     end
 
     %% Web Application Layer
-    subgraph "Web Layer"
+    subgraph "Web Layer" 
         DjangoServer["Django Server (ASGI/WSGI)"]:::web
         URLRouter["URL Router"]:::web
         Views["Views (scraper/views.py)"]:::web
@@ -136,7 +136,7 @@ flowchart TD
     end
 
     %% Service Layer
-    subgraph "Services Layer"
+    subgraph "Services Layer" 
         ScraperService["ScraperService"]:::service
         AnalysisService["AnalysisService"]:::service
         SentimentService["SentimentService"]:::service
@@ -145,7 +145,7 @@ flowchart TD
     end
 
     %% Background Task Layer
-    subgraph "Background Layer"
+    subgraph "Background Layer" 
         CeleryWorker["Celery Worker"]:::background
         RedisBroker["Redis (Broker & Cache)"]:::data
         Views -->|"trigger task"| TaskService
@@ -158,7 +158,7 @@ flowchart TD
     end
 
     %% Data Layer
-    subgraph "Data Layer"
+    subgraph "Data Layer" 
         Database["Database (SQLite/PostgreSQL)"]:::data
         Media["Media Storage"]:::data
         Cache["Redis Cache"]:::data
@@ -170,7 +170,7 @@ flowchart TD
     end
 
     %% External Dependencies
-    subgraph "External Services"
+    subgraph "External Services" 
         ChinaTimes["China Times Website"]:::external
         CKIP["CKIP Transformers"]:::external
         HFModels["HuggingFace Models"]:::external
@@ -211,457 +211,244 @@ flowchart TD
     classDef background fill:#ffd9b3,stroke:#f60,stroke-width:1px
     classDef data fill:#e0e0e0,stroke:#666,stroke-width:1px
     classDef external fill:#e6ccff,stroke:#704,stroke-width:1px
-```
-
-系統主要由以下模組組成：
-
-1. **爬蟲模組**：負責自動抓取新聞文章
-2. **分析模組**：提供文本處理與分析功能
-3. **檢索模組**：實現全文檢索與複雜查詢
-4. **情感分析模組**：分析文章情感傾向
-5. **視覺化模組**：將分析結果轉換為圖表
-6. **用戶管理模組**：處理用戶認證與權限
-
+ ```
 
 ### 項目目錄結構
 
 ```
 news_scraper_web/
-├── manage.py                  # Django 管理腳本
-├── news_scraper_web/          # 主項目目錄
-│   ├── __init__.py
-│   ├── asgi.py                # ASGI 配置
-│   ├── settings.py            # 項目設置
-│   ├── urls.py                # URL 配置
-│   └── wsgi.py                # WSGI 配置
-├── scraper/                   # 爬蟲應用
-│   ├── __init__.py
-│   ├── admin.py               # 管理界面配置
-│   ├── api.py                 # API 接口
-│   ├── apps.py                # 應用配置
-│   ├── forms.py               # 表單定義
-│   ├── migrations/            # 資料庫遷移文件
-│   ├── models.py              # 資料庫模型
-│   ├── services/              # 服務模塊
-│   │   ├── __init__.py
-│   │   ├── analysis_service.py # 分析服務
-│   │   ├── scraper_service.py  # 爬蟲服務
-│   │   ├── search_service.py   # 搜索服務
-│   │   ├── sentiment_service.py # 情感分析服務
-│   │   └── task_service.py     # 任務服務
-│   ├── tasks.py               # 後台任務
-│   ├── templatetags/          # 模板標籤
-│   ├── tests.py               # 測試
-│   ├── urls.py                # URL 配置
-│   ├── utils/                 # 工具函數
-│   │   ├── __init__.py
-│   │   ├── chart_utils.py     # 圖表工具
-│   │   ├── scraper_utils.py   # 爬蟲工具
-│   │   └── sentiment_analyzer.py # 情感分析器
-│   └── views.py               # 視圖函數
-├── media/                     # 媒體文件
-│   ├── charts/                # 圖表
-│   ├── models/                # 模型文件
-│   └── scraper_output/        # 爬蟲輸出
-├── static/                    # 靜態文件
-└── templates/                 # 模板文件
+├── .gitignore                       # Git 忽略設定檔，排除不需追蹤的檔案（如 __pycache__/、db.sqlite3 等）
+├── db.sqlite3                       # SQLite 資料庫檔案，儲存系統資料
+├── manage.py                        # Django 專案的管理工具，可用來執行 migrate、runserver 等指令
+├── README.md                        # 專案說明文件，提供使用說明與架構簡介
+├── requirements.txt                # Python 套件需求清單，用於建立環境
+├── images/                          # 系統展示截圖資料夾（自定義），用於說明文件或README中插圖
+├── media/                           # 使用者上傳資料與AI生成報告存放位置
+│   ├── ai_reports/                  # 存放由 AI 產生的 Markdown 報告檔
+│   │   ├── report_XX.md            # 單份 AI 分析報告（Markdown 格式）
+│   ├── models/                      # 可用於存放上傳模型檔、圖像等資料（目前尚未細列）
+├── news_scraper_web/               # Django 專案設定目錄（與專案同名）
+│   ├── asgi.py                      # ASGI 進入點，用於非同步部署
+│   ├── settings.py                  # 專案設定檔，包括資料庫、靜態檔、應用註冊等
+│   ├── urls.py                      # 專案 URL 路由總入口
+│   ├── wsgi.py                      # WSGI 進入點，用於部署至傳統伺服器
+│   ├── __init__.py                  # 專案模組初始化
+├── scraper/                         # 系統核心 app，負責新聞爬蟲、分析、UI、API 等
+│   ├── admin.py                     # Django 後台管理設定
+│   ├── api.py                       # 若有提供 REST API，可放在此處（依需求而定）
+│   ├── apps.py                      # Django App 註冊設定
+│   ├── forms.py                     # 表單邏輯定義（如登入、任務表單、篩選器）
+│   ├── models.py                    # 資料模型定義（如文章、任務、分析結果）
+│   ├── tasks.py                     # 任務排程/背景任務（如Celery）邏輯（若使用）
+│   ├── tests.py                     # 自動化測試程式
+│   ├── urls.py                      # scraper 應用自身的 URL 路由設定
+│   ├── views.py                     # 系統所有視圖（網頁邏輯處理）定義
+│   ├── __init__.py                  # 模組初始化
+│   ├── migrations/                  # 資料表遷移檔案（由 makemigrations 產生）
+│   ├── services/                    # 分離商業邏輯層，各分析服務模組
+│   │   ├── ai_service.py            # AI 報告生成相關邏輯
+│   │   ├── analysis_service.py      # 關鍵詞/實體分析邏輯
+│   │   ├── scraper_service.py       # 爬蟲任務核心邏輯
+│   │   ├── search_service.py        # 進階搜尋與查詢邏輯
+│   │   ├── sentiment_service.py     # 情感分析服務邏輯
+│   │   ├── summary_service.py       # 摘要產生與分析邏輯
+│   │   ├── task_service.py          # 任務初始化與執行邏輯
+│   │   ├── __init__.py              # services 模組初始化
+│   ├── templatetags/                # 自訂 template filter 與標籤
+│   │   ├── custom_filters.py        # 定義自訂過濾器（如數字格式化、顏色轉換等）
+│   │   ├── __init__.py              # 模組初始化
+│   ├── utils/                       # 工具函式集
+│   │   ├── chart_utils.py           # 圖表用資料處理輔助函數
+│   │   ├── scraper_utils.py         # 爬蟲相關的處理函式（如斷詞、斷句等）
+│   │   ├── sentiment_analyzer.py    # 情感分析模型或推論方法
+│   │   ├── __init__.py              # 模組初始化
+├── static/                          # 靜態檔案資源（CSS、JS、圖檔）
+│   ├── css/
+│   │   ├── ai_report.css            # AI 報告頁面樣式
+│   │   ├── analysis.css             # 一般分析模組頁面樣式
+│   │   ├── bootstrap.min.css        # Bootstrap 樣式表（前端框架）
+│   │   ├── main.css                 # 通用樣式
+│   │   ├── search_analysis.css      # 搜尋分析頁面專用樣式
+│   ├── images/
+│   │   ├── 404.svg                  # 404 頁面的插圖
+│   │   ├── login.png                # 登入頁的背景或 UI 示意圖
+│   │   ├── leader/                  # 領導人物相關圖片
+│   │   │   ├── biden.png            # 拜登圖片
+│   │   │   ├── lai.png              # 賴清德圖片
+│   │   │   ├── trump.png            # 川普圖片
+│   │   │   ├── tsai.png             # 蔡英文圖片
+│   │   │   ├── xi.png               # 習近平圖片
+│   ├── js/
+│   │   ├── analysis.js              # 分析頁的互動邏輯
+│   │   ├── bootstrap.min.js         # Bootstrap 前端元件邏輯
+│   │   ├── chart.js                 # Chart.js 圖表套件
+│   │   ├── datatables.min.js        # 表格操作功能（排序、分頁）
+│   │   ├── main.js                  # 通用 JS 邏輯
+│   │   ├── search_analysis.js       # 進階搜尋互動邏輯
+│   │   ├── word_cloud_analysis.js   # 關鍵詞雲圖產生邏輯
+├── templates/                       # HTML 模板資料夾
+│   ├── 403.html                     # 無權限錯誤頁
+│   ├── 404.html                     # 頁面不存在錯誤頁
+│   ├── 500.html                     # 系統錯誤頁
+│   ├── base.html                    # 通用模板框架，其他頁面繼承自此
+│   ├── scraper/                     # scraper app 專用的頁面模板
+│   │   ├── ai_report_detail.html    # AI 報告詳情頁
+│   │   ├── ai_report_list.html      # AI 報告總覽頁
+│   │   ├── article_detail.html      # 文章詳情頁
+│   │   ├── job_articles.html        # 文章列表頁
+│   │   ├── job_create.html          # 建立爬蟲任務頁
+│   │   ├── job_detail.html          # 任務總覽頁
+│   │   ├── job_entities.html        # 命名實體分析頁
+│   │   ├── job_keywords.html        # 關鍵詞分析頁
+│   │   ├── job_list.html            # 任務列表頁
+│   │   ├── job_search_analysis.html # 進階搜尋分析頁
+│   │   ├── job_sentiment_analysis.html # 情感分析頁
+│   │   ├── job_summary_analysis.html   # 摘要分析頁
+│   │   ├── key_a_person.html       # 領導人物分析頁（單人）
+│   │   ├── key_compare_persons.html # 領導人物比較頁
+│   │   ├── key_person_selection.html # 領導人物選擇頁
+│   │   ├── login.html              # 登入頁模板
 ```
+
+---
 
 ## 資料庫設計
 
-系統使用關聯式資料庫，共包含以下主要資料表：
+系統使用關聯式資料庫（Django ORM），共包含以下主要資料表：
 
 ### 資料表結構
 
 #### 1. ScrapeJob（爬蟲任務）
 
-| 欄位名稱 | 資料類型 | 說明 |
-|---------|---------|------|
-| id | BigAutoField | 主鍵 |
-| user | ForeignKey | 外鍵，關聯到Django用戶 |
-| created_at | DateTimeField | 創建時間 |
-| updated_at | DateTimeField | 更新時間 |
-| status | CharField | 任務狀態（等待中、執行中、已完成、失敗） |
-| categories | CharField | 爬取類別，以逗號分隔 |
-| limit_per_category | IntegerField | 每個類別的文章數量限制 |
-| use_threading | BooleanField | 是否使用多線程 |
-| max_workers | IntegerField | 最大工作線程數 |
-| result_file_path | CharField | 結果文件路徑 |
-| sentiment_analyzed | BooleanField | 情感分析是否完成 |
+| 欄位名稱                 | 資料類型          | 說明                                     |
+| -------------------- | ------------- | -------------------------------------- |
+| id                   | AutoField     | 主鍵                                     |
+| user                 | ForeignKey    | 關聯使用者（User）                            |
+| created\_at          | DateTimeField | 任務建立時間                                 |
+| updated\_at          | DateTimeField | 任務更新時間                                 |
+| status               | CharField     | 任務狀態（pending、running、completed、failed） |
+| categories           | CharField     | 爬取新聞分類（逗號分隔）                           |
+| limit\_per\_category | IntegerField  | 每分類最大文章數量                              |
+| use\_threading       | BooleanField  | 是否啟用多線程                                |
+| max\_workers         | IntegerField  | 最大線程數                                  |
+| result\_file\_path   | CharField     | 任務結果檔案儲存路徑                             |
+| sentiment\_analyzed  | BooleanField  | 是否已進行情感分析                              |
+
+---
 
 #### 2. Article（文章）
 
-| 欄位名稱 | 資料類型 | 說明 |
-|---------|---------|------|
-| id | BigAutoField | 主鍵 |
-| job | ForeignKey | 外鍵，關聯到ScrapeJob |
-| item_id | CharField | 文章唯一標識符 |
-| category | CharField | 文章類別 |
-| title | CharField | 標題 |
-| content | TextField | 內容 |
-| date | DateTimeField | 發布日期 |
-| author | CharField | 作者 |
-| link | URLField | 原始連結 |
-| photo_links | TextField | 圖片連結（JSON格式） |
+| 欄位名稱         | 資料類型          | 說明            |
+| ------------ | ------------- | ------------- |
+| id           | AutoField     | 主鍵            |
+| job          | ForeignKey    | 所屬爬蟲任務        |
+| item\_id     | CharField     | 原始文章唯一識別碼     |
+| category     | CharField     | 文章分類          |
+| title        | CharField     | 文章標題          |
+| content      | TextField     | 文章內容          |
+| date         | DateTimeField | 發布時間          |
+| author       | CharField     | 作者            |
+| link         | URLField      | 原始連結          |
+| photo\_links | TextField     | 圖片連結（JSON 字串） |
+
+---
 
 #### 3. KeywordAnalysis（關鍵詞分析）
 
-| 欄位名稱 | 資料類型 | 說明 |
-|---------|---------|------|
-| id | BigAutoField | 主鍵 |
-| job | ForeignKey | 外鍵，關聯到ScrapeJob |
-| word | CharField | 關鍵詞 |
-| pos | CharField | 詞性 |
-| frequency | IntegerField | 頻率 |
-| category | CharField | 類別 |
-| created_at | DateTimeField | 創建時間 |
+| 欄位名稱        | 資料類型          | 說明   |
+| ----------- | ------------- | ---- |
+| id          | AutoField     | 主鍵   |
+| job         | ForeignKey    | 所屬任務 |
+| word        | CharField     | 關鍵詞  |
+| pos         | CharField     | 詞性   |
+| frequency   | IntegerField  | 出現次數 |
+| category    | CharField     | 所屬分類 |
+| created\_at | DateTimeField | 建立時間 |
+
+---
 
 #### 4. NamedEntityAnalysis（命名實體分析）
 
-| 欄位名稱 | 資料類型 | 說明 |
-|---------|---------|------|
-| id | BigAutoField | 主鍵 |
-| job | ForeignKey | 外鍵，關聯到ScrapeJob |
-| entity | CharField | 實體 |
-| entity_type | CharField | 實體類型（人物、地點、組織等） |
-| frequency | IntegerField | 頻率 |
-| category | CharField | 類別 |
-| created_at | DateTimeField | 創建時間 |
+| 欄位名稱         | 資料類型          | 說明                 |
+| ------------ | ------------- | ------------------ |
+| id           | AutoField     | 主鍵                 |
+| job          | ForeignKey    | 所屬任務               |
+| entity       | CharField     | 實體文字（人名、地名等）       |
+| entity\_type | CharField     | 實體類型（如 PERSON、ORG） |
+| frequency    | IntegerField  | 出現頻率               |
+| category     | CharField     | 所屬分類               |
+| created\_at  | DateTimeField | 建立時間               |
+
+---
 
 #### 5. SentimentAnalysis（情感分析）
 
-| 欄位名稱 | 資料類型 | 說明 |
-|---------|---------|------|
-| id | BigAutoField | 主鍵 |
-| article | OneToOneField | 外鍵，關聯到Article |
-| job | ForeignKey | 外鍵，關聯到ScrapeJob |
-| positive_score | FloatField | 正面情感分數 |
-| negative_score | FloatField | 負面情感分數 |
-| sentiment | CharField | 情感傾向（正面、負面、中立） |
-| title_sentiment | CharField | 標題情感傾向 |
-| title_positive_score | FloatField | 標題正面分數 |
-| title_negative_score | FloatField | 標題負面分數 |
-| created_at | DateTimeField | 創建時間 |
-| updated_at | DateTimeField | 更新時間 |
+| 欄位名稱                   | 資料類型          | 說明     |
+| ---------------------- | ------------- | ------ |
+| id                     | AutoField     | 主鍵     |
+| article                | OneToOneField | 關聯文章   |
+| job                    | ForeignKey    | 所屬任務   |
+| positive\_score        | FloatField    | 內容正面分數 |
+| negative\_score        | FloatField    | 內容負面分數 |
+| sentiment              | CharField     | 內容情感傾向 |
+| title\_sentiment       | CharField     | 標題情感傾向 |
+| title\_positive\_score | FloatField    | 標題正面分數 |
+| title\_negative\_score | FloatField    | 標題負面分數 |
+| created\_at            | DateTimeField | 建立時間   |
+| updated\_at            | DateTimeField | 更新時間   |
+
+---
 
 #### 6. CategorySentimentSummary（類別情感摘要）
 
-| 欄位名稱 | 資料類型 | 說明 |
-|---------|---------|------|
-| id | BigAutoField | 主鍵 |
-| job | ForeignKey | 外鍵，關聯到ScrapeJob |
-| category | CharField | 類別 |
-| positive_count | IntegerField | 正面文章數 |
-| negative_count | IntegerField | 負面文章數 |
-| neutral_count | IntegerField | 中立文章數 |
-| average_positive_score | FloatField | 平均正面分數 |
-| created_at | DateTimeField | 創建時間 |
-| updated_at | DateTimeField | 更新時間 |
+| 欄位名稱                     | 資料類型          | 說明     |
+| ------------------------ | ------------- | ------ |
+| id                       | AutoField     | 主鍵     |
+| job                      | ForeignKey    | 所屬任務   |
+| category                 | CharField     | 分類名稱   |
+| positive\_count          | IntegerField  | 正面文章數  |
+| negative\_count          | IntegerField  | 負面文章數  |
+| neutral\_count           | IntegerField  | 中立文章數  |
+| average\_positive\_score | FloatField    | 平均正面分數 |
+| created\_at              | DateTimeField | 建立時間   |
+| updated\_at              | DateTimeField | 更新時間   |
 
-### 數據庫關係圖
+---
 
-```
-ScrapeJob (1) ──────┬───────> Article (n)
-                    │              │
-                    │              │ 
-                    │              ▼
-                    │        SentimentAnalysis (1)
-                    │
-                    ├───────> KeywordAnalysis (n)
-                    │
-                    ├───────> NamedEntityAnalysis (n)
-                    │
-                    └───────> CategorySentimentSummary (n)
-```
+#### 7. AIReport（AI 生成報告）
 
-```mermaid
-erDiagram
-    User ||--o{ ScrapeJob : "創建"
-    ScrapeJob ||--o{ Article : "包含"
-    ScrapeJob ||--o{ KeywordAnalysis : "產生"
-    ScrapeJob ||--o{ NamedEntityAnalysis : "產生"
-    ScrapeJob ||--o{ CategorySentimentSummary : "總結"
-    Article ||--o| SentimentAnalysis : "分析"
-    ScrapeJob ||--o{ SentimentAnalysis : "關聯"
-    
-    User {
-        int id PK
-        string username
-        string password
-        string email
-    }
-    
-    ScrapeJob {
-        int id PK
-        int user_id FK
-        datetime created_at
-        datetime updated_at
-        string status
-        string categories
-        int limit_per_category
-        boolean use_threading
-        int max_workers
-        string result_file_path
-        boolean sentiment_analyzed
-    }
-    
-    Article {
-        int id PK
-        int job_id FK
-        string item_id
-        string category
-        string title
-        text content
-        datetime date
-        string author
-        url link
-        text photo_links
-    }
-    
-    KeywordAnalysis {
-        int id PK
-        int job_id FK
-        string word
-        string pos
-        int frequency
-        string category
-        datetime created_at
-    }
-    
-    NamedEntityAnalysis {
-        int id PK
-        int job_id FK
-        string entity
-        string entity_type
-        int frequency
-        string category
-        datetime created_at
-    }
-    
-    SentimentAnalysis {
-        int id PK
-        int article_id FK "OneToOne"
-        int job_id FK
-        float positive_score
-        float negative_score
-        string sentiment
-        string title_sentiment
-        float title_positive_score
-        float title_negative_score
-        datetime created_at
-        datetime updated_at
-    }
-    
-    CategorySentimentSummary {
-        int id PK
-        int job_id FK
-        string category
-        int positive_count
-        int negative_count
-        int neutral_count
-        float average_positive_score
-        datetime created_at
-        datetime updated_at
-    }
-```
+| 欄位名稱           | 資料類型          | 說明                             |
+| -------------- | ------------- | ------------------------------ |
+| id             | AutoField     | 主鍵                             |
+| job            | ForeignKey    | 所屬任務                           |
+| search\_query  | TextField     | 搜尋查詢內容（文字版）                    |
+| content        | TextField     | 生成的報告內容                        |
+| generated\_at  | DateTimeField | 生成時間                           |
+| updated\_at    | DateTimeField | 更新時間                           |
+| language       | CharField     | 語言設定（預設 zh-TW）                 |
+| article\_count | IntegerField  | 分析的文章數量                        |
+| status         | CharField     | 處理狀態（pending、completed、failed） |
+| error\_message | TextField     | 錯誤訊息（如有）                       |
+| search\_params | JSONField     | 搜尋參數（JSON 格式）                  |
 
-## 全文檢索與關聯分析系統設計
+---
 
-### 全文檢索引擎
+#### 8. ArticleSummary（文章摘要）
 
-系統實現了一個高效的全文檢索引擎，能夠對新聞文章進行多維度的查詢與分析。檢索引擎主要基於Django ORM與自定義的查詢邏輯實現，支援以下功能：
+| 欄位名稱             | 資料類型          | 說明                                   |
+| ---------------- | ------------- | ------------------------------------ |
+| id               | AutoField     | 主鍵                                   |
+| article          | OneToOneField | 所屬文章                                 |
+| job              | ForeignKey    | 所屬任務                                 |
+| summary\_text    | TextField     | 生成的摘要文字                              |
+| generated\_at    | DateTimeField | 生成時間                                 |
+| updated\_at      | DateTimeField | 更新時間                                 |
+| status           | CharField     | 狀態（pending、running、completed、failed） |
+| error\_message   | TextField     | 錯誤訊息                                 |
+| model\_used      | CharField     | 使用的 LLM 模型名稱                         |
+| generation\_time | FloatField    | 生成耗時（秒）                              |
 
-1. **複合條件查詢**：支援多關鍵詞、多實體類型的AND/OR邏輯組合
-2. **範圍過濾**：按發布日期、類別等進行範圍過濾
-3. **詞性與實體類型過濾**：可針對特定詞性或實體類型進行檢索
-4. **時間序列分析**：支援按日、週、月進行時間軸分析
-5. **內容優先級**：可選擇優先檢索標題或內容
-6. **關鍵詞密度分析**：分析關鍵詞在文章中的分佈密度
-
-### 搜索服務架構
-
-搜索服務（`SearchAnalysisService`）是系統的核心組件，主要包含以下功能模塊：
-
-#### 1. 查詢構建模塊
-
-- **詞項過濾器**：處理搜索詞並構建查詢條件
-- **範圍過濾器**：處理時間、類別等範圍條件
-- **屬性過濾器**：處理關鍵詞數量、實體數量等條件
-
-#### 2. 結果分析模塊
-
-- **時間序列分析**：生成時間趨勢數據
-- **關鍵詞分布**：分析關鍵詞在結果中的分布
-- **實體分布**：分析命名實體在結果中的分布
-- **共現關係分析**：分析關鍵詞與實體的共現關係
-
-#### 3. 可視化處理模塊
-
-- **資料轉換器**：將分析結果轉換為適合圖表展示的格式
-- **圖表生成器**：生成各類圖表的配置數據
-
-### 搜索性能優化
-
-為提高檢索效率，系統採用了以下優化措施：
-
-1. **資料庫索引**：為常用查詢欄位創建索引
-2. **查詢緩存**：使用緩存減少重複計算
-3. **延遲加載**：僅在需要時加載複雜數據
-4. **批量處理**：使用批量查詢減少資料庫操作次數
-5. **查詢計劃優化**：根據實際使用情況優化查詢計劃
-
-### 關聯分析功能
-
-系統提供了多種關聯分析功能，幫助用戶發現數據中的隱藏關係：
-
-#### 1. 關鍵詞共現分析
-
-分析關鍵詞之間的共現關係，發現詞語之間的關聯。系統通過以下步驟實現：
-
-1. 從檢索結果中提取關鍵詞
-2. 計算關鍵詞在同一文章中出現的頻率
-3. 構建共現矩陣
-4. 使用力導向圖或網絡圖可視化關聯關係
-
-#### 2. 實體關係分析
-
-分析命名實體之間的關係，發現人物、組織、地點等之間的聯繫：
-
-1. 提取檢索結果中的命名實體
-2. 分析實體在同一文章或段落中的共現情況
-3. 構建實體關係網絡
-4. 可視化展示實體關聯
-
-#### 3. 領導人物分析
-
-系統特別關注國家領導人物的報導情況，提供以下分析功能：
-
-1. **提及度分析**：統計特定領導人在文章中的提及頻率
-2. **情感傾向分析**：分析與領導人相關文章的情感傾向
-3. **跨類別分析**：分析領導人在不同新聞類別中的關注度
-4. **領導人對比**：支援多位領導人的同期比較分析
-
-## 系統實現細節
-
-### 爬蟲模組實現
-
-爬蟲模組(`CTSimpleScraper`)使用Selenium和undetected-chromedriver實現，具有以下特點：
-
-1. **反偵測機制**：使用undetected-chromedriver避免網站的反爬蟲措施
-2. **多線程支援**：可選使用多線程加速爬取過程
-3. **頁面翻頁**：支援自動翻頁獲取更多文章
-4. **人類行為模擬**：模擬滾動、點擊等人類行為
-5. **Cookie管理**：支援Cookie持久化，減少被封禁風險
-
-### 文本處理模組
-
-文本處理模組(`CTTextProcessor`)負責對爬取的文章進行自然語言處理：
-
-1. **中文斷詞**：使用CKIP Transformers進行中文斷詞
-2. **詞性標註**：識別詞語的詞性
-3. **命名實體識別**：識別文章中的人物、地點、組織等實體
-4. **關鍵詞提取**：根據詞頻和詞性提取關鍵詞
-5. **停用詞過濾**：過濾無意義的常用詞
-
-### 情感分析模組
-
-情感分析模組(`SentimentAnalyzer`)使用預訓練的Transformer模型：
-
-1. **文章情感分析**：分析整篇文章的情感傾向
-2. **標題情感分析**：單獨分析標題的情感傾向
-3. **情感分數計算**：提供正面、負面情感的具體分數
-4. **批量處理**：支援多文章並行處理
-5. **類別情感摘要**：生成各新聞類別的情感分布統計
-
-### 全文檢索實現
-
-全文檢索功能由`SearchAnalysisService`類實現：
-
-1. **查詢構建**：根據用戶輸入動態構建複雜查詢
-2. **條件解析**：解析用戶指定的搜索條件
-3. **結果過濾**：根據條件過濾文章結果
-4. **高效緩存**：使用MD5哈希作為緩存鍵存儲查詢結果
-5. **增量更新**：支援定期更新檢索索引
-
-### 視覺化組件
-
-系統使用多種視覺化技術展示分析結果：
-
-1. **Chart.js**：生成柱狀圖、餅圖、折線圖等
-2. **D3.js**：用於複雜的力導向圖和網絡圖
-3. **自定義繪圖**：使用Matplotlib生成靜態圖表
-4. **交互式圖表**：支援用戶交互的動態圖表
-5. **資料匯出**：支援將圖表數據匯出為CSV或JSON格式
-
-## 使用者界面與功能
-
-系統提供了豐富的用戶界面和功能：
-
-### 主要頁面
-
-1. **任務列表**：顯示用戶創建的所有爬蟲任務
-2. **任務詳情**：顯示特定任務的基本信息和導航選項
-3. **關鍵詞分析**：顯示文章關鍵詞分析結果
-4. **命名實體分析**：顯示文章命名實體分析結果
-5. **文章列表**：顯示爬取的文章列表
-6. **文章詳情**：顯示單篇文章的詳細內容
-7. **情感分析**：顯示文章情感分析結果
-8. **進階搜尋**：提供複雜的搜索和分析功能
-9. **領導人分析**：針對特定領導人的分析頁面
-
-### 主要功能
-
-1. **新建爬蟲任務**：選擇類別、設置參數並執行爬蟲
-2. **瀏覽文章**：查看爬取的文章內容
-3. **關鍵詞分析**：查看各類別的關鍵詞統計
-4. **實體分析**：查看各類別的命名實體統計
-5. **情感分析**：查看文章情感傾向分析
-6. **進階搜尋**：使用複雜條件進行全文檢索
-7. **領導人比較**：比較多位領導人的提及情況
-8. **數據可視化**：查看各類分析結果的圖表展示
-
-## 系統部署
-
-### 開發環境配置
-
-1. 克隆代碼庫：
-   ```bash
-   git clone https://github.com/yourusername/news-scraper-web.git
-   cd news-scraper-web
-   ```
-
-2. 創建虛擬環境：
-   ```bash
-   python -m venv venv
-   source venv/bin/activate  # Linux/Mac
-   venv\Scripts\activate     # Windows
-   ```
-
-3. 安裝依賴：
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-4. 初始化資料庫：
-   ```bash
-   python manage.py migrate
-   ```
-
-5. 創建超級用戶：
-   ```bash
-   python manage.py createsuperuser
-   ```
-
-6. 運行開發服務器：
-   ```bash
-   python manage.py runserver
-   ```
-
-## 結論
-
-新聞爬蟲與全文檢索關聯分析系統是一個功能完整、技術先進的新聞分析平台。系統通過爬蟲技術獲取新聞數據，使用NLP技術進行文本分析，提供全面的檢索和分析功能，幫助用戶從海量新聞中發現有價值的信息和潛在關聯。
-
-系統設計考慮了效能、擴展性和用戶體驗，採用模塊化架構便於維護和擴展。未來可以進一步優化NLP模型，增加更多分析維度，並擴展到更多新聞源，建立更全面的新聞分析平台。
+---
 
 ## 參考資料
 
