@@ -196,6 +196,16 @@
             <div id="activeFilterTags"></div>
         </div>
     </div>
+
+    <hr class="my-3">
+    <div class="filter-group">
+        <h6 class="mb-2 text-info">
+            <i class="bi bi-magic me-2"></i>批量摘要分析
+        </h6>
+        <div id="summaryProgressContainer">
+            <!-- 進度監控將由 JavaScript 動態創建 -->
+        </div>
+    </div>
 </div>
 
 <!-- 文章列表 -->
@@ -203,6 +213,7 @@
     {% for article in articles %}
     <div class="col-md-6 col-lg-4 mb-4 article-item"
          data-category="{{ article.category }}"
+         data-article-id="{{ article.id }}"
          data-aos="fade-up"
          data-aos-delay="{{ forloop.counter|add:100 }}">
         <div class="card article-card">
@@ -225,6 +236,13 @@
             </div>
             <div class="card-body">
                 <h5 class="card-title article-title">{{ article.title }}</h5>
+                <div class="article-summary" data-article-id="{{ article.id }}">
+                    <div class="summary-placeholder text-center py-2">
+                        <small class="text-muted">
+                            <i class="bi bi-hourglass-split me-1"></i>載入摘要狀態...
+                        </small>
+                    </div>
+                </div>
                 <p class="article-meta mb-3">
                     <i class="bi bi-person-circle me-1"></i>{{ article.author }}
                     <i class="bi bi-clock ms-2 me-1"></i>{{ article.date|date:"H:i" }}
@@ -362,13 +380,15 @@
     </div>
 </div>
 {% endblock %}
-
 {% block extra_js %}
 <!-- 引入共用腳本 -->
 <script src="/static/js/analysis.js"></script>
 <!-- 頁面特有腳本 -->
 <script>
     $(document).ready(function() {
+        // 初始化摘要進度監控組件
+        createSummaryProgressMonitor({{ job.id }}, 'summaryProgressContainer');
+
         // 類別標籤點擊事件
         $('.filter-tag').click(function() {
             const checkbox = $(this).find('input[type="checkbox"]');
@@ -429,35 +449,20 @@
             window.location.href = "{% url 'job_articles' job.id %}";
         });
 
-        // 顯示文章詳情
+        // 增強的文章預覽功能（包含摘要）
         $('.view-article').click(function() {
-            const id = $(this).data('id');
-            const title = $(this).data('title');
-            const category = $(this).data('category');
-            const date = $(this).data('date');
-            const author = $(this).data('author');
-            const content = $(this).data('content');
-            const link = $(this).data('link');
+            const articleData = {
+                id: $(this).data('id'),
+                title: $(this).data('title'),
+                category: $(this).data('category'),
+                date: $(this).data('date'),
+                author: $(this).data('author'),
+                content: $(this).data('content'),
+                link: $(this).data('link')
+            };
 
-            $('#articleTitle').text(title);
-            $('#articleCategory').text(category);
-            $('#articleDate').text(date);
-            $('#articleAuthor').text('作者: ' + author);
-
-            // 如果搜尋關鍵字存在，高亮顯示在文章內容中
-            if (keyword) {
-                const highlightedContent = content.replace(new RegExp(keyword, 'gi'),
-                    match => `<mark class="highlight">${match}</mark>`);
-                $('#articleContent').html(highlightedContent.replace(/\n/g, '<br>'));
-            } else {
-                $('#articleContent').html(content.replace(/\n/g, '<br>'));
-            }
-
-            $('#articleLink').attr('href', link);
-            $('#articleDetailLink').attr('href', `/articles/${id}/`);
-
-            const articleModal = new bootstrap.Modal(document.getElementById('articleModal'));
-            articleModal.show();
+            // 使用增強的預覽功能
+            showArticlePreviewWithSummary(articleData);
         });
 
         // 返回頂部按鈕
@@ -603,6 +608,11 @@
 
         // 初始篩選（如果有篩選參數）
         filterArticles();
+
+        // 延遲初始化摘要狀態，避免阻塞頁面載入
+        setTimeout(function() {
+            initializeExistingSummaryStatus();
+        }, 1000);
     });
 </script>
 {% endblock %}

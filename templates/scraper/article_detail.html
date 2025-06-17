@@ -7,6 +7,33 @@
     <div class="col-md-8">
         <h2 class="fw-bold text-white">{{ article.title }}</h2>
     </div>
+    <div class="card summary-detail-card mb-4" data-aos="fade-up" data-aos-delay="100">
+        <div class="card-header">
+            <h6 class="mb-0">
+                <i class="bi bi-chat-dots me-2"></i>AI 生成摘要
+            </h6>
+        </div>
+        <div class="card-body">
+            <div id="articleSummaryContent">
+                <div class="text-center summary-loading">
+                    <div class="spinner-border spinner-border-sm text-info" role="status">
+                        <span class="visually-hidden">載入中...</span>
+                    </div>
+                    <span class="ms-2">載入摘要中...</span>
+                </div>
+            </div>
+            <div class="summary-meta mt-3" id="summaryActions" style="display: none;">
+                <button class="btn btn-sm btn-outline-info generate-single-summary"
+                        data-article-id="{{ article.id }}" id="generateSummaryBtn" style="display: none;">
+                    <i class="bi bi-magic me-1"></i>生成摘要
+                </button>
+                <button class="btn btn-sm btn-outline-secondary regenerate-summary"
+                        data-article-id="{{ article.id }}" id="regenerateSummaryBtn" style="display: none;">
+                    <i class="bi bi-arrow-clockwise me-1"></i>重新生成
+                </button>
+            </div>
+        </div>
+    </div>
     <div class="col-md-4 text-md-end">
         <a href="{% url 'job_detail' article.job.id %}" class="btn btn-outline-secondary">
             <i class="bi bi-arrow-left me-1"></i>返回任務詳情
@@ -109,6 +136,9 @@
 {% block extra_js %}
 <script>
     $(document).ready(function() {
+        // 載入文章摘要
+        loadArticleSummary();
+
         // 處理圖片連結
         try {
             {% if article.photo_links %}
@@ -218,6 +248,73 @@
                 </div>
             `);
         }
+
+        /**
+         * 載入文章摘要
+         */
+        function loadArticleSummary() {
+            const articleId = {{ article.id }};
+
+            getArticleSummary(articleId, function(summary) {
+                const summaryContent = $('#articleSummaryContent');
+                const summaryActions = $('#summaryActions');
+
+                if (summary) {
+                    // 顯示摘要內容
+                    summaryContent.html(`
+                        <div class="summary-content">
+                            ${summary.summary_text}
+                        </div>
+                    `);
+
+                    // 顯示摘要元數據
+                    const metaHtml = `
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-muted">
+                                <i class="bi bi-clock me-1"></i>
+                                生成時間: ${new Date(summary.generated_at).toLocaleString()}
+                                ${summary.generation_time ? ` | 耗時: ${summary.generation_time.toFixed(2)}秒` : ''}
+                                ${summary.model_used ? ` | 模型: ${summary.model_used}` : ''}
+                            </small>
+                            <button class="btn btn-sm btn-outline-secondary regenerate-summary"
+                                    data-article-id="${articleId}">
+                                <i class="bi bi-arrow-clockwise me-1"></i>重新生成
+                            </button>
+                        </div>
+                    `;
+
+                    summaryActions.html(metaHtml).show();
+                } else {
+                    // 顯示未分析狀態
+                    summaryContent.html(`
+                        <div class="summary-empty text-center">
+                            <i class="bi bi-chat-dots"></i>
+                            <p class="mb-0">此文章尚未生成摘要</p>
+                        </div>
+                    `);
+
+                    // 顯示生成按鈕
+                    const generateHtml = `
+                        <div class="text-center">
+                            <button class="btn btn-info generate-single-summary"
+                                    data-article-id="${articleId}">
+                                <i class="bi bi-magic me-1"></i>生成摘要
+                            </button>
+                        </div>
+                    `;
+
+                    summaryActions.html(generateHtml).show();
+                }
+            });
+        }
+
+        // 監聽摘要按鈕點擊後的更新
+        $(document).on('click', '.generate-single-summary, .regenerate-summary', function() {
+            // 延遲重新載入摘要，給API時間處理
+            setTimeout(function() {
+                loadArticleSummary();
+            }, 2000);
+        });
     });
 </script>
 {% endblock %}

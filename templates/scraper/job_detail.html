@@ -178,34 +178,24 @@
         </div>
     </div>
 
-    <!-- 情感分析狀態 -->
+    <!-- 摘要分析統計 -->
     <div class="col-md-3 mb-4" data-aos="fade-up" data-aos-delay="400">
         <div class="card overview-card">
             <div class="card-body p-4 text-center">
-                <i class="bi bi-emoji-smile stat-icon
-                    {% if sentiment_progress >= 100 %}text-success
-                    {% elif sentiment_progress > 0 %}text-warning
-                    {% else %}text-secondary{% endif %}">
-                </i>
+                <i class="bi bi-chat-dots stat-icon text-primary"></i>
+                <h3 class="stat-value" id="summaryCount">0</h3>
+                <p class="stat-label">文章摘要分析數</p>
 
-                <h3 class="stat-value">{{ sentiment_count }}</h3>
-                <p class="stat-label">情感分析處理文章數</p>
-                {% if sentiment_progress < 100 and sentiment_progress > 0 %}
-                    <div class="progress mb-2 mt-2" style="height: 10px;">
-                        <div class="progress-bar progress-bar-striped progress-bar-animated bg-warning"
-                             role="progressbar" style="width: {{ sentiment_progress }}%;"
-                             aria-valuenow="{{ sentiment_progress }}" aria-valuemin="0" aria-valuemax="100">
-                            {{ sentiment_progress }}%
-                        </div>
+                <div class="progress mb-2 mt-2" style="height: 10px;" id="summaryProgress">
+                    <div class="progress-bar bg-primary" role="progressbar" style="width: 0%;"
+                         aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+                        0%
                     </div>
-                    <a href="{% url 'job_sentiment_analysis' job.id %}?analyze=True" class="action-link">
-                        查看並啟動情感分析 <i class="bi bi-arrow-right action-icon"></i>
-                    </a>
-                {% elif sentiment_progress >= 100 %}
-                    <a href="{% url 'job_sentiment_analysis' job.id %}" class="action-link">
-                        查看情感分析 <i class="bi bi-arrow-right action-icon"></i>
-                    </a>
-                {% endif %}
+                </div>
+
+                <a href="{% url 'job_summary_analysis' job.id %}" class="action-link">
+                    查看摘要分析 <i class="bi bi-arrow-right action-icon"></i>
+                </a>
             </div>
         </div>
     </div>
@@ -223,7 +213,6 @@
             <div class="card-body">
                 <div class="row g-2">
                     <div class="col-md-2">
-{#                        <a href="#" class="btn btn-sm btn-outline-success w-100">#}
                         <a href="{% url 'key_person_selection' job.id %}" class="btn btn-sm btn-outline-info w-100">
                             <i class="bi bi-person-badge me-1"></i>關鍵人物分析
                         </a>
@@ -235,22 +224,22 @@
                     </div>
                     <div class="col-md-2">
                         <a href="{% url 'ai_report_view' job.id %}" class="btn btn-sm btn-outline-warning w-100">
-                            <i class="bi bi-chat-dots me-1"></i>AI 生成報告列表
+                            <i class="bi bi-file-text me-1"></i>AI 生成報告
                         </a>
                     </div>
                     <div class="col-md-2">
-                        <a href="#" class="btn btn-sm btn-outline-danger w-100">
-                            <i class="bi bi-geo-alt me-1"></i>地區分布
+                        <a href="{% url 'job_summary_analysis' job.id %}" class="btn btn-sm btn-outline-primary w-100">
+                            <i class="bi bi-chat-dots me-1"></i>摘要分析
                         </a>
                     </div>
                     <div class="col-md-2">
-                        <a href="#" class="btn btn-sm btn-outline-primary w-100">
-                            <i class="bi bi-calendar-event me-1"></i>時間軸分析
+                        <a href="{% url 'job_sentiment_analysis' job.id %}" class="btn btn-sm btn-outline-danger w-100">
+                            <i class="bi bi-emoji-smile me-1"></i>情感分析
                         </a>
                     </div>
                     <div class="col-md-2">
-                        <a href="#" class="btn btn-sm btn-outline-secondary w-100">
-                            <i class="bi bi-link-45deg me-1"></i>關聯分析
+                        <a href="{% url 'job_list' %}" class="btn btn-sm btn-primary w-100">
+                            <i class="bi bi-house-door me-1"></i>回首頁
                         </a>
                     </div>
                 </div>
@@ -313,6 +302,11 @@
                             <small class="badge" style="background-color: rgba(100, 100, 200, 0.7);">{{ article.category }}</small>
                             <small class="text-muted">{{ article.author }}</small>
                         </div>
+                        <div class="mt-2" id="summary-status-{{ article.id }}">
+                            <small class="text-muted">
+                                <i class="bi bi-hourglass-split me-1"></i>載入摘要狀態...
+                            </small>
+                        </div>
                     </a>
                     {% endfor %}
                 </div>
@@ -335,6 +329,12 @@
 {% block extra_js %}
 <script>
     $(document).ready(function() {
+        // 載入摘要統計
+        loadSummaryStats();
+
+        // 載入最新文章摘要狀態
+        loadRecentArticlesSummaryStatus();
+
         // 繪製類別分布圖表
         {% if category_stats %}
         const categoryCtx = document.getElementById('categoryChart').getContext('2d');
@@ -391,6 +391,71 @@
             location.reload();
         }, 5000);
         {% endif %}
+
+        /**
+         * 載入摘要統計
+         */
+        function loadSummaryStats() {
+            $.ajax({
+                url: `/api/jobs/{{ job.id }}/summary-analysis/`,
+                type: 'GET',
+                success: function(response) {
+                    if (response.status === 'success') {
+                        $('#summaryCount').text(response.analyzed_summaries || 0);
+
+                        const progress = response.analysis_progress || 0;
+                        const progressBar = $('#summaryProgress .progress-bar');
+                        progressBar.css('width', progress + '%').text(progress + '%');
+
+                        if (progress === 100) {
+                            progressBar.removeClass('bg-primary').addClass('bg-success');
+                        } else if (progress > 0) {
+                            progressBar.removeClass('bg-primary').addClass('bg-warning');
+                        }
+                    }
+                },
+                error: function() {
+                    $('#summaryCount').text('--');
+                }
+            });
+        }
+
+        /**
+         * 載入最新文章摘要狀態
+         */
+        function loadRecentArticlesSummaryStatus() {
+            {% for article in recent_articles %}
+            (function(articleId) {
+                $.ajax({
+                    url: `/api/articles/${articleId}/summary/`,
+                    type: 'GET',
+                    success: function(response) {
+                        const statusElement = $(`#summary-status-${articleId}`);
+                        if (response.status === 'success' && response.has_summary) {
+                            statusElement.html(`
+                                <small class="text-success">
+                                    <i class="bi bi-check-circle me-1"></i>已有摘要
+                                </small>
+                            `);
+                        } else {
+                            statusElement.html(`
+                                <small class="text-muted">
+                                    <i class="bi bi-dash-circle me-1"></i>未分析
+                                </small>
+                            `);
+                        }
+                    },
+                    error: function() {
+                        $(`#summary-status-${articleId}`).html(`
+                            <small class="text-muted">
+                                <i class="bi bi-dash-circle me-1"></i>未分析
+                            </small>
+                        `);
+                    }
+                });
+            })({{ article.id }});
+            {% endfor %}
+        }
     });
 </script>
 {% endblock %}
